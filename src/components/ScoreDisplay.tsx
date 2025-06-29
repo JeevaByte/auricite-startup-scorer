@@ -6,8 +6,10 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScoreResult, AssessmentData } from '@/pages/Index';
 import { RecommendationsDisplay } from './RecommendationsDisplay';
+import { DownloadDialog } from './DownloadDialog';
+import { ShareDialog } from './ShareDialog';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
-import { RotateCcw, Download, Share2, Target, TrendingUp } from 'lucide-react';
+import { RotateCcw, Target, TrendingUp } from 'lucide-react';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -201,14 +203,12 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart }: ScoreDisplay
           <RotateCcw className="h-4 w-4" />
           <span>Take Again</span>
         </Button>
-        <Button className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700">
-          <Download className="h-4 w-4" />
-          <span>Download Report</span>
-        </Button>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Share2 className="h-4 w-4" />
-          <span>Share Results</span>
-        </Button>
+        <DownloadDialog 
+          scoreResult={result}
+          assessmentData={assessmentData}
+          recommendations={recommendations || undefined}
+        />
+        <ShareDialog scoreResult={result} />
       </div>
     </div>
   );
