@@ -11,11 +11,11 @@ export interface DatabaseAssessment {
   full_time_team: boolean;
   term_sheets: boolean;
   cap_table: boolean;
-  mrr: 'none' | 'low' | 'medium' | 'high';
-  employees: '1-2' | '3-10' | '11-50' | '50+';
-  funding_goal: 'mvp' | 'productMarketFit' | 'scale' | 'exit';
-  investors: 'none' | 'angels' | 'vc' | 'lateStage';
-  milestones: 'concept' | 'launch' | 'scale' | 'exit';
+  mrr: string;
+  employees: string;
+  funding_goal: string;
+  investors: string;
+  milestones: string;
   created_at: string;
   updated_at: string;
 }
@@ -90,7 +90,7 @@ export const getUserAssessments = async (): Promise<(DatabaseAssessment & { scor
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return data as (DatabaseAssessment & { scores: DatabaseScore[] })[] || [];
 };
 
 export const checkCachedResponse = async (assessmentData: AssessmentData): Promise<ScoreResult | null> => {
@@ -103,15 +103,15 @@ export const checkCachedResponse = async (assessmentData: AssessmentData): Promi
     .maybeSingle();
 
   if (error || !data) return null;
-  return data.response_data as ScoreResult;
+  return data.response_data as unknown as ScoreResult;
 };
 
 export const cacheResponse = async (assessmentData: AssessmentData, responseData: ScoreResult): Promise<void> => {
   const { error } = await supabase
     .from('ai_responses')
     .insert({
-      assessment_data: assessmentData,
-      response_data: responseData,
+      assessment_data: assessmentData as any,
+      response_data: responseData as any,
     });
 
   if (error) console.error('Error caching response:', error);
