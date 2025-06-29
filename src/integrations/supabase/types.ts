@@ -9,7 +9,164 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ai_responses: {
+        Row: {
+          assessment_data: Json
+          created_at: string
+          id: string
+          response_data: Json
+        }
+        Insert: {
+          assessment_data: Json
+          created_at?: string
+          id?: string
+          response_data: Json
+        }
+        Update: {
+          assessment_data?: Json
+          created_at?: string
+          id?: string
+          response_data?: Json
+        }
+        Relationships: []
+      }
+      assessments: {
+        Row: {
+          cap_table: boolean
+          created_at: string
+          employees: string
+          external_capital: boolean
+          full_time_team: boolean
+          funding_goal: string
+          id: string
+          investors: string
+          milestones: string
+          mrr: string
+          prototype: boolean
+          revenue: boolean
+          term_sheets: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cap_table: boolean
+          created_at?: string
+          employees: string
+          external_capital: boolean
+          full_time_team: boolean
+          funding_goal: string
+          id?: string
+          investors: string
+          milestones: string
+          mrr: string
+          prototype: boolean
+          revenue: boolean
+          term_sheets: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cap_table?: boolean
+          created_at?: string
+          employees?: string
+          external_capital?: boolean
+          full_time_team?: boolean
+          funding_goal?: string
+          id?: string
+          investors?: string
+          milestones?: string
+          mrr?: string
+          prototype?: boolean
+          revenue?: boolean
+          term_sheets?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scores: {
+        Row: {
+          assessment_id: string
+          business_idea: number
+          business_idea_explanation: string
+          created_at: string
+          financials: number
+          financials_explanation: string
+          id: string
+          team: number
+          team_explanation: string
+          total_score: number
+          traction: number
+          traction_explanation: string
+          user_id: string
+        }
+        Insert: {
+          assessment_id: string
+          business_idea: number
+          business_idea_explanation: string
+          created_at?: string
+          financials: number
+          financials_explanation: string
+          id?: string
+          team: number
+          team_explanation: string
+          total_score: number
+          traction: number
+          traction_explanation: string
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string
+          business_idea?: number
+          business_idea_explanation?: string
+          created_at?: string
+          financials?: number
+          financials_explanation?: string
+          id?: string
+          team?: number
+          team_explanation?: string
+          total_score?: number
+          traction?: number
+          traction_explanation?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scores_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
