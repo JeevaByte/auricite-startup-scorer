@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { AssessmentForm } from '@/components/AssessmentForm';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
@@ -112,7 +111,7 @@ const Index = () => {
   };
 
   const handleViewScore = (assessment: DatabaseAssessment, score: DatabaseScore) => {
-    // Convert database format to app format
+    // Convert database format to app format with proper type casting
     setAssessmentData({
       prototype: assessment.prototype,
       externalCapital: assessment.external_capital,
@@ -120,11 +119,11 @@ const Index = () => {
       fullTimeTeam: assessment.full_time_team,
       termSheets: assessment.term_sheets,
       capTable: assessment.cap_table,
-      mrr: assessment.mrr,
-      employees: assessment.employees,
-      fundingGoal: assessment.funding_goal,
-      investors: assessment.investors,
-      milestones: assessment.milestones,
+      mrr: assessment.mrr as 'none' | 'low' | 'medium' | 'high',
+      employees: assessment.employees as '1-2' | '3-10' | '11-50' | '50+',
+      fundingGoal: assessment.funding_goal as 'mvp' | 'productMarketFit' | 'scale' | 'exit',
+      investors: assessment.investors as 'none' | 'angels' | 'vc' | 'lateStage',
+      milestones: assessment.milestones as 'concept' | 'launch' | 'scale' | 'exit',
     });
     
     setScoreResult({
