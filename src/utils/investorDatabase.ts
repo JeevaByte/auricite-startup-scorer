@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface InvestorProfileData {
@@ -99,10 +98,19 @@ export const getUserInvestorProfiles = async (): Promise<(DatabaseInvestorProfil
   if (error) throw error;
   
   // Map the data to match our interface structure
-  return (data || []).map(profile => ({
-    ...profile,
-    classifications: profile.investor_classifications || []
-  }));
+  return (data || []).map(profile => {
+    const { investor_classifications, ...profileWithoutClassifications } = profile;
+    return {
+      ...profileWithoutClassifications,
+      classifications: (investor_classifications || []).map((classification: any) => ({
+        id: classification.id,
+        category: classification.category as InvestorClassification['category'],
+        confidence: classification.confidence,
+        explanation: classification.explanation,
+        created_at: classification.created_at,
+      }))
+    };
+  });
 };
 
 export const classifyInvestor = async (profileData: InvestorProfileData) => {
