@@ -84,6 +84,41 @@ export type Database = {
         }
         Relationships: []
       }
+      badges: {
+        Row: {
+          assessment_id: string
+          badge_name: string
+          created_at: string
+          explanation: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          assessment_id: string
+          badge_name: string
+          created_at?: string
+          explanation: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string
+          badge_name?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_classifications: {
         Row: {
           category: string

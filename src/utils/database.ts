@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
 
@@ -33,6 +32,15 @@ export interface DatabaseScore {
   traction: number;
   traction_explanation: string;
   total_score: number;
+  created_at: string;
+}
+
+export interface Badge {
+  id: string;
+  user_id: string;
+  assessment_id: string;
+  badge_name: string;
+  explanation: string;
   created_at: string;
 }
 
@@ -80,6 +88,42 @@ export const saveScore = async (assessmentId: string, scoreResult: ScoreResult):
   if (error) throw error;
 };
 
+export const saveBadges = async (assessmentId: string, badges: { name: string; explanation: string }[]): Promise<void> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const badgeInserts = badges.map(badge => ({
+    assessment_id: assessmentId,
+    user_id: user.id,
+    badge_name: badge.name,
+    explanation: badge.explanation,
+  }));
+
+  const { error } = await supabase
+    .from('badges')
+    .insert(badgeInserts);
+
+  if (error) throw error;
+};
+
+export const assignBadges = async (assessmentData: AssessmentData, scores: ScoreResult) => {
+  const { data, error } = await supabase.functions.invoke('assign-badges', {
+    body: { 
+      data: assessmentData,
+      scores: {
+        businessIdea: scores.businessIdea,
+        financials: scores.financials,
+        team: scores.team,
+        traction: scores.traction,
+        total: scores.totalScore
+      }
+    }
+  });
+
+  if (error) throw error;
+  return data;
+};
+
 export const getUserAssessments = async (): Promise<(DatabaseAssessment & { scores: DatabaseScore[] })[]> => {
   const { data, error } = await supabase
     .from('assessments')
@@ -91,6 +135,23 @@ export const getUserAssessments = async (): Promise<(DatabaseAssessment & { scor
 
   if (error) throw error;
   return data as (DatabaseAssessment & { scores: DatabaseScore[] })[] || [];
+};
+
+export const getUserAssessmentsWithBadges = async (): Promise<(DatabaseAssessment & { 
+  scores: DatabaseScore[]; 
+  badges: Badge[] 
+})[]> => {
+  const { data, error } = await supabase
+    .from('assessments')
+    .select(`
+      *,
+      scores (*),
+      badges (*)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as (DatabaseAssessment & { scores: DatabaseScore[]; badges: Badge[] })[] || [];
 };
 
 export const checkCachedResponse = async (assessmentData: AssessmentData): Promise<ScoreResult | null> => {

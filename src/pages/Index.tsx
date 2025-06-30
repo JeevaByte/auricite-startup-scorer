@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
-import { saveAssessment, saveScore, checkCachedResponse, cacheResponse, DatabaseAssessment, DatabaseScore } from '@/utils/database';
+import { saveAssessment, saveScore, saveBadges, assignBadges, checkCachedResponse, cacheResponse, DatabaseAssessment, DatabaseScore } from '@/utils/database';
 import { calculateScore } from '@/utils/scoreCalculator';
 
 export interface AssessmentData {
@@ -53,6 +53,8 @@ const Index = () => {
     milestones: null,
   });
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
+  const [badges, setBadges] = useState<{ name: string; explanation: string }[]>([]);
+  const [engagementMessage, setEngagementMessage] = useState<string>('');
 
   const handleStartAssessment = () => {
     if (!user) {
@@ -80,6 +82,23 @@ const Index = () => {
         // Save assessment and score to database
         const assessmentId = await saveAssessment(data);
         await saveScore(assessmentId, result);
+
+        // Assign and save badges
+        try {
+          const badgeResult = await assignBadges(data, result);
+          setBadges(badgeResult.badges || []);
+          setEngagementMessage(badgeResult.engagementMessage || '');
+          
+          if (badgeResult.badges && badgeResult.badges.length > 0) {
+            await saveBadges(assessmentId, badgeResult.badges);
+          }
+        } catch (badgeError) {
+          console.error('Error assigning badges:', badgeError);
+          // Set fallback badge if badge assignment fails
+          const fallbackBadges = [{ name: 'Starter', explanation: 'Early-stage startup with potential to grow.' }];
+          setBadges(fallbackBadges);
+          setEngagementMessage('Keep building your startup!');
+        }
       } catch (error) {
         console.error('Error saving assessment:', error);
       }
@@ -104,6 +123,8 @@ const Index = () => {
       milestones: null,
     });
     setScoreResult(null);
+    setBadges([]);
+    setEngagementMessage('');
   };
 
   const handleViewHistory = () => {
@@ -169,6 +190,8 @@ const Index = () => {
           result={scoreResult}
           assessmentData={assessmentData}
           onRestart={handleRestart}
+          badges={badges}
+          engagementMessage={engagementMessage}
         />
       )}
       
