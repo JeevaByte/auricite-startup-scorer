@@ -97,7 +97,12 @@ export const getUserInvestorProfiles = async (): Promise<(DatabaseInvestorProfil
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as (DatabaseInvestorProfile & { classifications: InvestorClassification[] })[] || [];
+  
+  // Map the data to match our interface structure
+  return (data || []).map(profile => ({
+    ...profile,
+    classifications: profile.investor_classifications || []
+  }));
 };
 
 export const classifyInvestor = async (profileData: InvestorProfileData) => {
