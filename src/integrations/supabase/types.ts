@@ -84,6 +84,146 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_classifications: {
+        Row: {
+          category: string
+          confidence: number
+          created_at: string
+          explanation: string
+          id: string
+          profile_id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          confidence: number
+          created_at?: string
+          explanation: string
+          id?: string
+          profile_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          confidence?: number
+          created_at?: string
+          explanation?: string
+          id?: string
+          profile_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_classifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "investor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_matches: {
+        Row: {
+          assessment_id: string
+          classification_id: string
+          created_at: string
+          id: string
+          investor_user_id: string
+          match_score: number
+          startup_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_id: string
+          classification_id: string
+          created_at?: string
+          id?: string
+          investor_user_id: string
+          match_score: number
+          startup_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string
+          classification_id?: string
+          created_at?: string
+          id?: string
+          investor_user_id?: string
+          match_score?: number
+          startup_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_matches_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_matches_classification_id_fkey"
+            columns: ["classification_id"]
+            isOneToOne: false
+            referencedRelation: "investor_classifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_profiles: {
+        Row: {
+          check_size: string
+          created_at: string
+          deal_source: string
+          due_diligence: boolean
+          esg_metrics: boolean
+          frequency: string
+          id: string
+          objective: string
+          personal_capital: boolean
+          registered_entity: boolean
+          stage: string
+          structured_fund: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          check_size: string
+          created_at?: string
+          deal_source: string
+          due_diligence: boolean
+          esg_metrics: boolean
+          frequency: string
+          id?: string
+          objective: string
+          personal_capital: boolean
+          registered_entity: boolean
+          stage: string
+          structured_fund: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          check_size?: string
+          created_at?: string
+          deal_source?: string
+          due_diligence?: boolean
+          esg_metrics?: boolean
+          frequency?: string
+          id?: string
+          objective?: string
+          personal_capital?: boolean
+          registered_entity?: boolean
+          stage?: string
+          structured_fund?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company_name: string | null
