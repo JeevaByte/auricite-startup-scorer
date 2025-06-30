@@ -8,6 +8,7 @@ import { ScoreResult, AssessmentData } from '@/pages/Index';
 import { RecommendationsDisplay } from './RecommendationsDisplay';
 import { DownloadDialog } from './DownloadDialog';
 import { ShareDialog } from './ShareDialog';
+import BadgeDisplay from './BadgeDisplay';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
 import { RotateCcw, Target, TrendingUp } from 'lucide-react';
 
@@ -15,9 +16,11 @@ interface ScoreDisplayProps {
   result: ScoreResult;
   assessmentData: AssessmentData;
   onRestart: () => void;
+  badges: { name: string; explanation: string }[];
+  engagementMessage: string;
 }
 
-export const ScoreDisplay = ({ result, assessmentData, onRestart }: ScoreDisplayProps) => {
+export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
 
@@ -91,6 +94,9 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart }: ScoreDisplay
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Investment Score</h1>
         <p className="text-lg text-gray-600">Here's how your startup scored across key investment criteria</p>
       </div>
+
+      {/* Badge Display */}
+      <BadgeDisplay badges={badges} engagementMessage={engagementMessage} />
 
       <Tabs defaultValue="score" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-8">
