@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -7,6 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
 import { calculateScore } from '@/utils/scoreCalculator';
 import { ArrowLeft, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
+import { sanitizeAssessmentData } from '@/utils/inputSanitization';
+import { formRateLimiter } from '@/utils/rateLimiting';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Tooltip,
   TooltipContent,
@@ -135,11 +138,16 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<AssessmentData>(initialData);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false]);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleAnswer = (questionId: string, value: any) => {
+    // Sanitize input before setting
+    const sanitizedValue = typeof value === 'string' ? sanitizeText(value) : value;
+    
     setAnswers(prev => ({
       ...prev,
-      [questionId]: value
+      [questionId]: sanitizedValue
     }));
   };
 
@@ -159,15 +167,64 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
   };
 
   const handleNext = () => {
+    // Authentication check
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to complete the assessment.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (currentStep < questionSteps.length - 1) {
       const newCompletedSteps = [...completedSteps];
       newCompletedSteps[currentStep] = isStepComplete(currentStep);
       setCompletedSteps(newCompletedSteps);
       setCurrentStep(prev => prev + 1);
     } else {
-      // Complete assessment
-      const result = calculateScore(answers);
-      onComplete(answers, result);
+      // Rate limiting check before submission
+      const userId = user.id;
+      if (formRateLimiter.isRateLimited(userId)) {
+        const remainingTime = formRateLimiter.getRemainingTime(userId);
+        toast({
+          title: 'Too Many Submissions',
+          description: `Please wait ${remainingTime} seconds before submitting again.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      try {
+        // Sanitize all assessment data before processing
+        const sanitizedAnswers = sanitizeAssessmentData(answers);
+        
+        // Validate required fields
+        const requiredFields = ['prototype', 'revenue', 'mrr', 'capTable', 'fullTimeTeam', 'employees', 'milestones', 'fundingGoal', 'termSheets', 'investors', 'externalCapital'];
+        const missingFields = requiredFields.filter(field => 
+          sanitizedAnswers[field] === null || sanitizedAnswers[field] === undefined
+        );
+
+        if (missingFields.length > 0) {
+          toast({
+            title: 'Incomplete Assessment',
+            description: 'Please answer all questions before submitting.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Complete assessment
+        const result = calculateScore(sanitizedAnswers);
+        onComplete(sanitizedAnswers, result);
+      } catch (error) {
+        console.error('Assessment submission error:', error);
+        toast({
+          title: 'Submission Error',
+          description: 'An error occurred while processing your assessment. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -272,6 +329,7 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
                         variant={currentAnswer === true ? "default" : "outline"}
                         onClick={() => handleAnswer(question.id, true)}
                         className="p-4 h-auto"
+                        disabled={!user}
                       >
                         Yes
                       </Button>
@@ -279,6 +337,7 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
                         variant={currentAnswer === false ? "default" : "outline"}
                         onClick={() => handleAnswer(question.id, false)}
                         className="p-4 h-auto"
+                        disabled={!user}
                       >
                         No
                       </Button>
@@ -291,6 +350,7 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
                           variant={currentAnswer === option.value ? "default" : "outline"}
                           onClick={() => handleAnswer(question.id, option.value)}
                           className="w-full p-4 h-auto justify-start text-left"
+                          disabled={!user}
                         >
                           {option.label}
                         </Button>
@@ -301,6 +361,14 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
               );
             })}
           </div>
+
+          {!user && (
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 text-sm">
+                Please sign in to complete and submit your assessment.
+              </p>
+            </div>
+          )}
 
           {/* Navigation */}
           <div className="flex justify-between mt-8 pt-6 border-t">

@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { sanitizeAssessmentData } from './inputSanitization';
 
 export interface DatabaseAssessment {
   id: string;
@@ -45,35 +46,53 @@ export interface Badge {
 }
 
 export const saveAssessment = async (data: AssessmentData): Promise<string> => {
+  // Authenticate user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
+
+  // Sanitize data before saving
+  const sanitizedData = sanitizeAssessmentData(data);
+
   const { data: assessment, error } = await supabase
     .from('assessments')
     .insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
-      prototype: data.prototype,
-      external_capital: data.externalCapital,
-      revenue: data.revenue,
-      full_time_team: data.fullTimeTeam,
-      term_sheets: data.termSheets,
-      cap_table: data.capTable,
-      mrr: data.mrr,
-      employees: data.employees,
-      funding_goal: data.fundingGoal,
-      investors: data.investors,
-      milestones: data.milestones,
+      user_id: user.id,
+      prototype: sanitizedData.prototype,
+      external_capital: sanitizedData.externalCapital,
+      revenue: sanitizedData.revenue,
+      full_time_team: sanitizedData.fullTimeTeam,
+      term_sheets: sanitizedData.termSheets,
+      cap_table: sanitizedData.capTable,
+      mrr: sanitizedData.mrr,
+      employees: sanitizedData.employees,
+      funding_goal: sanitizedData.fundingGoal,
+      investors: sanitizedData.investors,
+      milestones: sanitizedData.milestones,
     })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Database error:', error);
+    throw new Error('Failed to save assessment');
+  }
   return assessment.id;
 };
 
 export const saveScore = async (assessmentId: string, scoreResult: ScoreResult): Promise<void> => {
+  // Authenticate user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
+
   const { error } = await supabase
     .from('scores')
     .insert({
       assessment_id: assessmentId,
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: user.id,
       business_idea: scoreResult.businessIdea,
       business_idea_explanation: scoreResult.businessIdeaExplanation,
       financials: scoreResult.financials,
@@ -85,7 +104,10 @@ export const saveScore = async (assessmentId: string, scoreResult: ScoreResult):
       total_score: scoreResult.totalScore,
     });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Database error:', error);
+    throw new Error('Failed to save score');
+  }
 };
 
 export const saveBadges = async (assessmentId: string, badges: { name: string; explanation: string }[]): Promise<void> => {
@@ -155,10 +177,19 @@ export const getUserAssessmentsWithBadges = async (): Promise<(DatabaseAssessmen
 };
 
 export const checkCachedResponse = async (assessmentData: AssessmentData): Promise<ScoreResult | null> => {
+  // Authenticate user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return null;
+  }
+
+  // Sanitize data before checking cache
+  const sanitizedData = sanitizeAssessmentData(assessmentData);
+
   const { data, error } = await supabase
     .from('ai_responses')
     .select('response_data')
-    .eq('assessment_data', JSON.stringify(assessmentData))
+    .eq('assessment_data', JSON.stringify(sanitizedData))
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -168,10 +199,19 @@ export const checkCachedResponse = async (assessmentData: AssessmentData): Promi
 };
 
 export const cacheResponse = async (assessmentData: AssessmentData, responseData: ScoreResult): Promise<void> => {
+  // Authenticate user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return;
+  }
+
+  // Sanitize data before caching
+  const sanitizedData = sanitizeAssessmentData(assessmentData);
+
   const { error } = await supabase
     .from('ai_responses')
     .insert({
-      assessment_data: assessmentData as any,
+      assessment_data: sanitizedData as any,
       response_data: responseData as any,
     });
 

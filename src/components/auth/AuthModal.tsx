@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validatePassword } from '@/utils/passwordValidation';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { sanitizeText, sanitizeEmail, validateEmail } from '@/utils/inputSanitization';
+import { authRateLimiter } from '@/utils/rateLimiting';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -21,18 +25,43 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const passwordValidation = validatePassword(password);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Input validation and sanitization
+      const sanitizedEmail = sanitizeEmail(email);
+      const sanitizedFullName = sanitizeText(fullName);
+      const sanitizedCompanyName = sanitizeText(companyName);
+
+      if (!validateEmail(sanitizedEmail)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      if (!passwordValidation.isValid) {
+        throw new Error('Please ensure your password meets all requirements');
+      }
+
+      // Rate limiting check
+      const clientIP = 'signup-' + sanitizedEmail; // In production, use actual IP
+      if (authRateLimiter.isRateLimited(clientIP)) {
+        const remainingTime = authRateLimiter.getRemainingTime(clientIP);
+        throw new Error(`Too many signup attempts. Please try again in ${remainingTime} seconds.`);
+      }
+
+      const redirectUrl = `${window.location.origin}/`;
+
       const { error } = await supabase.auth.signUp({
-        email,
+        email: sanitizedEmail,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
-            full_name: fullName,
-            company_name: companyName,
+            full_name: sanitizedFullName,
+            company_name: sanitizedCompanyName,
           },
         },
       });
@@ -45,9 +74,10 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       });
       onClose();
     } catch (error: any) {
+      console.error('Signup error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'An error occurred during signup',
         variant: 'destructive',
       });
     } finally {
@@ -60,12 +90,34 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setLoading(true);
 
     try {
+      // Input validation and sanitization
+      const sanitizedEmail = sanitizeEmail(email);
+
+      if (!validateEmail(sanitizedEmail)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Rate limiting check
+      const clientIP = 'signin-' + sanitizedEmail; // In production, use actual IP
+      if (authRateLimiter.isRateLimited(clientIP)) {
+        const remainingTime = authRateLimiter.getRemainingTime(clientIP);
+        throw new Error(`Too many login attempts. Please try again in ${remainingTime} seconds.`);
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: sanitizedEmail,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        throw error;
+      }
+
+      // Reset rate limit on successful login
+      authRateLimiter.reset('signin-' + sanitizedEmail);
 
       toast({
         title: 'Welcome back!',
@@ -73,9 +125,10 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       });
       onClose();
     } catch (error: any) {
+      console.error('Signin error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'An error occurred during signin',
         variant: 'destructive',
       });
     } finally {
@@ -106,6 +159,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={254}
                 />
               </div>
               <div>
@@ -116,6 +170,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
+                  maxLength={128}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
@@ -134,6 +190,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  maxLength={100}
                 />
               </div>
               <div>
@@ -143,6 +200,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
+                  maxLength={100}
                 />
               </div>
               <div>
@@ -153,6 +211,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={254}
                 />
               </div>
               <div>
@@ -163,9 +222,16 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
+                  maxLength={128}
                 />
+                <PasswordStrengthIndicator validation={passwordValidation} password={password} />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading || !passwordValidation.isValid}
+              >
                 {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
