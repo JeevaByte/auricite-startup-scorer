@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
-import { calculateScore } from '@/utils/scoreCalculator';
+import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
 import { ArrowLeft, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
 import { sanitizeAssessmentData, sanitizeText } from '@/utils/inputSanitization';
 import { formRateLimiter } from '@/utils/rateLimiting';
@@ -215,8 +214,8 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
           return;
         }
 
-        // Complete assessment
-        const result = calculateScore(sanitizedAnswers);
+        // Use the new dynamic scoring engine
+        const result = calculateDynamicScore(sanitizedAnswers);
         onComplete(sanitizedAnswers, result);
       } catch (error) {
         console.error('Assessment submission error:', error);

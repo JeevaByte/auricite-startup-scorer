@@ -1,26 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { useToast } from "@/hooks/use-toast";
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
-import { AssessmentHistory } from '@/components/AssessmentHistory';
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { Footer } from '@/components/Footer';
-import { AuthModal } from '@/components/auth/AuthModal';
-import { useAuth } from '@/hooks/useAuth';
-import { saveAssessment, saveScore, saveBadges, assignBadges, checkCachedResponse, cacheResponse, DatabaseAssessment, DatabaseScore } from '@/utils/database';
+import { ConsentCheckbox } from '@/components/ConsentCheckbox';
+import { saveAssessment, saveScore, assignBadges, saveBadges } from '@/utils/database';
+import { loadDraft, saveDraft, clearDraft } from '@/utils/autosave';
+import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
+import { useNavigate } from 'react-router-dom';
 
 export interface AssessmentData {
   prototype: boolean | null;
-  externalCapital: boolean | null;
   revenue: boolean | null;
-  fullTimeTeam: boolean | null;
-  termSheets: boolean | null;
+  mrr: string | null;
   capTable: boolean | null;
-  mrr: 'none' | 'low' | 'medium' | 'high' | null;
-  employees: '1-2' | '3-10' | '11-50' | '50+' | null;
-  fundingGoal: 'mvp' | 'productMarketFit' | 'scale' | 'exit' | null;
-  investors: 'none' | 'angels' | 'vc' | 'lateStage' | null;
-  milestones: 'concept' | 'launch' | 'scale' | 'exit' | null;
+  fullTimeTeam: boolean | null;
+  employees: string | null;
+  milestones: string | null;
+  fundingGoal: string | null;
+  termSheets: boolean | null;
+  investors: string | null;
+  externalCapital: boolean | null;
 }
 
 export interface ScoreResult {
@@ -35,179 +38,193 @@ export interface ScoreResult {
   totalScore: number;
 }
 
+const initialData: AssessmentData = {
+  prototype: null,
+  revenue: null,
+  mrr: null,
+  capTable: null,
+  fullTimeTeam: null,
+  employees: null,
+  milestones: null,
+  fundingGoal: null,
+  termSheets: null,
+  investors: null,
+  externalCapital: null
+};
+
 const Index = () => {
-  const { user, loading } = useAuth();
-  const [currentStep, setCurrentStep] = useState<'intro' | 'assessment' | 'results' | 'history'>('intro');
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [assessmentData, setAssessmentData] = useState<AssessmentData>({
-    prototype: null,
-    externalCapital: null,
-    revenue: null,
-    fullTimeTeam: null,
-    termSheets: null,
-    capTable: null,
-    mrr: null,
-    employees: null,
-    fundingGoal: null,
-    investors: null,
-    milestones: null,
-  });
+  const [assessmentStarted, setAssessmentStarted] = useState(false);
+  const [assessmentComplete, setAssessmentComplete] = useState(false);
+  const [assessmentData, setAssessmentData] = useState<AssessmentData>(initialData);
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
   const [badges, setBadges] = useState<{ name: string; explanation: string }[]>([]);
   const [engagementMessage, setEngagementMessage] = useState<string>('');
+  const [loadingDraft, setLoadingDraft] = useState(true);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleStartAssessment = () => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-    setCurrentStep('assessment');
-  };
-
-  const handleAssessmentComplete = async (data: AssessmentData, result: ScoreResult) => {
-    setAssessmentData(data);
-    setScoreResult(result);
-    
-    if (user) {
+  useEffect(() => {
+    const loadAssessmentDraft = async () => {
       try {
-        // Check for cached response first
-        const cachedResult = await checkCachedResponse(data);
-        if (cachedResult) {
-          setScoreResult(cachedResult);
-        } else {
-          // Cache the new response
-          await cacheResponse(data, result);
-        }
-        
-        // Save assessment and score to database
-        const assessmentId = await saveAssessment(data);
-        await saveScore(assessmentId, result);
-
-        // Assign and save badges
-        try {
-          const badgeResult = await assignBadges(data, result);
-          setBadges(badgeResult.badges || []);
-          setEngagementMessage(badgeResult.engagementMessage || '');
-          
-          if (badgeResult.badges && badgeResult.badges.length > 0) {
-            await saveBadges(assessmentId, badgeResult.badges);
-          }
-        } catch (badgeError) {
-          console.error('Error assigning badges:', badgeError);
-          // Set fallback badge if badge assignment fails
-          const fallbackBadges = [{ name: 'Starter', explanation: 'Early-stage startup with potential to grow.' }];
-          setBadges(fallbackBadges);
-          setEngagementMessage('Keep building your startup!');
+        setLoadingDraft(true);
+        const draft = await loadDraft();
+        if (draft) {
+          setAssessmentData(draft.draft_data as AssessmentData);
+          setAssessmentStarted(true);
         }
       } catch (error) {
-        console.error('Error saving assessment:', error);
+        console.error('Error loading draft:', error);
+      } finally {
+        setLoadingDraft(false);
       }
+    };
+
+    loadAssessmentDraft();
+  }, []);
+
+  const handleStartAssessment = () => {
+    if (!consentGiven) {
+      toast({
+        title: 'Consent Required',
+        description: 'Please agree to the terms and privacy policy to proceed.',
+        variant: 'destructive',
+      });
+      return;
     }
-    
-    setCurrentStep('results');
+    setAssessmentStarted(true);
   };
 
-  const handleRestart = () => {
-    setCurrentStep('intro');
-    setAssessmentData({
-      prototype: null,
-      externalCapital: null,
-      revenue: null,
-      fullTimeTeam: null,
-      termSheets: null,
-      capTable: null,
-      mrr: null,
-      employees: null,
-      fundingGoal: null,
-      investors: null,
-      milestones: null,
-    });
+  const handleSaveDraft = async (data: Partial<AssessmentData>, step: number) => {
+    try {
+      await saveDraft(data, step);
+      toast({
+        title: 'Draft Saved',
+        description: 'Your progress has been saved.',
+      });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast({
+        title: 'Error Saving Draft',
+        description: 'Failed to save your progress. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleAssessmentRestart = async () => {
+    setAssessmentStarted(false);
+    setAssessmentComplete(false);
+    setAssessmentData(initialData);
     setScoreResult(null);
     setBadges([]);
     setEngagementMessage('');
+    try {
+      await clearDraft();
+      toast({
+        title: 'Assessment Reset',
+        description: 'Your assessment has been reset.',
+      });
+    } catch (error) {
+      console.error('Error clearing draft:', error);
+      toast({
+        title: 'Error Resetting Assessment',
+        description: 'Failed to reset the assessment. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleViewHistory = () => {
-    setCurrentStep('history');
-  };
-
-  const handleViewScore = (assessment: DatabaseAssessment, score: DatabaseScore) => {
-    // Convert database format to app format with proper type casting
-    setAssessmentData({
-      prototype: assessment.prototype,
-      externalCapital: assessment.external_capital,
-      revenue: assessment.revenue,
-      fullTimeTeam: assessment.full_time_team,
-      termSheets: assessment.term_sheets,
-      capTable: assessment.cap_table,
-      mrr: assessment.mrr as 'none' | 'low' | 'medium' | 'high',
-      employees: assessment.employees as '1-2' | '3-10' | '11-50' | '50+',
-      fundingGoal: assessment.funding_goal as 'mvp' | 'productMarketFit' | 'scale' | 'exit',
-      investors: assessment.investors as 'none' | 'angels' | 'vc' | 'lateStage',
-      milestones: assessment.milestones as 'concept' | 'launch' | 'scale' | 'exit',
-    });
+  const handleComplete = async (data: AssessmentData, result: ScoreResult) => {
+    console.log('Assessment completed:', { data, result });
     
-    setScoreResult({
-      businessIdea: score.business_idea,
-      businessIdeaExplanation: score.business_idea_explanation,
-      financials: score.financials,
-      financialsExplanation: score.financials_explanation,
-      team: score.team,
-      teamExplanation: score.team_explanation,
-      traction: score.traction,
-      tractionExplanation: score.traction_explanation,
-      totalScore: score.total_score,
-    });
-    
-    setCurrentStep('results');
+    try {
+      // Save assessment to database
+      const assessmentId = await saveAssessment(data);
+      await saveScore(assessmentId, result);
+      
+      // Get badges
+      const badgeData = await assignBadges(data, result);
+      if (badgeData?.badges) {
+        await saveBadges(assessmentId, badgeData.badges);
+        setBadges(badgeData.badges);
+      }
+      
+      // Set engagement message
+      setEngagementMessage(badgeData?.engagementMessage || 'Great job completing your assessment!');
+      
+      // Clear any saved draft
+      await clearDraft();
+      
+      // Navigate to results page with data
+      navigate('/results', {
+        state: {
+          assessmentData: data,
+          scoreResult: result
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error saving assessment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save assessment. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onViewHistory={user ? handleViewHistory : undefined} />
-      
-      {currentStep === 'intro' && (
-        <Hero onStartAssessment={handleStartAssessment} />
-      )}
-      
-      {currentStep === 'assessment' && (
-        <AssessmentWizard 
-          onComplete={handleAssessmentComplete}
-          initialData={assessmentData}
-        />
-      )}
-      
-      {currentStep === 'results' && scoreResult && (
-        <ScoreDisplay
-          result={scoreResult}
-          assessmentData={assessmentData}
-          onRestart={handleRestart}
-          badges={badges}
-          engagementMessage={engagementMessage}
-        />
-      )}
-      
-      {currentStep === 'history' && (
-        <AssessmentHistory
-          onBack={() => setCurrentStep('intro')}
-          onViewScore={handleViewScore}
-        />
-      )}
-      
-      <Footer />
-      
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <div className="container max-w-4xl mx-auto p-4">
+        <header className="py-6">
+          <h1 className="text-3xl font-bold text-center text-gray-900">
+            Startup Investment Readiness Assessment
+          </h1>
+          <p className="text-center text-gray-600 mt-2">
+            Evaluate your startup's potential for investment with our comprehensive assessment tool.
+          </p>
+        </header>
+
+        <main className="mb-8">
+          {!assessmentStarted ? (
+            <Card className="p-8">
+              <div className="space-y-4">
+                <p className="text-lg text-gray-700">
+                  This assessment will help you understand your startup's strengths and weaknesses across key
+                  investment criteria. By answering a series of questions, you'll receive a detailed score and
+                  personalized recommendations to improve your investment readiness.
+                </p>
+                <ConsentCheckbox
+                  checked={consentGiven}
+                  onCheckedChange={setConsentGiven}
+                />
+                <Button onClick={handleStartAssessment} disabled={loadingDraft || !consentGiven} className="w-full">
+                  {loadingDraft ? 'Loading Draft...' : 'Start Assessment'}
+                </Button>
+              </div>
+            </Card>
+          ) : assessmentComplete && scoreResult ? (
+            <ScoreDisplay
+              result={scoreResult}
+              assessmentData={assessmentData}
+              onRestart={handleAssessmentRestart}
+              badges={badges}
+              engagementMessage={engagementMessage}
+            />
+          ) : (
+            <AssessmentWizard
+              onComplete={handleComplete}
+              initialData={assessmentData}
+              onSaveDraft={handleSaveDraft}
+            />
+          )}
+        </main>
+
+        <footer className="text-center text-gray-500 mt-8">
+          <p>&copy; 2024 Startup Assessment Tool. All rights reserved.</p>
+        </footer>
+      </div>
     </div>
   );
 };
