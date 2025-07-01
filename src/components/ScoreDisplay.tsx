@@ -4,13 +4,15 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { ScoreResult, AssessmentData } from '@/pages/Index';
 import { RecommendationsDisplay } from './RecommendationsDisplay';
 import { DownloadDialog } from './DownloadDialog';
 import { ShareDialog } from './ShareDialog';
 import BadgeDisplay from './BadgeDisplay';
+import { ScoreGauge } from './ScoreGauge';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
-import { RotateCcw, Target, TrendingUp } from 'lucide-react';
+import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink } from 'lucide-react';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -40,22 +42,15 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
     fetchRecommendations();
   }, [assessmentData, result]);
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-50';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
-    if (score >= 40) return 'text-orange-600 bg-orange-50';
-    return 'text-red-600 bg-red-50';
+  const getInvestorReadiness = () => {
+    const score = result.totalScore;
+    if (score >= 700) return { level: 'Angel Ready', color: 'text-green-600', description: 'Your startup shows strong signals for angel investment' };
+    if (score >= 500) return { level: 'Pre-Seed Ready', color: 'text-blue-600', description: 'Good foundation with room for improvement before approaching angels' };
+    if (score >= 300) return { level: 'Early Stage', color: 'text-orange-600', description: 'Focus on building traction and strengthening fundamentals' };
+    return { level: 'Foundation Stage', color: 'text-red-600', description: 'Concentrate on core business development before seeking investment' };
   };
 
-  const getScoreGrade = (score: number) => {
-    if (score >= 800) return 'A+';
-    if (score >= 700) return 'A';
-    if (score >= 600) return 'B+';
-    if (score >= 500) return 'B';
-    if (score >= 400) return 'C+';
-    if (score >= 300) return 'C';
-    return 'D';
-  };
+  const readiness = getInvestorReadiness();
 
   const categories = [
     {
@@ -91,16 +86,44 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Investment Score</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Investment Readiness Score</h1>
         <p className="text-lg text-gray-600">Here's how your startup scored across key investment criteria</p>
       </div>
 
       {/* Badge Display */}
       <BadgeDisplay badges={badges} engagementMessage={engagementMessage} />
 
-      <Tabs defaultValue="score" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="score" className="flex items-center space-x-2">
+      {/* Main Score Section */}
+      <Card className="p-8 mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div className="text-center">
+            <ScoreGauge score={result.totalScore} maxScore={999} title="Overall Score" />
+          </div>
+          <div>
+            <div className="mb-6">
+              <Badge className={`${readiness.color} bg-opacity-10 text-lg px-4 py-2`}>
+                {readiness.level}
+              </Badge>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Investment Readiness Assessment</h2>
+            <p className="text-gray-600 mb-6">{readiness.description}</p>
+            
+            {result.totalScore >= 700 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <ExternalLink className="h-4 w-4 text-green-600" />
+                  <span className="font-semibold text-green-800">Ready for Angel Investors</span>
+                </div>
+                <p className="text-green-700 text-sm">Your startup demonstrates strong fundamentals that angel investors look for. Consider reaching out to our network.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      <Tabs defaultValue="breakdown" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger value="breakdown" className="flex items-center space-x-2">
             <TrendingUp className="h-4 w-4" />
             <span>Score Breakdown</span>
           </TabsTrigger>
@@ -108,32 +131,27 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
             <Target className="h-4 w-4" />
             <span>Recommendations</span>
           </TabsTrigger>
+          <TabsTrigger value="insights" className="flex items-center space-x-2">
+            <ExternalLink className="h-4 w-4" />
+            <span>Investor Insights</span>
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="score" className="space-y-8">
-          {/* Total Score Card */}
-          <Card className="p-8 text-center bg-gradient-to-r from-blue-50 to-purple-50">
-            <div className="mb-6">
-              <div className="text-6xl font-bold text-gray-900 mb-2">
-                {result.totalScore}
-                <span className="text-2xl text-gray-500">/999</span>
-              </div>
-              <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${getScoreColor(result.totalScore / 10)}`}>
-                Grade: {getScoreGrade(result.totalScore)}
-              </div>
-            </div>
-            <div className="max-w-2xl mx-auto">
-              <Progress value={(result.totalScore / 999) * 100} className="h-4 mb-4" />
-              <p className="text-gray-600">
-                {result.totalScore >= 700 ? 'Excellent! Your startup shows strong investment potential.' :
-                 result.totalScore >= 500 ? 'Good foundation with room for improvement.' :
-                 result.totalScore >= 300 ? 'Early stage with key areas to develop.' :
-                 'Focus on strengthening core fundamentals.'}
-              </p>
-            </div>
-          </Card>
+        <TabsContent value="breakdown" className="space-y-6">
+          {/* Category Score Gauges */}
+          <div className="grid md:grid-cols-4 gap-6 mb-8">
+            {categories.map((category) => (
+              <Card key={category.name} className="p-6 text-center">
+                <ScoreGauge score={category.score} maxScore={100} title={category.name} size="small" />
+                <div className="mt-4">
+                  <Badge variant="outline" className="text-xs">{category.weight}</Badge>
+                  <p className="text-gray-600 text-sm mt-2 line-clamp-2">{category.explanation}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
 
-          {/* Category Scores */}
+          {/* Detailed Category Analysis */}
           <div className="grid md:grid-cols-2 gap-6">
             {categories.map((category) => (
               <Card key={category.name} className="p-6">
@@ -143,7 +161,7 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
                     <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
                     <span className="text-sm text-gray-500">({category.weight})</span>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-xl font-bold text-gray-900">
                     {category.score}/100
                   </div>
                 </div>
@@ -152,27 +170,6 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
               </Card>
             ))}
           </div>
-
-          {/* Next Steps */}
-          <Card className="p-6 bg-blue-50">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommended Next Steps</h3>
-            <div className="space-y-3 text-sm text-gray-700">
-              {result.businessIdea < 70 && (
-                <p>• <strong>Business Idea:</strong> Develop a stronger prototype and clarify your market positioning</p>
-              )}
-              {result.financials < 70 && (
-                <p>• <strong>Financials:</strong> Focus on revenue generation and document your cap table properly</p>
-              )}
-              {result.team < 70 && (
-                <p>• <strong>Team:</strong> Ensure full-time commitment and consider expanding your core team</p>
-              )}
-              {result.traction < 70 && (
-                <p>• <strong>Traction:</strong> Build relationships with potential investors and gather market validation</p>
-              )}
-              <p>• Consider joining an accelerator program to strengthen weak areas</p>
-              <p>• Prepare a compelling pitch deck highlighting your strongest categories</p>
-            </div>
-          </Card>
         </TabsContent>
 
         <TabsContent value="recommendations">
@@ -196,6 +193,56 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
               <p className="text-gray-600">Unable to generate recommendations at this time.</p>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="insights">
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">What Angels Look For</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Strong Signals ✅</h4>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    {result.businessIdea >= 70 && <li>• Clear market opportunity</li>}
+                    {result.financials >= 70 && <li>• Solid financial foundation</li>}
+                    {result.team >= 70 && <li>• Committed team</li>}
+                    {result.traction >= 70 && <li>• Market validation</li>}
+                    {result.totalScore >= 600 && <li>• Investment-ready fundamentals</li>}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Improvement Areas 🎯</h4>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    {result.businessIdea < 70 && <li>• Strengthen business model</li>}
+                    {result.financials < 70 && <li>• Improve financial metrics</li>}
+                    {result.team < 70 && <li>• Build stronger team</li>}
+                    {result.traction < 70 && <li>• Increase market traction</li>}
+                  </ul>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-blue-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Steps</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">📊</div>
+                  <h4 className="font-medium mb-1">Improve Score</h4>
+                  <p className="text-sm text-gray-600">Focus on your lowest scoring areas first</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl mb-2">🤝</div>
+                  <h4 className="font-medium mb-1">Network</h4>
+                  <p className="text-sm text-gray-600">Connect with angels in your industry</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl mb-2">📈</div>
+                  <h4 className="font-medium mb-1">Track Progress</h4>
+                  <p className="text-sm text-gray-600">Retake assessment monthly</p>
+                </div>
+              </div>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

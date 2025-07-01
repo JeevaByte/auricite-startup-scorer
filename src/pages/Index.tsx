@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { AssessmentForm } from '@/components/AssessmentForm';
+import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
 import { AssessmentHistory } from '@/components/AssessmentHistory';
 import { Header } from '@/components/Header';
@@ -9,7 +8,6 @@ import { Footer } from '@/components/Footer';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
 import { saveAssessment, saveScore, saveBadges, assignBadges, checkCachedResponse, cacheResponse, DatabaseAssessment, DatabaseScore } from '@/utils/database';
-import { calculateScore } from '@/utils/scoreCalculator';
 
 export interface AssessmentData {
   prototype: boolean | null;
@@ -181,7 +179,7 @@ const Index = () => {
       )}
       
       {currentStep === 'assessment' && (
-        <AssessmentForm 
+        <AssessmentWizard 
           onComplete={handleAssessmentComplete}
           initialData={assessmentData}
         />
