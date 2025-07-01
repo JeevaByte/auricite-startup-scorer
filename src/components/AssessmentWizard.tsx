@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
 import { calculateScore } from '@/utils/scoreCalculator';
 import { ArrowLeft, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
-import { sanitizeAssessmentData } from '@/utils/inputSanitization';
+import { sanitizeAssessmentData, sanitizeText } from '@/utils/inputSanitization';
 import { formRateLimiter } from '@/utils/rateLimiting';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';

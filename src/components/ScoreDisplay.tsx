@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,11 @@ import { ShareDialog } from './ShareDialog';
 import BadgeDisplay from './BadgeDisplay';
 import { ScoreGauge } from './ScoreGauge';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
-import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink } from 'lucide-react';
+import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
+import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText } from 'lucide-react';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -25,6 +28,9 @@ interface ScoreDisplayProps {
 export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -42,15 +48,39 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
     fetchRecommendations();
   }, [assessmentData, result]);
 
-  const getInvestorReadiness = () => {
-    const score = result.totalScore;
-    if (score >= 700) return { level: 'Angel Ready', color: 'text-green-600', description: 'Your startup shows strong signals for angel investment' };
-    if (score >= 500) return { level: 'Pre-Seed Ready', color: 'text-blue-600', description: 'Good foundation with room for improvement before approaching angels' };
-    if (score >= 300) return { level: 'Early Stage', color: 'text-orange-600', description: 'Focus on building traction and strengthening fundamentals' };
-    return { level: 'Foundation Stage', color: 'text-red-600', description: 'Concentrate on core business development before seeking investment' };
-  };
+  const readiness = getInvestorReadinessLevel(result.totalScore);
 
-  const readiness = getInvestorReadiness();
+  const handlePDFExport = async () => {
+    try {
+      setExportingPDF(true);
+      
+      const pdfData: PDFExportData = {
+        assessmentData,
+        scoreResult: result,
+        userProfile: user ? {
+          email: user.email || undefined,
+          name: user.user_metadata?.full_name || undefined
+        } : undefined,
+        generatedAt: new Date().toISOString()
+      };
+      
+      await exportToPDF(pdfData);
+      
+      toast({
+        title: 'PDF Export Successful',
+        description: 'Your assessment report has been prepared for download.',
+      });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Unable to generate PDF. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setExportingPDF(false);
+    }
+  };
 
   const categories = [
     {
@@ -103,6 +133,9 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
             <div className="mb-6">
               <Badge className={`${readiness.color} bg-opacity-10 text-lg px-4 py-2`}>
                 {readiness.level}
+              </Badge>
+              <Badge variant="outline" className="ml-2">
+                {readiness.confidence} Confidence
               </Badge>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Investment Readiness Assessment</h2>
@@ -246,7 +279,7 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
         </TabsContent>
       </Tabs>
 
-      {/* Action Buttons */}
+      {/* Enhanced Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
         <Button
           onClick={onRestart}
@@ -256,11 +289,22 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
           <RotateCcw className="h-4 w-4" />
           <span>Take Again</span>
         </Button>
+        
+        <Button
+          onClick={handlePDFExport}
+          disabled={exportingPDF}
+          className="flex items-center space-x-2"
+        >
+          <FileText className="h-4 w-4" />
+          <span>{exportingPDF ? 'Generating...' : 'Download PDF'}</span>
+        </Button>
+        
         <DownloadDialog 
           scoreResult={result}
           assessmentData={assessmentData}
           recommendations={recommendations || undefined}
         />
+        
         <ShareDialog scoreResult={result} />
       </div>
     </div>
