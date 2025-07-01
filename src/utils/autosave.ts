@@ -18,13 +18,14 @@ export const saveDraft = async (data: Partial<AssessmentData>, step: number): Pr
     throw new Error('User not authenticated');
   }
 
-  const draftData: Omit<DraftAssessment, 'id' | 'created_at' | 'updated_at'> = {
+  const draftData = {
     user_id: user.id,
     draft_data: data,
     step
   };
 
-  const { error } = await supabase
+  // Use type assertion to work with the current Supabase types
+  const { error } = await (supabase as any)
     .from('assessment_drafts')
     .upsert(draftData, { 
       onConflict: 'user_id',
@@ -44,7 +45,8 @@ export const loadDraft = async (): Promise<DraftAssessment | null> => {
     return null;
   }
 
-  const { data, error } = await supabase
+  // Use type assertion to work with the current Supabase types
+  const { data, error } = await (supabase as any)
     .from('assessment_drafts')
     .select('*')
     .eq('user_id', user.id)
@@ -55,7 +57,7 @@ export const loadDraft = async (): Promise<DraftAssessment | null> => {
     return null;
   }
 
-  return data;
+  return data as DraftAssessment;
 };
 
 export const clearDraft = async (): Promise<void> => {
@@ -65,7 +67,8 @@ export const clearDraft = async (): Promise<void> => {
     return;
   }
 
-  const { error } = await supabase
+  // Use type assertion to work with the current Supabase types
+  const { error } = await (supabase as any)
     .from('assessment_drafts')
     .delete()
     .eq('user_id', user.id);
