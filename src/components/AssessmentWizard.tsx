@@ -20,6 +20,7 @@ import {
 interface AssessmentWizardProps {
   onComplete: (data: AssessmentData, result: ScoreResult) => void;
   initialData: AssessmentData;
+  onSaveDraft: (data: Partial<AssessmentData>, step: number) => Promise<void>;
 }
 
 const questionSteps = [
@@ -134,7 +135,7 @@ const questionConfig = {
   }
 };
 
-export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardProps) => {
+export const AssessmentWizard = ({ onComplete, initialData, onSaveDraft }: AssessmentWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<AssessmentData>(initialData);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false]);
@@ -166,7 +167,7 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
     });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Authentication check
     if (!user) {
       toast({
@@ -181,6 +182,15 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
       const newCompletedSteps = [...completedSteps];
       newCompletedSteps[currentStep] = isStepComplete(currentStep);
       setCompletedSteps(newCompletedSteps);
+      
+      // Save draft before moving to next step
+      try {
+        await onSaveDraft(answers, currentStep + 1);
+      } catch (error) {
+        console.error('Error saving draft:', error);
+        // Don't block progression if draft save fails
+      }
+      
       setCurrentStep(prev => prev + 1);
     } else {
       // Rate limiting check before submission
