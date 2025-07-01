@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { AssessmentForm } from '@/components/AssessmentForm';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
 import { AssessmentHistory } from '@/components/AssessmentHistory';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Footer } from '@/components/Footer';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
 import { saveAssessment, saveScore, saveBadges, assignBadges, checkCachedResponse, cacheResponse, DatabaseAssessment, DatabaseScore } from '@/utils/database';
@@ -201,6 +203,8 @@ const Index = () => {
           onViewScore={handleViewScore}
         />
       )}
+      
+      <Footer />
       
       <AuthModal 
         isOpen={showAuthModal} 
