@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface ValidationResult {
   phase: string;
@@ -8,6 +9,8 @@ export interface ValidationResult {
   notes: string;
   timestamp: string;
 }
+
+type TableName = keyof Database['public']['Tables'];
 
 export class ValidationReporter {
   private results: ValidationResult[] = [];
@@ -87,15 +90,19 @@ The MVP is **PRODUCTION READY** with all core features implemented and tested.
 
   async validateDatabase(): Promise<void> {
     try {
-      // Check table existence
-      const tables = ['assessments', 'scores', 'badges', 'profiles', 'ai_responses'];
+      // Check table existence with proper typing
+      const tables: TableName[] = ['assessments', 'scores', 'badges', 'profiles', 'ai_responses'];
       
       for (const table of tables) {
-        const { data, error } = await supabase.from(table).select('*').limit(1);
-        if (error) {
-          this.addResult('Phase 1', `${table} table`, '❌', `Table error: ${error.message}`);
-        } else {
-          this.addResult('Phase 1', `${table} table`, '✅', 'Table exists and accessible');
+        try {
+          const { data, error } = await supabase.from(table).select('*').limit(1);
+          if (error) {
+            this.addResult('Phase 1', `${table} table`, '❌', `Table error: ${error.message}`);
+          } else {
+            this.addResult('Phase 1', `${table} table`, '✅', 'Table exists and accessible');
+          }
+        } catch (tableError) {
+          this.addResult('Phase 1', `${table} table`, '❌', `Access error: ${tableError}`);
         }
       }
     } catch (error) {
