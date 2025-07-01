@@ -250,11 +250,11 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
                       <h4 className="text-lg font-medium text-gray-900 mb-2">
                         {question.question}
                       </h4>
-                      {question.description && (
+                      {'description' in question && question.description && (
                         <p className="text-gray-600 text-sm mb-3">{question.description}</p>
                       )}
                     </div>
-                    {question.tooltip && (
+                    {'tooltip' in question && question.tooltip && (
                       <Tooltip>
                         <TooltipTrigger>
                           <HelpCircle className="h-4 w-4 text-gray-400 ml-2" />
@@ -285,7 +285,7 @@ export const AssessmentWizard = ({ onComplete, initialData }: AssessmentWizardPr
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {question.options?.map((option) => (
+                      {'options' in question && question.options?.map((option) => (
                         <Button
                           key={option.value}
                           variant={currentAnswer === option.value ? "default" : "outline"}
