@@ -1,4 +1,5 @@
 
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -103,12 +104,26 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  RechartsPrimitive.TooltipProps<any, any> & {
+  {
+    active?: boolean
+    payload?: Array<{
+      value?: any
+      name?: string
+      dataKey?: string
+      color?: string
+      payload?: any
+    }>
+    label?: string
+    className?: string
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
+    labelFormatter?: (value: any, payload: any[]) => React.ReactNode
+    labelClassName?: string
+    formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode
+    color?: string
   }
 >(
   (
@@ -366,3 +381,4 @@ export {
   ChartLegendContent,
   ChartStyle,
 }
+
