@@ -1,3 +1,4 @@
+
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
@@ -7,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { ArrowLeft, Download, Share2, Target, TrendingUp, FileText } from 'lucide-react';
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
 import { getInvestmentReadinessLevel } from '@/utils/dynamicScoreCalculator';
 import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
 import { shareResults } from '@/utils/shareUtils';

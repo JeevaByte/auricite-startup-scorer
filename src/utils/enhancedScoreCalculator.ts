@@ -1,5 +1,5 @@
-
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
 
 interface WeightConfig {
   businessIdea: number;

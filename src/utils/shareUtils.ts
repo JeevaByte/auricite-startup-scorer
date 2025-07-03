@@ -1,5 +1,4 @@
-
-import { ScoreResult } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
 
 export const shareResults = async (scoreResult: ScoreResult) => {
   const shareData = {

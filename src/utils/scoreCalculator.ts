@@ -1,5 +1,16 @@
+import { AssessmentData } from '@/pages/Index';
 
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+export interface ScoreResult {
+  businessIdea: number;
+  businessIdeaExplanation: string;
+  financials: number;
+  financialsExplanation: string;
+  team: number;
+  teamExplanation: string;
+  traction: number;
+  tractionExplanation: string;
+  totalScore: number;
+}
 
 export const calculateScore = (data: AssessmentData): ScoreResult => {
   // Validate input data

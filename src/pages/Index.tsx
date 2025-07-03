@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
@@ -16,6 +17,7 @@ import { BrandMessaging } from '@/components/BrandVoice';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { TargetAudienceSelector } from '@/components/TargetAudienceSelector';
 import { TrustSignals } from '@/components/TrustSignals';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface AssessmentData {
   prototype: boolean | null;
@@ -30,6 +32,8 @@ export interface AssessmentData {
   investors: string | null;
   milestones: string | null;
 }
+
+export { ScoreResult };
 
 export default function Index() {
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
@@ -59,7 +63,7 @@ export default function Index() {
   const [userStage, setUserStage] = useState('');
   const [userIndustry, setUserIndustry] = useState('');
 
-  const { user, loading, supabase } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -79,7 +83,7 @@ export default function Index() {
     };
 
     fetchHistory();
-  }, [user, supabase]);
+  }, [user]);
 
   const handleAssessmentChange = (data: AssessmentData) => {
     setAssessmentData(data);
@@ -106,30 +110,26 @@ export default function Index() {
     }
   };
 
-  const handleSubmitAssessment = async () => {
+  const handleSubmitAssessment = async (data: AssessmentData, result: ScoreResult) => {
     try {
-      if (!assessmentData) {
-        throw new Error('Assessment data is missing.');
-      }
-
-      const calculatedScore = calculateDynamicScore(assessmentData);
-      setScoreResult(calculatedScore);
+      setScoreResult(result);
+      setAssessmentData(data);
 
       // Generate recommendations
-      const generatedRecommendations = await generateRecommendations(assessmentData, calculatedScore);
+      const generatedRecommendations = await generateRecommendations(data, result);
       setRecommendations(generatedRecommendations);
 
       setShowAssessment(false);
       setShowResults(true);
 
       if (user) {
-        const { data, error } = await supabase
+        const { data: savedData, error } = await supabase
           .from('assessment_history')
           .insert([
             {
               user_id: user.id,
-              assessment_data: assessmentData,
-              score_result: calculatedScore,
+              assessment_data: data,
+              score_result: result,
             },
           ])
           .select()
@@ -137,11 +137,11 @@ export default function Index() {
         if (error) {
           console.error('Error saving assessment:', error);
         } else {
-          console.log('Assessment saved successfully!', data);
-          setCurrentAssessmentId(data[0].id);
+          console.log('Assessment saved successfully!', savedData);
+          setCurrentAssessmentId(savedData[0].id);
 
           // Optimistically update assessment history
-          setAssessmentHistory((prevHistory) => [data[0], ...prevHistory]);
+          setAssessmentHistory((prevHistory) => [savedData[0], ...prevHistory]);
         }
       }
     } catch (error: any) {
@@ -192,7 +192,7 @@ export default function Index() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             Startup Investment Readiness Assessment
           </h1>
-          <AssessmentForm onChange={handleAssessmentChange} onSubmit={handleSubmitAssessment} />
+          <AssessmentForm onComplete={handleSubmitAssessment} initialData={assessmentData} />
         </div>
         <Footer />
       </div>

@@ -57,6 +57,30 @@ export type Database = {
         }
         Relationships: []
       }
+      assessment_history: {
+        Row: {
+          assessment_data: Json
+          created_at: string
+          id: string
+          score_result: Json
+          user_id: string
+        }
+        Insert: {
+          assessment_data: Json
+          created_at?: string
+          id?: string
+          score_result: Json
+          user_id: string
+        }
+        Update: {
+          assessment_data?: Json
+          created_at?: string
+          id?: string
+          score_result?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       assessments: {
         Row: {
           cap_table: boolean
@@ -368,6 +392,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_feedback: {
+        Row: {
+          assessment_id: string | null
+          created_at: string
+          feedback: string | null
+          id: string
+          rating: string
+          section: string
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rating: string
+          section: string
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rating?: string
+          section?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
