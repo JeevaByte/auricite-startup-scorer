@@ -217,7 +217,6 @@ const Index = () => {
             <DialogTitle>Download Options</DialogTitle>
           </DialogHeader>
           <p>Choose your preferred download format:</p>
-          {/* Add download options here */}
           <Button onClick={() => setShowDownloadDialog(false)}>Close</Button>
         </DialogContent>
       </Dialog>
@@ -248,6 +247,7 @@ const Index = () => {
               onComplete={handleComplete}
               initialData={assessmentData}
               onDataChange={updateAssessmentData}
+              isLoading={isLoading}
             />
           )}
 
