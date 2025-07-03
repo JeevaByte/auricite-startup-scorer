@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,7 @@ export const ShareDialog = ({ scoreResult }: ShareDialogProps) => {
   const [shareableLink, setShareableLink] = useState('');
   const { toast } = useToast();
 
-  // Use useEffect to set the shareable link when component mounts
+  // Use React.useEffect to set the shareable link when component mounts
   React.useEffect(() => {
     if (scoreResult) {
       setShareableLink(generateShareableLink(scoreResult));
