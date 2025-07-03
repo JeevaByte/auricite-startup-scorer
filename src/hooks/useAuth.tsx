@@ -2,6 +2,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logSecurityEvent } from '@/utils/securityLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -34,16 +35,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Security: Clear sensitive data on signout
+        // Log security events
+        if (event === 'SIGNED_IN' && session?.user) {
+          logSecurityEvent({
+            type: 'AUTH_FAILURE',
+            userId: session.user.id,
+            details: 'User signed in successfully',
+            timestamp: new Date()
+          });
+        }
+        
         if (event === 'SIGNED_OUT') {
-          // Clear any cached sensitive data
+          // Security: Clear sensitive data on signout
           localStorage.removeItem('assessment_cache');
           sessionStorage.clear();
+          
+          // Clear any cached user data
+          if (user) {
+            logSecurityEvent({
+              type: 'AUTH_FAILURE',
+              userId: user.id,
+              details: 'User signed out',
+              timestamp: new Date()
+            });
+          }
+        }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          logSecurityEvent({
+            type: 'AUTH_FAILURE',
+            userId: session?.user?.id,
+            details: 'Token refreshed',
+            timestamp: new Date()
+          });
         }
       }
     );
@@ -51,7 +79,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error('Error getting session:', error);
+        logSecurityEvent({
+          type: 'AUTH_FAILURE',
+          details: 'Error getting session',
+          timestamp: new Date()
+        });
       }
       setSession(session);
       setUser(session?.user ?? null);
@@ -65,11 +97,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error signing out:', error);
+        logSecurityEvent({
+          type: 'AUTH_FAILURE',
+          userId: user?.id,
+          details: 'Sign out failed',
+          timestamp: new Date()
+        });
         throw error;
       }
     } catch (error) {
-      console.error('Signout error:', error);
+      logSecurityEvent({
+        type: 'AUTH_FAILURE',
+        userId: user?.id,
+        details: 'Sign out error',
+        timestamp: new Date()
+      });
       throw error;
     }
   };

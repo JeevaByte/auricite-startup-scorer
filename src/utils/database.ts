@@ -57,30 +57,34 @@ export const saveAssessment = async (data: AssessmentData): Promise<string> => {
   // Sanitize data before saving
   const sanitizedData = sanitizeAssessmentData(data);
 
-  const { data: assessment, error } = await supabase
-    .from('assessments')
-    .insert({
-      user_id: user.id,
-      prototype: sanitizedData.prototype,
-      external_capital: sanitizedData.externalCapital,
-      revenue: sanitizedData.revenue,
-      full_time_team: sanitizedData.fullTimeTeam,
-      term_sheets: sanitizedData.termSheets,
-      cap_table: sanitizedData.capTable,
-      mrr: sanitizedData.mrr,
-      employees: sanitizedData.employees,
-      funding_goal: sanitizedData.fundingGoal,
-      investors: sanitizedData.investors,
-      milestones: sanitizedData.milestones,
-    })
-    .select()
-    .single();
+  try {
+    const { data: assessment, error } = await supabase
+      .from('assessments')
+      .insert({
+        user_id: user.id,
+        prototype: sanitizedData.prototype,
+        external_capital: sanitizedData.externalCapital,
+        revenue: sanitizedData.revenue,
+        full_time_team: sanitizedData.fullTimeTeam,
+        term_sheets: sanitizedData.termSheets,
+        cap_table: sanitizedData.capTable,
+        mrr: sanitizedData.mrr,
+        employees: sanitizedData.employees,
+        funding_goal: sanitizedData.fundingGoal,
+        investors: sanitizedData.investors,
+        milestones: sanitizedData.milestones,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Database error:', error);
-    throw new Error('Failed to save assessment');
+    if (error) {
+      throw new Error('Failed to save assessment');
+    }
+    return assessment.id;
+  } catch (error) {
+    // Don't expose internal error details
+    throw new Error('Assessment could not be saved at this time');
   }
-  return assessment.id;
 };
 
 export const saveScore = async (assessmentId: string, scoreResult: ScoreResult): Promise<void> => {
@@ -90,31 +94,36 @@ export const saveScore = async (assessmentId: string, scoreResult: ScoreResult):
     throw new Error('Authentication required');
   }
 
-  const { error } = await supabase
-    .from('scores')
-    .insert({
-      assessment_id: assessmentId,
-      user_id: user.id,
-      business_idea: scoreResult.businessIdea,
-      business_idea_explanation: scoreResult.businessIdeaExplanation,
-      financials: scoreResult.financials,
-      financials_explanation: scoreResult.financialsExplanation,
-      team: scoreResult.team,
-      team_explanation: scoreResult.teamExplanation,
-      traction: scoreResult.traction,
-      traction_explanation: scoreResult.tractionExplanation,
-      total_score: scoreResult.totalScore,
-    });
+  try {
+    const { error } = await supabase
+      .from('scores')
+      .insert({
+        assessment_id: assessmentId,
+        user_id: user.id,
+        business_idea: scoreResult.businessIdea,
+        business_idea_explanation: scoreResult.businessIdeaExplanation,
+        financials: scoreResult.financials,
+        financials_explanation: scoreResult.financialsExplanation,
+        team: scoreResult.team,
+        team_explanation: scoreResult.teamExplanation,
+        traction: scoreResult.traction,
+        traction_explanation: scoreResult.tractionExplanation,
+        total_score: scoreResult.totalScore,
+      });
 
-  if (error) {
-    console.error('Database error:', error);
-    throw new Error('Failed to save score');
+    if (error) {
+      throw new Error('Failed to save score');
+    }
+  } catch (error) {
+    throw new Error('Score could not be saved at this time');
   }
 };
 
 export const saveBadges = async (assessmentId: string, badges: { name: string; explanation: string }[]): Promise<void> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('User not authenticated');
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
 
   const badgeInserts = badges.map(badge => ({
     assessment_id: assessmentId,
@@ -123,59 +132,98 @@ export const saveBadges = async (assessmentId: string, badges: { name: string; e
     explanation: badge.explanation,
   }));
 
-  const { error } = await supabase
-    .from('badges')
-    .insert(badgeInserts);
+  try {
+    const { error } = await supabase
+      .from('badges')
+      .insert(badgeInserts);
 
-  if (error) throw error;
+    if (error) {
+      throw new Error('Failed to save badges');
+    }
+  } catch (error) {
+    throw new Error('Badges could not be saved at this time');
+  }
 };
 
 export const assignBadges = async (assessmentData: AssessmentData, scores: ScoreResult) => {
-  const { data, error } = await supabase.functions.invoke('assign-badges', {
-    body: { 
-      data: assessmentData,
-      scores: {
-        businessIdea: scores.businessIdea,
-        financials: scores.financials,
-        team: scores.team,
-        traction: scores.traction,
-        total: scores.totalScore
-      }
-    }
-  });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
 
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.functions.invoke('assign-badges', {
+      body: { 
+        data: assessmentData,
+        scores: {
+          businessIdea: scores.businessIdea,
+          financials: scores.financials,
+          team: scores.team,
+          traction: scores.traction,
+          total: scores.totalScore
+        }
+      }
+    });
+
+    if (error) {
+      throw new Error('Badge assignment failed');
+    }
+    return data;
+  } catch (error) {
+    throw new Error('Badge assignment could not be completed at this time');
+  }
 };
 
 export const getUserAssessments = async (): Promise<(DatabaseAssessment & { scores: DatabaseScore[] })[]> => {
-  const { data, error } = await supabase
-    .from('assessments')
-    .select(`
-      *,
-      scores (*)
-    `)
-    .order('created_at', { ascending: false });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
 
-  if (error) throw error;
-  return data as (DatabaseAssessment & { scores: DatabaseScore[] })[] || [];
+  try {
+    const { data, error } = await supabase
+      .from('assessments')
+      .select(`
+        *,
+        scores (*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error('Failed to fetch assessments');
+    }
+    return data as (DatabaseAssessment & { scores: DatabaseScore[] })[] || [];
+  } catch (error) {
+    throw new Error('Assessments could not be retrieved at this time');
+  }
 };
 
 export const getUserAssessmentsWithBadges = async (): Promise<(DatabaseAssessment & { 
   scores: DatabaseScore[]; 
   badges: Badge[] 
 })[]> => {
-  const { data, error } = await supabase
-    .from('assessments')
-    .select(`
-      *,
-      scores (*),
-      badges (*)
-    `)
-    .order('created_at', { ascending: false });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
 
-  if (error) throw error;
-  return data as (DatabaseAssessment & { scores: DatabaseScore[]; badges: Badge[] })[] || [];
+  try {
+    const { data, error } = await supabase
+      .from('assessments')
+      .select(`
+        *,
+        scores (*),
+        badges (*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error('Failed to fetch assessments with badges');
+    }
+    return data as (DatabaseAssessment & { scores: DatabaseScore[]; badges: Badge[] })[] || [];
+  } catch (error) {
+    throw new Error('Assessment data could not be retrieved at this time');
+  }
 };
 
 export const checkCachedResponse = async (assessmentData: AssessmentData): Promise<ScoreResult | null> => {
@@ -188,16 +236,22 @@ export const checkCachedResponse = async (assessmentData: AssessmentData): Promi
   // Sanitize data before checking cache
   const sanitizedData = sanitizeAssessmentData(assessmentData);
 
-  const { data, error } = await supabase
-    .from('ai_responses')
-    .select('response_data')
-    .eq('assessment_data', JSON.stringify(sanitizedData))
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('ai_responses')
+      .select('response_data')
+      .eq('assessment_data', JSON.stringify(sanitizedData))
+      .eq('user_id', user.id) // Only check user's own cached responses
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (error || !data) return null;
-  return data.response_data as unknown as ScoreResult;
+    if (error || !data) return null;
+    return data.response_data as unknown as ScoreResult;
+  } catch (error) {
+    // Don't expose cache errors to user
+    return null;
+  }
 };
 
 export const cacheResponse = async (assessmentData: AssessmentData, responseData: ScoreResult): Promise<void> => {
@@ -210,12 +264,21 @@ export const cacheResponse = async (assessmentData: AssessmentData, responseData
   // Sanitize data before caching
   const sanitizedData = sanitizeAssessmentData(assessmentData);
 
-  const { error } = await supabase
-    .from('ai_responses')
-    .insert({
-      assessment_data: sanitizedData as any,
-      response_data: responseData as any,
-    });
+  try {
+    const { error } = await supabase
+      .from('ai_responses')
+      .insert({
+        assessment_data: sanitizedData as any,
+        response_data: responseData as any,
+        user_id: user.id, // Ensure user_id is set for proper RLS
+      });
 
-  if (error) console.error('Error caching response:', error);
+    if (error) {
+      // Don't expose caching errors to user, just log internally
+      console.error('Cache operation failed');
+    }
+  } catch (error) {
+    // Silent fail for caching operations
+    console.error('Cache operation failed');
+  }
 };

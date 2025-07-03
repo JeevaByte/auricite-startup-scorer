@@ -34,6 +34,12 @@ export const generateRecommendations = async (
   assessmentData: AssessmentData,
   scoreResult: ScoreResult
 ): Promise<RecommendationsData> => {
+  // Authenticate user first
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Authentication required');
+  }
+
   try {
     // Check for cached recommendations first
     const cachedRecommendations = await checkCachedRecommendations(assessmentData, scoreResult);
@@ -69,8 +75,7 @@ export const generateRecommendations = async (
     });
 
     if (error) {
-      console.error('Error calling recommendations function:', error);
-      return getFallbackRecommendations();
+      throw new Error('Recommendation generation failed');
     }
 
     const recommendations = data.recommendations as RecommendationsData;
@@ -80,7 +85,7 @@ export const generateRecommendations = async (
 
     return recommendations;
   } catch (error) {
-    console.error('Error generating recommendations:', error);
+    // Return fallback recommendations instead of exposing internal errors
     return getFallbackRecommendations();
   }
 };
@@ -89,6 +94,11 @@ const checkCachedRecommendations = async (
   assessmentData: AssessmentData,
   scoreResult: ScoreResult
 ): Promise<RecommendationsData | null> => {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return null;
+  }
+
   try {
     const cacheKey = JSON.stringify({
       assessment: assessmentData,
@@ -105,6 +115,7 @@ const checkCachedRecommendations = async (
       .from('ai_responses')
       .select('response_data')
       .eq('assessment_data', cacheKey)
+      .eq('user_id', user.id) // Only check user's own cached responses
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -118,7 +129,6 @@ const checkCachedRecommendations = async (
     
     return null;
   } catch (error) {
-    console.error('Error checking cached recommendations:', error);
     return null;
   }
 };
@@ -128,6 +138,11 @@ const cacheRecommendations = async (
   scoreResult: ScoreResult,
   recommendations: RecommendationsData
 ): Promise<void> => {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return;
+  }
+
   try {
     const cacheKey = JSON.stringify({
       assessment: assessmentData,
@@ -145,13 +160,15 @@ const cacheRecommendations = async (
       .insert({
         assessment_data: cacheKey as any,
         response_data: { recommendations } as any,
+        user_id: user.id, // Ensure user_id is set for proper RLS
       });
 
     if (error) {
-      console.error('Error caching recommendations:', error);
+      // Don't expose caching errors to user
+      console.error('Cache operation failed');
     }
   } catch (error) {
-    console.error('Error caching recommendations:', error);
+    console.error('Cache operation failed');
   }
 };
 

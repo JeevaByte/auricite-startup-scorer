@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
@@ -17,6 +18,7 @@ import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { TargetAudienceSelector } from '@/components/TargetAudienceSelector';
 import { TrustSignals } from '@/components/TrustSignals';
 import { supabase } from '@/integrations/supabase/client';
+import { logSecurityEvent, sanitizeErrorForUser } from '@/utils/securityLogger';
 
 export interface AssessmentData {
   prototype: boolean | null;
@@ -66,7 +68,9 @@ export default function Index() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (user) {
+      if (!user) return;
+
+      try {
         const { data, error } = await supabase
           .from('assessment_history')
           .select('*')
@@ -74,10 +78,19 @@ export default function Index() {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching assessment history:', error);
-        } else {
-          setAssessmentHistory(data || []);
+          logSecurityEvent({
+            type: 'DATA_ACCESS',
+            userId: user.id,
+            details: 'Failed to fetch assessment history',
+            timestamp: new Date()
+          });
+          throw error;
         }
+
+        setAssessmentHistory(data || []);
+      } catch (error) {
+        // Don't expose internal errors to user
+        console.error('History fetch failed');
       }
     };
 
@@ -110,6 +123,15 @@ export default function Index() {
   };
 
   const handleSubmitAssessment = async (data: AssessmentData, result: ScoreResult) => {
+    if (!user) {
+      logSecurityEvent({
+        type: 'UNAUTHORIZED_ACCESS',
+        details: 'Attempted assessment submission without authentication',
+        timestamp: new Date()
+      });
+      return;
+    }
+
     try {
       setScoreResult(result);
       setAssessmentData(data);
@@ -121,33 +143,52 @@ export default function Index() {
       setShowAssessment(false);
       setShowResults(true);
 
-      if (user) {
-        const { data: savedData, error } = await supabase
-          .from('assessment_history')
-          .insert({
-            user_id: user.id,
-            assessment_data: data as any,
-            score_result: result as any,
-          })
-          .select()
-          .single();
+      const { data: savedData, error } = await supabase
+        .from('assessment_history')
+        .insert({
+          user_id: user.id,
+          assessment_data: data as any,
+          score_result: result as any,
+        })
+        .select()
+        .single();
 
-        if (error) {
-          console.error('Error saving assessment:', error);
-        } else {
-          console.log('Assessment saved successfully!', savedData);
-          setCurrentAssessmentId(savedData.id);
-
-          // Optimistically update assessment history
-          setAssessmentHistory((prevHistory) => [savedData, ...prevHistory]);
-        }
+      if (error) {
+        logSecurityEvent({
+          type: 'DATA_ACCESS',
+          userId: user.id,
+          details: 'Failed to save assessment',
+          timestamp: new Date()
+        });
+        // Don't throw error, assessment was already processed
+        return;
       }
+
+      setCurrentAssessmentId(savedData.id);
+      // Optimistically update assessment history
+      setAssessmentHistory((prevHistory) => [savedData, ...prevHistory]);
+      
     } catch (error: any) {
-      console.error('Error submitting assessment:', error);
+      logSecurityEvent({
+        type: 'SUSPICIOUS_ACTIVITY',
+        userId: user.id,
+        details: 'Assessment submission failed',
+        timestamp: new Date()
+      });
+      // Show user-friendly error message
+      alert(sanitizeErrorForUser(error));
     }
   };
 
   const handleViewHistory = () => {
+    if (!user) {
+      logSecurityEvent({
+        type: 'UNAUTHORIZED_ACCESS',
+        details: 'Attempted to view history without authentication',
+        timestamp: new Date()
+      });
+      return;
+    }
     setShowHistory(true);
   };
 
@@ -156,6 +197,15 @@ export default function Index() {
   };
 
   const handleDownloadReport = (format: 'json' | 'csv') => {
+    if (!user) {
+      logSecurityEvent({
+        type: 'UNAUTHORIZED_ACCESS',
+        details: 'Attempted report download without authentication',
+        timestamp: new Date()
+      });
+      return;
+    }
+
     if (scoreResult) {
       const reportData = generateReportData(assessmentData, scoreResult, recommendations);
       const filename = `investment_readiness_report_${new Date().toISOString()}.${format}`;
