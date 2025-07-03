@@ -1,4 +1,3 @@
-
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
@@ -10,12 +9,17 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { ArrowLeft, Download, Share2, Target, TrendingUp, FileText } from 'lucide-react';
 import { AssessmentData, ScoreResult } from '@/pages/Index';
 import { getInvestmentReadinessLevel } from '@/utils/dynamicScoreCalculator';
+import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
+import { shareResults } from '@/utils/shareUtils';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null);
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   useEffect(() => {
     // Get data from navigation state
@@ -27,6 +31,62 @@ export default function Results() {
       navigate('/');
     }
   }, [location.state, navigate]);
+
+  const handleExportPDF = async () => {
+    if (!assessmentData || !scoreResult) return;
+    
+    try {
+      setExportingPDF(true);
+      
+      const pdfData: PDFExportData = {
+        assessmentData,
+        scoreResult,
+        generatedAt: new Date().toISOString()
+      };
+      
+      await exportToPDF(pdfData);
+      
+      toast({
+        title: 'PDF Export Successful',
+        description: 'Your assessment report has been prepared for download.',
+      });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Unable to generate PDF. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!scoreResult) return;
+    
+    try {
+      const shared = await shareResults(scoreResult);
+      if (shared) {
+        toast({
+          title: "Shared successfully!",
+          description: "Your results have been shared.",
+        });
+      } else {
+        toast({
+          title: "Copied to clipboard!",
+          description: "Share text has been copied to your clipboard.",
+        });
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      toast({
+        title: "Error sharing",
+        description: "Unable to share your results. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!assessmentData || !scoreResult) {
     return (
@@ -72,16 +132,6 @@ export default function Results() {
     }
   ];
 
-  const handleExportPDF = () => {
-    // TODO: Implement PDF export functionality
-    console.log('Exporting to PDF...');
-  };
-
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    console.log('Sharing results...');
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -97,9 +147,13 @@ export default function Results() {
               <span>Back to Assessment</span>
             </Button>
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={handleExportPDF}>
+              <Button 
+                variant="outline" 
+                onClick={handleExportPDF}
+                disabled={exportingPDF}
+              >
                 <FileText className="h-4 w-4 mr-2" />
-                Export PDF
+                {exportingPDF ? 'Generating...' : 'Export PDF'}
               </Button>
               <Button variant="outline" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-2" />
