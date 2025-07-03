@@ -164,7 +164,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     if (question.type === 'boolean') {
       return (
         <RadioGroup
-          value={value === null ? '' : value.toString()}
+          value={value === null ? '' : String(value)}
           onValueChange={(val) => updateFormData(question.key, val === 'true')}
         >
           <div className="flex items-center space-x-2">
