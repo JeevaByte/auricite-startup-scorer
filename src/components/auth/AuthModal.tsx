@@ -32,7 +32,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setSocialLoading(provider);
     
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Use the current site URL for redirect
+      const redirectUrl = window.location.origin;
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -41,16 +42,27 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         }
       });
 
-      if (error) throw error;
-
-      toast({
-        title: 'Redirecting...',
-        description: `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
-      });
+      if (error) {
+        // Handle specific provider errors
+        if (error.message.includes('provider is not enabled')) {
+          toast({
+            title: 'Provider Not Available',
+            description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication is not currently enabled. Please use email signup or contact support.`,
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: 'Redirecting...',
+          description: `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
+        });
+      }
     } catch (error: any) {
       console.error(`${provider} auth error:`, error);
       toast({
-        title: 'Error',
+        title: 'Authentication Error',
         description: error.message || `An error occurred with ${provider} authentication`,
         variant: 'destructive',
       });
@@ -190,12 +202,17 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const SocialButton = ({ provider, icon, label }: { provider: string, icon: string, label: string }) => (
+  const SocialButton = ({ provider, icon, label, disabled = false }: { 
+    provider: string, 
+    icon: string, 
+    label: string,
+    disabled?: boolean 
+  }) => (
     <Button
       variant="outline"
       className="w-full"
       onClick={() => handleSocialSignIn(provider as any)}
-      disabled={socialLoading === provider}
+      disabled={socialLoading === provider || disabled}
     >
       <span className="mr-2">{icon}</span>
       {socialLoading === provider ? 'Connecting...' : `Continue with ${label}`}
