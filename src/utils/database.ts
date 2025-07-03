@@ -1,6 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ScoreResult } from '@/utils/scoreCalculator';
 import { AssessmentData } from '@/pages/Index';
+import { sanitizeAssessmentData } from '@/utils/inputSanitization';
 
 export interface DatabaseAssessment {
   id: string;

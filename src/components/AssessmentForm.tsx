@@ -1,220 +1,244 @@
-
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { AssessmentData } from '@/pages/Index';
-import { ScoreResult } from '@/utils/scoreCalculator';
-import { calculateScore } from '@/utils/scoreCalculator';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
 
 interface AssessmentFormProps {
   onComplete: (data: AssessmentData, result: ScoreResult) => void;
-  initialData: AssessmentData;
+  initialData?: AssessmentData;
+  onDataChange?: (data: AssessmentData) => void;
 }
 
-const questions = [
-  {
-    id: 'prototype',
-    type: 'boolean',
-    question: 'Do you have a working prototype?',
-    description: 'A functional version of your product, even if basic'
-  },
-  {
-    id: 'revenue',
-    type: 'boolean',
-    question: 'Do you currently generate revenue?',
-    description: 'Any paying customers or revenue streams'
-  },
-  {
-    id: 'mrr',
-    type: 'select',
-    question: 'What is your Monthly Recurring Revenue (MRR)?',
-    options: [
-      { value: 'none', label: 'No recurring revenue' },
-      { value: 'low', label: '$1 - $5,000' },
-      { value: 'medium', label: '$5,001 - $25,000' },
-      { value: 'high', label: '$25,000+' }
-    ]
-  },
-  {
-    id: 'capTable',
-    type: 'boolean',
-    question: 'Do you have a documented cap table?',
-    description: 'Clear ownership structure and equity distribution'
-  },
-  {
-    id: 'fullTimeTeam',
-    type: 'boolean',
-    question: 'Is your core team working full-time on this startup?',
-    description: 'Founders and key team members fully committed'
-  },
-  {
-    id: 'employees',
-    type: 'select',
-    question: 'How many employees do you have?',
-    options: [
-      { value: '1-2', label: '1-2 people' },
-      { value: '3-10', label: '3-10 people' },
-      { value: '11-50', label: '11-50 people' },
-      { value: '50+', label: '50+ people' }
-    ]
-  },
-  {
-    id: 'milestones',
-    type: 'select',
-    question: 'What stage best describes your startup?',
-    options: [
-      { value: 'concept', label: 'Concept/Idea stage' },
-      { value: 'launch', label: 'MVP launched' },
-      { value: 'scale', label: 'Proven model, scaling' },
-      { value: 'exit', label: 'Preparing for exit' }
-    ]
-  },
-  {
-    id: 'fundingGoal',
-    type: 'select',
-    question: 'What is your primary funding goal?',
-    options: [
-      { value: 'mvp', label: 'Build/improve MVP' },
-      { value: 'productMarketFit', label: 'Achieve product-market fit' },
-      { value: 'scale', label: 'Scale operations' },
-      { value: 'exit', label: 'Prepare for exit' }
-    ]
-  },
-  {
-    id: 'termSheets',
-    type: 'boolean',
-    question: 'Have you received any term sheets?',
-    description: 'Formal investment offers from investors'
-  },
-  {
-    id: 'investors',
-    type: 'select',
-    question: 'What type of investors have you engaged with?',
-    options: [
-      { value: 'none', label: 'No investors yet' },
-      { value: 'angels', label: 'Angel investors' },
-      { value: 'vc', label: 'Venture capital firms' },
-      { value: 'lateStage', label: 'Late-stage investors' }
-    ]
-  },
-  {
-    id: 'externalCapital',
-    type: 'boolean',
-    question: 'Have you raised external capital?',
-    description: 'Any investment from outside sources'
-  }
-];
+export const AssessmentForm: React.FC<AssessmentFormProps> = ({
+  onComplete,
+  initialData,
+  onDataChange,
+}) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<AssessmentData>(
+    initialData || {
+      prototype: null,
+      externalCapital: null,
+      revenue: null,
+      fullTimeTeam: null,
+      termSheets: null,
+      capTable: null,
+      mrr: null,
+      employees: null,
+      fundingGoal: null,
+      investors: null,
+      milestones: null,
+    }
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-export const AssessmentForm = ({ onComplete, initialData }: AssessmentFormProps) => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<AssessmentData>(initialData);
+  const steps = [
+    {
+      title: 'Product Development',
+      questions: [
+        {
+          key: 'prototype' as keyof AssessmentData,
+          question: 'Do you have a working prototype or MVP?',
+          type: 'boolean',
+        },
+      ],
+    },
+    {
+      title: 'Financial Status',
+      questions: [
+        {
+          key: 'externalCapital' as keyof AssessmentData,
+          question: 'Have you raised external capital?',
+          type: 'boolean',
+        },
+        {
+          key: 'revenue' as keyof AssessmentData,
+          question: 'Are you generating revenue?',
+          type: 'boolean',
+        },
+        {
+          key: 'mrr' as keyof AssessmentData,
+          question: 'What is your Monthly Recurring Revenue (MRR)?',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      title: 'Team & Operations',
+      questions: [
+        {
+          key: 'fullTimeTeam' as keyof AssessmentData,
+          question: 'Do you have a full-time team?',
+          type: 'boolean',
+        },
+        {
+          key: 'employees' as keyof AssessmentData,
+          question: 'How many employees do you have?',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      title: 'Investment Readiness',
+      questions: [
+        {
+          key: 'termSheets' as keyof AssessmentData,
+          question: 'Have you received any term sheets?',
+          type: 'boolean',
+        },
+        {
+          key: 'capTable' as keyof AssessmentData,
+          question: 'Do you have a cap table?',
+          type: 'boolean',
+        },
+        {
+          key: 'fundingGoal' as keyof AssessmentData,
+          question: 'What is your funding goal?',
+          type: 'text',
+        },
+        {
+          key: 'investors' as keyof AssessmentData,
+          question: 'How many investors are you targeting?',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      title: 'Growth & Milestones',
+      questions: [
+        {
+          key: 'milestones' as keyof AssessmentData,
+          question: 'What are your key milestones for the next 12 months?',
+          type: 'textarea',
+        },
+      ],
+    },
+  ];
 
-  const handleAnswer = (questionId: string, value: any) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
+  const progress = ((currentStep + 1) / steps.length) * 100;
+
+  const updateFormData = (key: keyof AssessmentData, value: any) => {
+    const newData = { ...formData, [key]: value };
+    setFormData(newData);
+    if (onDataChange) {
+      onDataChange(newData);
+    }
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-    } else {
-      // Calculate score and complete assessment
-      const result = calculateScore(answers);
-      onComplete(answers, result);
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const question = questions[currentQuestion];
-  const currentAnswer = answers[question.id as keyof AssessmentData];
-  const canProceed = currentAnswer !== null && currentAnswer !== undefined;
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const result = await calculateDynamicScore(formData);
+      onComplete(formData, result);
+    } catch (error) {
+      console.error('Error calculating score:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const renderQuestion = (question: any) => {
+    const value = formData[question.key];
+
+    if (question.type === 'boolean') {
+      return (
+        <RadioGroup
+          value={value === null ? '' : value.toString()}
+          onValueChange={(val) => updateFormData(question.key, val === 'true')}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="true" id={`${question.key}-yes`} />
+            <Label htmlFor={`${question.key}-yes`}>Yes</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="false" id={`${question.key}-no`} />
+            <Label htmlFor={`${question.key}-no`}>No</Label>
+          </div>
+        </RadioGroup>
+      );
+    }
+
+    if (question.type === 'textarea') {
+      return (
+        <Textarea
+          value={value || ''}
+          onChange={(e) => updateFormData(question.key, e.target.value)}
+          placeholder="Enter your response..."
+          rows={4}
+        />
+      );
+    }
+
+    return (
+      <Input
+        type="text"
+        value={value || ''}
+        onChange={(e) => updateFormData(question.key, e.target.value)}
+        placeholder="Enter your response..."
+      />
+    );
+  };
+
+  const currentStepData = steps[currentStep];
+  const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">Startup Assessment</h2>
-          <span className="text-sm text-gray-500">
-            {currentQuestion + 1} of {questions.length}
-          </span>
-        </div>
-        <Progress value={progress} className="h-2" />
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-6">
+        <Progress value={progress} className="w-full" />
+        <p className="text-sm text-gray-600 mt-2">
+          Step {currentStep + 1} of {steps.length}
+        </p>
       </div>
 
-      <Card className="p-8">
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            {question.question}
-          </h3>
-          {question.description && (
-            <p className="text-gray-600 mb-6">{question.description}</p>
-          )}
-        </div>
-
-        <div className="space-y-4 mb-8">
-          {question.type === 'boolean' ? (
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant={currentAnswer === true ? "default" : "outline"}
-                onClick={() => handleAnswer(question.id, true)}
-                className="p-4 h-auto"
-              >
-                Yes
-              </Button>
-              <Button
-                variant={currentAnswer === false ? "default" : "outline"}
-                onClick={() => handleAnswer(question.id, false)}
-                className="p-4 h-auto"
-              >
-                No
-              </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>{currentStepData.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {currentStepData.questions.map((question, index) => (
+            <div key={question.key} className="space-y-2">
+              <Label className="text-base font-medium">{question.question}</Label>
+              {renderQuestion(question)}
             </div>
-          ) : (
-            <div className="space-y-3">
-              {question.options?.map((option) => (
-                <Button
-                  key={option.value}
-                  variant={currentAnswer === option.value ? "default" : "outline"}
-                  onClick={() => handleAnswer(question.id, option.value)}
-                  className="w-full p-4 h-auto justify-start text-left"
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
+          ))}
 
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestion === 0}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Previous</span>
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed}
-            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
-          >
-            <span>{currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+          <div className="flex justify-between pt-6">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+            >
+              Previous
+            </Button>
+
+            {isLastStep ? (
+              <Button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? 'Calculating...' : 'Complete Assessment'}
+              </Button>
+            ) : (
+              <Button onClick={handleNext}>Next</Button>
+            )}
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

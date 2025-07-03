@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
@@ -33,7 +32,7 @@ export interface AssessmentData {
   milestones: string | null;
 }
 
-export { ScoreResult };
+export type { ScoreResult };
 
 export default function Index() {
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
@@ -125,23 +124,22 @@ export default function Index() {
       if (user) {
         const { data: savedData, error } = await supabase
           .from('assessment_history')
-          .insert([
-            {
-              user_id: user.id,
-              assessment_data: data,
-              score_result: result,
-            },
-          ])
+          .insert({
+            user_id: user.id,
+            assessment_data: data,
+            score_result: result,
+          })
           .select()
+          .single();
 
         if (error) {
           console.error('Error saving assessment:', error);
         } else {
           console.log('Assessment saved successfully!', savedData);
-          setCurrentAssessmentId(savedData[0].id);
+          setCurrentAssessmentId(savedData.id);
 
           // Optimistically update assessment history
-          setAssessmentHistory((prevHistory) => [savedData[0], ...prevHistory]);
+          setAssessmentHistory((prevHistory) => [savedData, ...prevHistory]);
         }
       }
     } catch (error: any) {
@@ -192,7 +190,11 @@ export default function Index() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             Startup Investment Readiness Assessment
           </h1>
-          <AssessmentForm onComplete={handleSubmitAssessment} initialData={assessmentData} />
+          <AssessmentForm 
+            onComplete={handleSubmitAssessment} 
+            initialData={assessmentData}
+            onDataChange={handleAssessmentChange}
+          />
         </div>
         <Footer />
       </div>
