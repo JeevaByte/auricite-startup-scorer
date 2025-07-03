@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,12 +14,14 @@ interface AssessmentFormProps {
   onComplete: (data: AssessmentData, result: ScoreResult) => void;
   initialData?: AssessmentData;
   onDataChange?: (data: AssessmentData) => void;
+  isLoading?: boolean;
 }
 
 export const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onComplete,
   initialData,
   onDataChange,
+  isLoading = false,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<AssessmentData>(
@@ -233,8 +234,8 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
             </Button>
 
             {isLastStep ? (
-              <Button onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? 'Calculating...' : 'Complete Assessment'}
+              <Button onClick={handleSubmit} disabled={isSubmitting || isLoading}>
+                {isSubmitting || isLoading ? 'Calculating...' : 'Complete Assessment'}
               </Button>
             ) : (
               <Button onClick={handleNext}>Next</Button>
