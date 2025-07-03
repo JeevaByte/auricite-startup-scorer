@@ -1,245 +1,313 @@
-
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { useToast } from "@/hooks/use-toast";
-import { AssessmentWizard } from '@/components/AssessmentWizard';
-import { ScoreDisplay } from '@/components/ScoreDisplay';
-import { ConsentCheckbox } from '@/components/ConsentCheckbox';
-import { Hero } from '@/components/Hero';
 import { Header } from '@/components/Header';
-import { saveAssessment, saveScore, assignBadges, saveBadges } from '@/utils/database';
-import { loadDraft, saveDraft, clearDraft } from '@/utils/autosave';
-import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
-import { useNavigate } from 'react-router-dom';
+import { Hero } from '@/components/Hero';
+import { Footer } from '@/components/Footer';
+import { AssessmentForm } from '@/components/AssessmentForm';
+import { ScoreResult } from '@/utils/scoreCalculator';
+import { calculateDynamicScore, getInvestmentReadinessLevel } from '@/utils/dynamicScoreCalculator';
+import { Report } from '@/components/Report';
+import { AuthModal } from '@/components/auth/AuthModal';
+import { useAuth } from '@/hooks/useAuth';
+import { ProgressTracker } from '@/components/ProgressTracker';
+import { FeedbackCollection } from '@/components/FeedbackCollection';
+import { downloadAsJSON, downloadAsCSV, generateReportData } from '@/utils/reportGenerator';
+import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
+import { BrandMessaging } from '@/components/BrandVoice';
+import { OnboardingFlow } from '@/components/OnboardingFlow';
+import { TargetAudienceSelector } from '@/components/TargetAudienceSelector';
+import { TrustSignals } from '@/components/TrustSignals';
 
 export interface AssessmentData {
   prototype: boolean | null;
-  revenue: boolean | null;
-  mrr: string | null;
-  capTable: boolean | null;
-  fullTimeTeam: boolean | null;
-  employees: string | null;
-  milestones: string | null;
-  fundingGoal: string | null;
-  termSheets: boolean | null;
-  investors: string | null;
   externalCapital: boolean | null;
+  revenue: boolean | null;
+  fullTimeTeam: boolean | null;
+  termSheets: boolean | null;
+  capTable: boolean | null;
+  mrr: string | null;
+  employees: string | null;
+  fundingGoal: string | null;
+  investors: string | null;
+  milestones: string | null;
 }
 
-export interface ScoreResult {
-  businessIdea: number;
-  businessIdeaExplanation: string;
-  financials: number;
-  financialsExplanation: string;
-  team: number;
-  teamExplanation: string;
-  traction: number;
-  tractionExplanation: string;
-  totalScore: number;
-}
-
-const initialData: AssessmentData = {
-  prototype: null,
-  revenue: null,
-  mrr: null,
-  capTable: null,
-  fullTimeTeam: null,
-  employees: null,
-  milestones: null,
-  fundingGoal: null,
-  termSheets: null,
-  investors: null,
-  externalCapital: null
-};
-
-const Index = () => {
-  const [assessmentStarted, setAssessmentStarted] = useState(false);
-  const [assessmentComplete, setAssessmentComplete] = useState(false);
-  const [assessmentData, setAssessmentData] = useState<AssessmentData>(initialData);
+export default function Index() {
+  const [assessmentData, setAssessmentData] = useState<AssessmentData>({
+    prototype: null,
+    externalCapital: null,
+    revenue: null,
+    fullTimeTeam: null,
+    termSheets: null,
+    capTable: null,
+    mrr: null,
+    employees: null,
+    fundingGoal: null,
+    investors: null,
+    milestones: null,
+  });
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
-  const [badges, setBadges] = useState<{ name: string; explanation: string }[]>([]);
-  const [engagementMessage, setEngagementMessage] = useState<string>('');
-  const [loadingDraft, setLoadingDraft] = useState(true);
-  const [consentGiven, setConsentGiven] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [assessmentHistory, setAssessmentHistory] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackSection, setFeedbackSection] = useState<'scoring' | 'recommendations' | 'overall'>('overall');
+  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showTargetSelector, setShowTargetSelector] = useState(false);
+  const [userStage, setUserStage] = useState('');
+  const [userIndustry, setUserIndustry] = useState('');
+
+  const { user, loading, supabase } = useAuth();
 
   useEffect(() => {
-    const loadAssessmentDraft = async () => {
-      try {
-        setLoadingDraft(true);
-        const draft = await loadDraft();
-        if (draft) {
-          setAssessmentData(draft.draft_data as AssessmentData);
-          setAssessmentStarted(true);
+    const fetchHistory = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('assessment_history')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching assessment history:', error);
+        } else {
+          setAssessmentHistory(data || []);
         }
-      } catch (error) {
-        console.error('Error loading draft:', error);
-      } finally {
-        setLoadingDraft(false);
       }
     };
 
-    loadAssessmentDraft();
-  }, []);
+    fetchHistory();
+  }, [user, supabase]);
+
+  const handleAssessmentChange = (data: AssessmentData) => {
+    setAssessmentData(data);
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setShowTargetSelector(true);
+  };
+
+  const handleTargetSelection = (stage: string, industry: string) => {
+    setUserStage(stage);
+    setUserIndustry(industry);
+    setShowTargetSelector(false);
+    setShowAssessment(true);
+  };
 
   const handleStartAssessment = () => {
-    if (!consentGiven) {
-      toast({
-        title: 'Consent Required',
-        description: 'Please agree to the terms and privacy policy to proceed.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setAssessmentStarted(true);
-  };
-
-  const handleSaveDraft = async (data: Partial<AssessmentData>, step: number) => {
-    try {
-      await saveDraft(data, step);
-      toast({
-        title: 'Draft Saved',
-        description: 'Your progress has been saved.',
-      });
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      toast({
-        title: 'Error Saving Draft',
-        description: 'Failed to save your progress. Please try again.',
-        variant: 'destructive',
-      });
+    // Check if user is new (no previous assessments)
+    if (!user || assessmentHistory.length === 0) {
+      setShowOnboarding(true);
+    } else {
+      setShowAssessment(true);
     }
   };
 
-  const handleAssessmentRestart = async () => {
-    setAssessmentStarted(false);
-    setAssessmentComplete(false);
-    setAssessmentData(initialData);
-    setScoreResult(null);
-    setBadges([]);
-    setEngagementMessage('');
+  const handleSubmitAssessment = async () => {
     try {
-      await clearDraft();
-      toast({
-        title: 'Assessment Reset',
-        description: 'Your assessment has been reset.',
-      });
-    } catch (error) {
-      console.error('Error clearing draft:', error);
-      toast({
-        title: 'Error Resetting Assessment',
-        description: 'Failed to reset the assessment. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleComplete = async (data: AssessmentData, result: ScoreResult) => {
-    console.log('Assessment completed:', { data, result });
-    
-    try {
-      // Save assessment to database
-      const assessmentId = await saveAssessment(data);
-      await saveScore(assessmentId, result);
-      
-      // Get badges
-      const badgeData = await assignBadges(data, result);
-      if (badgeData?.badges) {
-        await saveBadges(assessmentId, badgeData.badges);
-        setBadges(badgeData.badges);
+      if (!assessmentData) {
+        throw new Error('Assessment data is missing.');
       }
-      
-      // Set engagement message
-      setEngagementMessage(badgeData?.engagementMessage || 'Great job completing your assessment!');
-      
-      // Clear any saved draft
-      await clearDraft();
-      
-      // Navigate to results page with data
-      navigate('/results', {
-        state: {
-          assessmentData: data,
-          scoreResult: result
+
+      const calculatedScore = calculateDynamicScore(assessmentData);
+      setScoreResult(calculatedScore);
+
+      // Generate recommendations
+      const generatedRecommendations = await generateRecommendations(assessmentData, calculatedScore);
+      setRecommendations(generatedRecommendations);
+
+      setShowAssessment(false);
+      setShowResults(true);
+
+      if (user) {
+        const { data, error } = await supabase
+          .from('assessment_history')
+          .insert([
+            {
+              user_id: user.id,
+              assessment_data: assessmentData,
+              score_result: calculatedScore,
+            },
+          ])
+          .select()
+
+        if (error) {
+          console.error('Error saving assessment:', error);
+        } else {
+          console.log('Assessment saved successfully!', data);
+          setCurrentAssessmentId(data[0].id);
+
+          // Optimistically update assessment history
+          setAssessmentHistory((prevHistory) => [data[0], ...prevHistory]);
         }
-      });
-      
-    } catch (error) {
-      console.error('Error saving assessment:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save assessment. Please try again.',
-        variant: 'destructive',
-      });
+      }
+    } catch (error: any) {
+      console.error('Error submitting assessment:', error);
     }
   };
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className="flex-1">
-        {!assessmentStarted ? (
-          <>
-            <Hero onStartAssessment={handleStartAssessment} />
-            
-            {/* Additional Content Section */}
-            <div className="container max-w-4xl mx-auto p-4">
-              <Card className="p-8">
-                <div className="space-y-4">
-                  <p className="text-lg text-gray-700">
-                    This assessment will help you understand your startup's strengths and weaknesses across key
-                    investment criteria. By answering a series of questions, you'll receive a detailed score and
-                    personalized recommendations to improve your investment readiness.
-                  </p>
-                  <ConsentCheckbox
-                    checked={consentGiven}
-                    onCheckedChange={setConsentGiven}
-                  />
-                  <Button 
-                    onClick={handleStartAssessment} 
-                    disabled={loadingDraft || !consentGiven} 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    {loadingDraft ? 'Loading Draft...' : 'Start Assessment'}
-                  </Button>
+  const handleViewHistory = () => {
+    setShowHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setShowHistory(false);
+  };
+
+  const handleDownloadReport = (format: 'json' | 'csv') => {
+    if (scoreResult) {
+      const reportData = generateReportData(assessmentData, scoreResult, recommendations);
+      const filename = `investment_readiness_report_${new Date().toISOString()}.${format}`;
+
+      if (format === 'json') {
+        downloadAsJSON(reportData, filename);
+      } else if (format === 'csv') {
+        downloadAsCSV(reportData, filename);
+      }
+    }
+  };
+
+  const readinessLevel = scoreResult ? getInvestmentReadinessLevel(scoreResult.totalScore) : null;
+
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  if (showTargetSelector) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <TargetAudienceSelector onSelect={handleTargetSelection} />
+      </div>
+    );
+  }
+
+  if (showAssessment) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Startup Investment Readiness Assessment
+          </h1>
+          <AssessmentForm onChange={handleAssessmentChange} onSubmit={handleSubmitAssessment} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (showResults) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+            Assessment Results
+          </h1>
+
+          {scoreResult && readinessLevel && (
+            <div className="mb-8">
+              <div className={`bg-white p-6 rounded-lg shadow-md border-l-4 border-${readinessLevel.color.replace('text-', '')}-500`}>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Investment Readiness: <span className={readinessLevel.color}>{readinessLevel.level}</span>
+                </h2>
+                <p className="text-gray-600 mb-4">{readinessLevel.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {readinessLevel.nextSteps && readinessLevel.nextSteps.map((step, index) => (
+                    <span key={index} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-0.5 text-sm font-medium text-gray-800">
+                      {step}
+                    </span>
+                  ))}
                 </div>
-              </Card>
+              </div>
             </div>
-          </>
-        ) : assessmentComplete && scoreResult ? (
-          <ScoreDisplay
-            result={scoreResult}
-            assessmentData={assessmentData}
-            onRestart={handleAssessmentRestart}
-            badges={badges}
-            engagementMessage={engagementMessage}
-          />
-        ) : (
-          <AssessmentWizard
-            onComplete={handleComplete}
-            initialData={assessmentData}
-            onSaveDraft={handleSaveDraft}
-          />
+          )}
+
+          {scoreResult && (
+            <Report
+              scoreResult={scoreResult}
+              recommendations={recommendations}
+              onFeedbackClick={(section) => {
+                setFeedbackSection(section);
+                setShowFeedbackModal(true);
+              }}
+            />
+          )}
+
+          <div className="mt-8 flex justify-between">
+            <button
+              onClick={() => handleDownloadReport('json')}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Download as JSON
+            </button>
+            <button
+              onClick={() => handleDownloadReport('csv')}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Download as CSV
+            </button>
+          </div>
+          <button
+            onClick={() => {
+              setFeedbackSection('overall');
+              setShowFeedbackModal(true);
+            }}
+            className="mt-4 text-blue-600 hover:underline block text-center"
+          >
+            Provide overall feedback on this assessment
+          </button>
+        </div>
+        <Footer />
+        {showFeedbackModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <FeedbackCollection
+              section={feedbackSection}
+              assessmentId={currentAssessmentId || undefined}
+              onClose={() => setShowFeedbackModal(false)}
+            />
+          </div>
         )}
       </div>
+    );
+  }
 
-      <footer className="bg-white border-t border-gray-200 py-8">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-gray-500">
-            <p>&copy; 2024 Auricite InvestX. All rights reserved.</p>
-            <div className="flex justify-center space-x-6 mt-4">
-              <a href="/terms" className="hover:text-gray-700">Terms of Service</a>
-              <a href="/privacy" className="hover:text-gray-700">Privacy Policy</a>
-            </div>
-          </div>
+  if (showHistory) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onViewHistory={handleViewHistory} />
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Your Assessment History
+          </h1>
+          <ProgressTracker assessments={assessmentHistory} currentScore={scoreResult?.totalScore || 0} />
+          <button
+            onClick={handleCloseHistory}
+            className="mt-4 text-blue-600 hover:underline block text-center"
+          >
+            Close History
+          </button>
         </div>
-      </footer>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header onViewHistory={() => setShowHistory(true)} />
+      
+      <Hero onStartAssessment={handleStartAssessment} />
+      
+      {/* Add Trust Signals section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <TrustSignals />
+      </div>
+      
+      <Footer />
     </div>
   );
-};
-
-export default Index;
+}

@@ -1,4 +1,3 @@
-
 import { useToast } from '@/hooks/use-toast';
 
 export interface ErrorWithFallback {
@@ -92,4 +91,88 @@ export const retryOperation = async <T>(
   }
   
   throw lastError!;
+};
+
+export const createRobustAIErrorHandler = () => {
+  const fallbackResponses = {
+    scoring: {
+      businessIdea: "Strong concept with clear market potential. Focus on customer validation and competitive differentiation.",
+      financials: "Solid financial foundation. Consider diversifying revenue streams and improving cash flow projections.",
+      team: "Capable team with relevant experience. Consider adding advisory support in key areas.",
+      traction: "Good early traction indicators. Focus on scaling user acquisition and retention metrics."
+    },
+    recommendations: {
+      businessIdea: [
+        "Conduct 10 customer interviews to validate problem-solution fit",
+        "Research market size using industry reports and competitive analysis",
+        "Develop compelling value proposition statements for different customer segments"
+      ],
+      financials: [
+        "Create detailed 18-month financial projections with scenario planning",
+        "Document clear path to profitability with key milestones",
+        "Establish financial controls and reporting systems"
+      ],
+      team: [
+        "Document team expertise and previous achievements",
+        "Consider recruiting advisors with relevant industry experience",
+        "Create clear roles and responsibilities documentation"
+      ],
+      traction: [
+        "Implement comprehensive analytics to track key metrics",
+        "Secure 3-5 customer testimonials or case studies",
+        "Establish clear growth milestones and tracking systems"
+      ]
+    }
+  };
+
+  return {
+    handleScoringError: (section: string) => {
+      console.warn(`AI scoring failed for ${section}, using fallback`);
+      return fallbackResponses.scoring[section as keyof typeof fallbackResponses.scoring] || 
+             "Assessment completed. Consider strengthening this area for better investment readiness.";
+    },
+    
+    handleRecommendationsError: (section: string) => {
+      console.warn(`AI recommendations failed for ${section}, using fallback`);
+      return fallbackResponses.recommendations[section as keyof typeof fallbackResponses.recommendations] || 
+             ["Focus on strengthening fundamentals in this area", "Seek expert advice for targeted improvements"];
+    },
+    
+    isAPIHealthy: async () => {
+      try {
+        // Simple health check - could be expanded
+        const response = await fetch('/api/health-check');
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+  };
+};
+
+// Rate limiting for API calls
+export const createAPIRateLimiter = (maxRequests: number = 10, timeWindow: number = 60000) => {
+  const requestLog: number[] = [];
+  
+  return {
+    canMakeRequest: () => {
+      const now = Date.now();
+      const recentRequests = requestLog.filter(time => now - time < timeWindow);
+      requestLog.length = 0;
+      requestLog.push(...recentRequests);
+      
+      return recentRequests.length < maxRequests;
+    },
+    
+    logRequest: () => {
+      requestLog.push(Date.now());
+    },
+    
+    getTimeUntilNextRequest: () => {
+      if (requestLog.length === 0) return 0;
+      const oldestRequest = Math.min(...requestLog);
+      const timeUntilReset = (oldestRequest + timeWindow) - Date.now();
+      return Math.max(0, timeUntilReset);
+    }
+  };
 };
