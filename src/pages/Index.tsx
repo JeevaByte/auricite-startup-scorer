@@ -1,365 +1,266 @@
-
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { Footer } from '@/components/Footer';
-import { AssessmentForm } from '@/components/AssessmentForm';
-import { ScoreResult } from '@/utils/scoreCalculator';
-import { calculateDynamicScore, getInvestmentReadinessLevel } from '@/utils/dynamicScoreCalculator';
-import { Report } from '@/components/Report';
-import { AuthModal } from '@/components/auth/AuthModal';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
-import { ProgressTracker } from '@/components/ProgressTracker';
-import { FeedbackCollection } from '@/components/FeedbackCollection';
-import { downloadAsJSON, downloadAsCSV, generateReportData } from '@/utils/reportGenerator';
-import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
-import { BrandMessaging } from '@/components/BrandVoice';
-import { OnboardingFlow } from '@/components/OnboardingFlow';
-import { TargetAudienceSelector } from '@/components/TargetAudienceSelector';
-import { TrustSignals } from '@/components/TrustSignals';
-import { supabase } from '@/integrations/supabase/client';
-import { logSecurityEvent, sanitizeErrorForUser } from '@/utils/securityLogger';
+import { AssessmentForm } from '@/components/AssessmentForm';
+import { ScoreDisplay } from '@/components/ScoreDisplay';
+import { RecommendationsDisplay } from '@/components/RecommendationsDisplay';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ShareButtons } from '@/components/ShareButtons';
+import { AssessmentHistory } from '@/components/AssessmentHistory';
+import { assignBadges } from '@/utils/database';
+import { checkCachedResponse, cacheResponse, saveAssessment, saveScore } from '@/utils/database';
+import { generateRecommendations } from '@/utils/recommendationsService';
+import { AssessmentData } from './Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
+import { Badge } from '@/utils/database';
+import { calculateEnhancedScore } from '@/utils/enhancedScoreCalculator';
+import { generateBenchmarking } from '@/utils/benchmarkingService';
+import { BenchmarkDisplay } from '@/components/BenchmarkDisplay';
 
 export interface AssessmentData {
-  prototype: boolean | null;
-  externalCapital: boolean | null;
-  revenue: boolean | null;
-  fullTimeTeam: boolean | null;
-  termSheets: boolean | null;
-  capTable: boolean | null;
-  mrr: string | null;
-  employees: string | null;
-  fundingGoal: string | null;
-  investors: string | null;
-  milestones: string | null;
+  prototype?: boolean | null;
+  externalCapital?: boolean | null;
+  revenue?: boolean | null;
+  fullTimeTeam?: boolean | null;
+  termSheets?: boolean | null;
+  capTable?: boolean | null;
+  mrr?: string | null;
+  employees?: string | null;
+  fundingGoal?: string | null;
+  investors?: string | null;
+  milestones?: string | null;
 }
 
-export type { ScoreResult };
+interface BenchmarkingData {
+  business_idea_percentile: number;
+  financials_percentile: number;
+  team_percentile: number;
+  traction_percentile: number;
+  total_percentile: number;
+  sector: string;
+  stage: string;
+  cluster_id: number;
+}
 
-export default function Index() {
-  const [assessmentData, setAssessmentData] = useState<AssessmentData>({
-    prototype: null,
-    externalCapital: null,
-    revenue: null,
-    fullTimeTeam: null,
-    termSheets: null,
-    capTable: null,
-    mrr: null,
-    employees: null,
-    fundingGoal: null,
-    investors: null,
-    milestones: null,
-  });
+const Index = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
-  const [showAssessment, setShowAssessment] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [recommendations, setRecommendations] = useState<any>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [assessmentHistory, setAssessmentHistory] = useState<any[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedbackSection, setFeedbackSection] = useState<'scoring' | 'recommendations' | 'overall'>('overall');
-  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [showTargetSelector, setShowTargetSelector] = useState(false);
-  const [userStage, setUserStage] = useState('');
-  const [userIndustry, setUserIndustry] = useState('');
-
-  const { user, loading } = useAuth();
+  const [benchmarkData, setBenchmarkData] = useState<BenchmarkingData | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('assessment_history')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          logSecurityEvent({
-            type: 'DATA_ACCESS',
-            userId: user.id,
-            details: 'Failed to fetch assessment history',
-            timestamp: new Date()
-          });
-          throw error;
-        }
-
-        setAssessmentHistory(data || []);
-      } catch (error) {
-        // Don't expose internal errors to user
-        console.error('History fetch failed');
-      }
-    };
-
-    fetchHistory();
-  }, [user]);
-
-  const handleAssessmentChange = (data: AssessmentData) => {
-    setAssessmentData(data);
-  };
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    setShowTargetSelector(true);
-  };
-
-  const handleTargetSelection = (stage: string, industry: string) => {
-    setUserStage(stage);
-    setUserIndustry(industry);
-    setShowTargetSelector(false);
-    setShowAssessment(true);
-  };
-
-  const handleStartAssessment = () => {
-    // Check if user is new (no previous assessments)
-    if (!user || assessmentHistory.length === 0) {
-      setShowOnboarding(true);
-    } else {
-      setShowAssessment(true);
+    if (currentStep === 4 && !scoreResult) {
+      setCurrentStep(1);
     }
+  }, [currentStep, scoreResult]);
+
+  const updateAssessmentData = (data: AssessmentData) => {
+    setAssessmentData(prevData => ({ ...prevData, ...data }));
   };
 
-  const handleSubmitAssessment = async (data: AssessmentData, result: ScoreResult) => {
+  const handleSubmit = async (data: AssessmentData) => {
     if (!user) {
-      logSecurityEvent({
-        type: 'UNAUTHORIZED_ACCESS',
-        details: 'Attempted assessment submission without authentication',
-        timestamp: new Date()
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save your assessment.",
+        variant: "destructive",
       });
       return;
     }
 
+    setIsLoading(true);
+    
     try {
-      setScoreResult(result);
-      setAssessmentData(data);
-
-      // Generate recommendations
-      const generatedRecommendations = await generateRecommendations(data, result);
-      setRecommendations(generatedRecommendations);
-
-      setShowAssessment(false);
-      setShowResults(true);
-
-      const { data: savedData, error } = await supabase
-        .from('assessment_history')
-        .insert({
-          user_id: user.id,
-          assessment_data: data as any,
-          score_result: result as any,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        logSecurityEvent({
-          type: 'DATA_ACCESS',
-          userId: user.id,
-          details: 'Failed to save assessment',
-          timestamp: new Date()
-        });
-        // Don't throw error, assessment was already processed
+      console.log('Assessment data:', data);
+      
+      // Check cache first
+      const cachedResult = await checkCachedResponse(data);
+      if (cachedResult) {
+        console.log('Using cached result:', cachedResult);
+        setScoreResult(cachedResult);
+        
+        // Generate benchmarking for cached results too
+        try {
+          const benchmarking = await generateBenchmarking('cached', data, cachedResult);
+          if (benchmarking) {
+            setBenchmarkData(benchmarking);
+          }
+        } catch (error) {
+          console.error('Benchmarking generation failed:', error);
+        }
+        
+        setCurrentStep(4);
+        setIsLoading(false);
         return;
       }
 
-      setCurrentAssessmentId(savedData.id);
-      // Optimistically update assessment history
-      setAssessmentHistory((prevHistory) => [savedData, ...prevHistory]);
+      // Use enhanced scoring algorithm
+      const score = calculateEnhancedScore(data);
+      console.log('Calculated score:', score);
       
-    } catch (error: any) {
-      logSecurityEvent({
-        type: 'SUSPICIOUS_ACTIVITY',
-        userId: user.id,
-        details: 'Assessment submission failed',
-        timestamp: new Date()
+      setScoreResult(score);
+
+      // Save assessment and get ID
+      const assessmentId = await saveAssessment(data);
+      console.log('Assessment saved with ID:', assessmentId);
+
+      // Save score
+      await saveScore(assessmentId, score);
+      console.log('Score saved');
+
+      // Generate and save benchmarking data
+      try {
+        const benchmarking = await generateBenchmarking(assessmentId, data, score);
+        if (benchmarking) {
+          setBenchmarkData(benchmarking);
+          console.log('Benchmarking generated:', benchmarking);
+        }
+      } catch (error) {
+        console.error('Benchmarking generation failed:', error);
+      }
+
+      // Generate recommendations
+      try {
+        const recommendations = await generateRecommendations(data, score);
+        setRecommendations(recommendations);
+        console.log('Recommendations generated:', recommendations);
+      } catch (error) {
+        console.error('Recommendations generation failed:', error);
+        setRecommendations({
+          businessIdea: ['Focus on validating your business concept with potential customers'],
+          financials: ['Develop a comprehensive financial model and funding strategy'],
+          team: ['Strengthen your team with complementary skills and experience'],
+          traction: ['Build measurable traction through customer acquisition and engagement']
+        });
+      }
+
+      // Generate badges
+      try {
+        const badgeData = await assignBadges(data, score);
+        setBadges(badgeData?.badges || []);
+        console.log('Badges assigned:', badgeData?.badges);
+      } catch (error) {
+        console.error('Badge assignment failed:', error);
+        setBadges([]);
+      }
+
+      // Cache the response
+      await cacheResponse(data, score);
+
+      setCurrentStep(4);
+      
+      toast({
+        title: "Assessment Complete!",
+        description: "Your startup readiness score has been calculated with peer benchmarking.",
       });
-      // Show user-friendly error message
-      alert(sanitizeErrorForUser(error));
+
+    } catch (error) {
+      console.error('Assessment submission failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process your assessment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleViewHistory = () => {
-    if (!user) {
-      logSecurityEvent({
-        type: 'UNAUTHORIZED_ACCESS',
-        details: 'Attempted to view history without authentication',
-        timestamp: new Date()
-      });
-      return;
-    }
     setShowHistory(true);
   };
 
-  const handleCloseHistory = () => {
+  const closeHistory = () => {
     setShowHistory(false);
   };
 
-  const handleDownloadReport = (format: 'json' | 'csv') => {
-    if (!user) {
-      logSecurityEvent({
-        type: 'UNAUTHORIZED_ACCESS',
-        details: 'Attempted report download without authentication',
-        timestamp: new Date()
-      });
-      return;
-    }
+  return (
+    <div className="container mx-auto py-8">
+      <Dialog open={showDownloadDialog} onOpenChange={() => setShowDownloadDialog(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Download Options</DialogTitle>
+          </DialogHeader>
+          <p>Choose your preferred download format:</p>
+          {/* Add download options here */}
+          <Button onClick={() => setShowDownloadDialog(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
 
-    if (scoreResult) {
-      const reportData = generateReportData(assessmentData, scoreResult, recommendations);
-      const filename = `investment_readiness_report_${new Date().toISOString()}.${format}`;
+      <Dialog open={showShareDialog} onOpenChange={() => setShowShareDialog(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Your Results</DialogTitle>
+          </DialogHeader>
+          <ShareButtons />
+          <Button onClick={() => setShowShareDialog(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
 
-      if (format === 'json') {
-        downloadAsJSON(reportData, filename);
-      } else if (format === 'csv') {
-        downloadAsCSV(reportData, filename);
-      }
-    }
-  };
+      <AssessmentHistory isOpen={showHistory} onClose={closeHistory} />
 
-  const readinessLevel = scoreResult ? getInvestmentReadinessLevel(scoreResult.totalScore) : null;
+      <h1 className="text-3xl font-bold text-center mb-8">
+        Startup Investment Readiness Assessment
+      </h1>
 
-  if (showOnboarding) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
-  }
+      {currentStep === 1 && (
+        <AssessmentForm
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          updateAssessmentData={updateAssessmentData}
+        />
+      )}
 
-  if (showTargetSelector) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <TargetAudienceSelector onSelect={handleTargetSelection} />
-      </div>
-    );
-  }
-
-  if (showAssessment) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Startup Investment Readiness Assessment
-          </h1>
-          <AssessmentForm 
-            onComplete={handleSubmitAssessment} 
-            initialData={assessmentData}
-            onDataChange={handleAssessmentChange}
-          />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (showResults) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-            Assessment Results
-          </h1>
-
-          {scoreResult && readinessLevel && (
-            <div className="mb-8">
-              <div className={`bg-white p-6 rounded-lg shadow-md border-l-4 border-${readinessLevel.color.replace('text-', '')}-500`}>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                  Investment Readiness: <span className={readinessLevel.color}>{readinessLevel.level}</span>
-                </h2>
-                <p className="text-gray-600 mb-4">{readinessLevel.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {readinessLevel.nextSteps && readinessLevel.nextSteps.map((step, index) => (
-                    <span key={index} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-0.5 text-sm font-medium text-gray-800">
-                      {step}
-                    </span>
-                  ))}
-                </div>
-              </div>
+      {currentStep === 4 && scoreResult && (
+          <div className="space-y-8">
+            <ScoreDisplay 
+              scoreResult={scoreResult} 
+              badges={badges}
+              onDownload={() => setShowDownloadDialog(true)}
+              onShare={() => setShowShareDialog(true)}
+            />
+            
+            {benchmarkData && (
+              <BenchmarkDisplay percentiles={benchmarkData} />
+            )}
+            
+            {recommendations && (
+              <RecommendationsDisplay recommendations={recommendations} />
+            )}
+            
+            <div className="flex gap-4 justify-center">
+              <Button
+                onClick={() => {
+                  setCurrentStep(1);
+                  setAssessmentData({});
+                  setScoreResult(null);
+                  setRecommendations(null);
+                  setBadges([]);
+                  setBenchmarkData(null);
+                }}
+                variant="outline"
+              >
+                Start New Assessment
+              </Button>
+              <Button onClick={() => setShowHistory(true)}>
+                View History
+              </Button>
             </div>
-          )}
-
-          {scoreResult && (
-            <Report
-              scoreResult={scoreResult}
-              recommendations={recommendations}
-              onFeedbackClick={(section) => {
-                setFeedbackSection(section);
-                setShowFeedbackModal(true);
-              }}
-            />
-          )}
-
-          <div className="mt-8 flex justify-between">
-            <button
-              onClick={() => handleDownloadReport('json')}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Download as JSON
-            </button>
-            <button
-              onClick={() => handleDownloadReport('csv')}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Download as CSV
-            </button>
-          </div>
-          <button
-            onClick={() => {
-              setFeedbackSection('overall');
-              setShowFeedbackModal(true);
-            }}
-            className="mt-4 text-blue-600 hover:underline block text-center"
-          >
-            Provide overall feedback on this assessment
-          </button>
-        </div>
-        <Footer />
-        {showFeedbackModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <FeedbackCollection
-              section={feedbackSection}
-              assessmentId={currentAssessmentId || undefined}
-              onClose={() => setShowFeedbackModal(false)}
-            />
           </div>
         )}
-      </div>
-    );
-  }
-
-  if (showHistory) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header onViewHistory={handleViewHistory} />
-        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Your Assessment History
-          </h1>
-          <ProgressTracker assessments={assessmentHistory} currentScore={scoreResult?.totalScore || 0} />
-          <button
-            onClick={handleCloseHistory}
-            className="mt-4 text-blue-600 hover:underline block text-center"
-          >
-            Close History
-          </button>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onViewHistory={() => setShowHistory(true)} />
-      
-      <Hero onStartAssessment={handleStartAssessment} />
-      
-      {/* Add Trust Signals section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <TrustSignals />
-      </div>
-      
-      <Footer />
     </div>
   );
-}
+};
+
+export default Index;

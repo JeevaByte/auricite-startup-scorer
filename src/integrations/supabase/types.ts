@@ -173,6 +173,48 @@ export type Database = {
           },
         ]
       }
+      benchmark_data: {
+        Row: {
+          business_idea_avg: number
+          created_at: string
+          financials_avg: number
+          id: string
+          sample_size: number
+          sector: string
+          stage: string
+          team_avg: number
+          total_score_avg: number
+          traction_avg: number
+          updated_at: string
+        }
+        Insert: {
+          business_idea_avg?: number
+          created_at?: string
+          financials_avg?: number
+          id?: string
+          sample_size?: number
+          sector: string
+          stage: string
+          team_avg?: number
+          total_score_avg?: number
+          traction_avg?: number
+          updated_at?: string
+        }
+        Update: {
+          business_idea_avg?: number
+          created_at?: string
+          financials_avg?: number
+          id?: string
+          sample_size?: number
+          sector?: string
+          stage?: string
+          team_avg?: number
+          total_score_avg?: number
+          traction_avg?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_classifications: {
         Row: {
           category: string
@@ -389,6 +431,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scores_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_clusters: {
+        Row: {
+          assessment_id: string | null
+          cluster_id: number
+          created_at: string
+          id: string
+          percentile_business_idea: number | null
+          percentile_financials: number | null
+          percentile_team: number | null
+          percentile_total: number | null
+          percentile_traction: number | null
+          sector: string
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          cluster_id: number
+          created_at?: string
+          id?: string
+          percentile_business_idea?: number | null
+          percentile_financials?: number | null
+          percentile_team?: number | null
+          percentile_total?: number | null
+          percentile_traction?: number | null
+          sector: string
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          cluster_id?: number
+          created_at?: string
+          id?: string
+          percentile_business_idea?: number | null
+          percentile_financials?: number | null
+          percentile_team?: number | null
+          percentile_total?: number | null
+          percentile_traction?: number | null
+          sector?: string
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_clusters_assessment_id_fkey"
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "assessments"

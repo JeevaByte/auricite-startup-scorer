@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ScoreResult } from '@/utils/scoreCalculator';
 import { AssessmentData } from '@/pages/Index';
@@ -224,6 +223,24 @@ export const getUserAssessmentsWithBadges = async (): Promise<(DatabaseAssessmen
   } catch (error) {
     throw new Error('Assessment data could not be retrieved at this time');
   }
+};
+
+// Enhanced function with benchmarking support
+export const saveAssessmentWithBenchmarking = async (
+  data: AssessmentData, 
+  scoreResult: ScoreResult,
+  percentiles?: any
+): Promise<string> => {
+  const assessmentId = await saveAssessment(data);
+  await saveScore(assessmentId, scoreResult);
+  
+  // Save benchmarking data if provided
+  if (percentiles) {
+    const { generateBenchmarking } = await import('./benchmarkingService');
+    await generateBenchmarking(assessmentId, data, scoreResult);
+  }
+  
+  return assessmentId;
 };
 
 export const checkCachedResponse = async (assessmentData: AssessmentData): Promise<ScoreResult | null> => {

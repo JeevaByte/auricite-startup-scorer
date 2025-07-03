@@ -43,7 +43,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
       if (error) throw error;
 
-      // Don't close modal immediately for OAuth as it will redirect
       toast({
         title: 'Redirecting...',
         description: `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
@@ -65,7 +64,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setLoading(true);
 
     try {
-      // Input validation and sanitization
       const sanitizedEmail = sanitizeEmail(email);
       const sanitizedFullName = sanitizeText(fullName);
       const sanitizedCompanyName = sanitizeText(companyName);
@@ -78,8 +76,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         throw new Error('Please ensure your password meets all requirements');
       }
 
-      // Rate limiting check
-      const clientIP = 'signup-' + sanitizedEmail; // In production, use actual IP
+      const clientIP = 'signup-' + sanitizedEmail;
       if (authRateLimiter.isRateLimited(clientIP)) {
         const remainingTime = authRateLimiter.getRemainingTime(clientIP);
         throw new Error(`Too many signup attempts. Please try again in ${remainingTime} seconds.`);
@@ -87,7 +84,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
       const redirectUrl = `${window.location.origin}/`;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password,
         options: {
@@ -95,16 +92,24 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           data: {
             full_name: sanitizedFullName,
             company_name: sanitizedCompanyName,
+            email: sanitizedEmail,
           },
         },
       });
 
       if (error) throw error;
 
+      if (data.user && data.user.email_confirmed_at) {
+        await createUserProfile(data.user.id, sanitizedFullName, sanitizedCompanyName, sanitizedEmail);
+      }
+
       toast({
-        title: 'Check your email',
-        description: 'We sent you a confirmation link to complete your signup.',
+        title: 'Account created successfully!',
+        description: data.user?.email_confirmed_at 
+          ? 'You can now start using the platform.' 
+          : 'Please check your email to confirm your account.',
       });
+      
       onClose();
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -118,20 +123,37 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
+  const createUserProfile = async (userId: string, fullName: string, companyName: string, email: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          full_name: fullName,
+          company_name: companyName,
+          email: email,
+        });
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Input validation and sanitization
       const sanitizedEmail = sanitizeEmail(email);
 
       if (!validateEmail(sanitizedEmail)) {
         throw new Error('Please enter a valid email address');
       }
 
-      // Rate limiting check
-      const clientIP = 'signin-' + sanitizedEmail; // In production, use actual IP
+      const clientIP = 'signin-' + sanitizedEmail;
       if (authRateLimiter.isRateLimited(clientIP)) {
         const remainingTime = authRateLimiter.getRemainingTime(clientIP);
         throw new Error(`Too many login attempts. Please try again in ${remainingTime} seconds.`);
@@ -149,7 +171,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         throw error;
       }
 
-      // Reset rate limit on successful login
       authRateLimiter.reset('signin-' + sanitizedEmail);
 
       toast({
@@ -195,7 +216,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           </TabsList>
           
           <TabsContent value="signin" className="space-y-4">
-            {/* Social Sign In Options */}
             <div className="space-y-2">
               <SocialButton provider="google" icon="🔍" label="Google" />
               <SocialButton provider="github" icon="⚡" label="GitHub" />
@@ -246,7 +266,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           </TabsContent>
           
           <TabsContent value="signup" className="space-y-4">
-            {/* Social Sign Up Options */}
             <div className="space-y-2">
               <SocialButton provider="google" icon="🔍" label="Google" />
               <SocialButton provider="github" icon="⚡" label="GitHub" />
