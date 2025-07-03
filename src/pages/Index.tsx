@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ShareButtons } from '@/components/ShareButtons';
 import { AssessmentHistory } from '@/components/AssessmentHistory';
 import { assignBadges } from '@/utils/database';
-import { checkCachedResponse, cacheResponse, saveAssessment, saveScore } from '@/utils/database';
+import { checkCachedResponse, cacheResponse, saveAssessment, saveScore, DatabaseAssessment, DatabaseScore } from '@/utils/database';
 import { generateRecommendations } from '@/utils/recommendationsService';
 import { ScoreResult } from '@/utils/scoreCalculator';
 import { Badge } from '@/utils/database';
@@ -54,6 +54,8 @@ const Index = () => {
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedAssessment, setSelectedAssessment] = useState<DatabaseAssessment | null>(null);
+  const [selectedScore, setSelectedScore] = useState<DatabaseScore | null>(null);
   const [benchmarkData, setBenchmarkData] = useState<BenchmarkingData | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -181,8 +183,30 @@ const Index = () => {
     setShowHistory(true);
   };
 
-  const closeHistory = () => {
+  const handleBackFromHistory = () => {
     setShowHistory(false);
+    setSelectedAssessment(null);
+    setSelectedScore(null);
+  };
+
+  const handleViewScore = (assessment: DatabaseAssessment, score: DatabaseScore) => {
+    setSelectedAssessment(assessment);
+    setSelectedScore(score);
+    // Convert database score to ScoreResult format
+    const scoreResult: ScoreResult = {
+      businessIdea: score.business_idea,
+      financials: score.financials,
+      team: score.team,
+      traction: score.traction,
+      totalScore: score.total_score,
+      businessIdeaExplanation: score.business_idea_explanation,
+      financialsExplanation: score.financials_explanation,
+      teamExplanation: score.team_explanation,
+      tractionExplanation: score.traction_explanation
+    };
+    setScoreResult(scoreResult);
+    setShowHistory(false);
+    setCurrentStep(4);
   };
 
   return (
@@ -208,72 +232,79 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <AssessmentHistory />
-
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Startup Investment Readiness Assessment
-      </h1>
-
-      {currentStep === 1 && (
-        <AssessmentForm
-          onComplete={handleComplete}
-          initialData={assessmentData}
-          onDataChange={updateAssessmentData}
+      {showHistory ? (
+        <AssessmentHistory 
+          onBack={handleBackFromHistory}
+          onViewScore={handleViewScore}
         />
-      )}
+      ) : (
+        <>
+          <h1 className="text-3xl font-bold text-center mb-8">
+            Startup Investment Readiness Assessment
+          </h1>
 
-      {currentStep === 4 && scoreResult && (
-        <div className="space-y-8">
-          <ScoreDisplay 
-            result={scoreResult} 
-            assessmentData={assessmentData}
-            badges={badges.map(b => ({ name: b.badge_name, explanation: b.explanation }))}
-            engagementMessage="Great work on completing your assessment!"
-            onRestart={() => {
-              setCurrentStep(1);
-              setAssessmentData({});
-              setScoreResult(null);
-              setRecommendations(null);
-              setBadges([]);
-              setBenchmarkData(null);
-            }}
-          />
-          
-          {benchmarkData && (
-            <BenchmarkDisplay percentiles={benchmarkData} />
-          )}
-          
-          {recommendations && (
-            <RecommendationsDisplay 
-              recommendations={recommendations}
-              scores={{
-                businessIdea: scoreResult.businessIdea,
-                financials: scoreResult.financials,
-                team: scoreResult.team,
-                traction: scoreResult.traction,
-              }}
+          {currentStep === 1 && (
+            <AssessmentForm
+              onComplete={handleComplete}
+              initialData={assessmentData}
+              onDataChange={updateAssessmentData}
             />
           )}
-          
-          <div className="flex gap-4 justify-center">
-            <Button
-              onClick={() => {
-                setCurrentStep(1);
-                setAssessmentData({});
-                setScoreResult(null);
-                setRecommendations(null);
-                setBadges([]);
-                setBenchmarkData(null);
-              }}
-              variant="outline"
-            >
-              Start New Assessment
-            </Button>
-            <Button onClick={() => setShowHistory(true)}>
-              View History
-            </Button>
-          </div>
-        </div>
+
+          {currentStep === 4 && scoreResult && (
+            <div className="space-y-8">
+              <ScoreDisplay 
+                result={scoreResult} 
+                assessmentData={assessmentData}
+                badges={badges.map(b => ({ name: b.badge_name, explanation: b.explanation }))}
+                engagementMessage="Great work on completing your assessment!"
+                onRestart={() => {
+                  setCurrentStep(1);
+                  setAssessmentData({});
+                  setScoreResult(null);
+                  setRecommendations(null);
+                  setBadges([]);
+                  setBenchmarkData(null);
+                }}
+              />
+              
+              {benchmarkData && (
+                <BenchmarkDisplay percentiles={benchmarkData} />
+              )}
+              
+              {recommendations && (
+                <RecommendationsDisplay 
+                  recommendations={recommendations}
+                  scores={{
+                    businessIdea: scoreResult.businessIdea,
+                    financials: scoreResult.financials,
+                    team: scoreResult.team,
+                    traction: scoreResult.traction,
+                  }}
+                />
+              )}
+              
+              <div className="flex gap-4 justify-center">
+                <Button
+                  onClick={() => {
+                    setCurrentStep(1);
+                    setAssessmentData({});
+                    setScoreResult(null);
+                    setRecommendations(null);
+                    setBadges([]);
+                    setBenchmarkData(null);
+                  }}
+                  variant="outline"
+                >
+                  Start New Assessment
+                </Button>
+                <Button onClick={() => setShowHistory(true)}>
+                  View History
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
