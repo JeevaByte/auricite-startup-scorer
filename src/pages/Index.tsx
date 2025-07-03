@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
+import { Hero } from '@/components/Hero';
+import { Footer } from '@/components/Footer';
 import { AssessmentForm } from '@/components/AssessmentForm';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
 import { RecommendationsDisplay } from '@/components/RecommendationsDisplay';
@@ -45,6 +47,7 @@ interface BenchmarkingData {
 }
 
 const Index = () => {
+  const [showAssessment, setShowAssessment] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
@@ -66,6 +69,11 @@ const Index = () => {
       setCurrentStep(1);
     }
   }, [currentStep, scoreResult]);
+
+  const handleStartAssessment = () => {
+    setShowAssessment(true);
+    setCurrentStep(1);
+  };
 
   const updateAssessmentData = (data: AssessmentData) => {
     setAssessmentData(prevData => ({ ...prevData, ...data }));
@@ -206,11 +214,22 @@ const Index = () => {
     };
     setScoreResult(scoreResult);
     setShowHistory(false);
+    setShowAssessment(true);
     setCurrentStep(4);
   };
 
+  const handleBackToHome = () => {
+    setShowAssessment(false);
+    setCurrentStep(1);
+    setAssessmentData({});
+    setScoreResult(null);
+    setRecommendations(null);
+    setBadges([]);
+    setBenchmarkData(null);
+  };
+
   return (
-    <div className="container mx-auto py-8">
+    <div className="min-h-screen bg-gray-50">
       <Dialog open={showDownloadDialog} onOpenChange={() => setShowDownloadDialog(false)}>
         <DialogContent>
           <DialogHeader>
@@ -232,23 +251,40 @@ const Index = () => {
       </Dialog>
 
       {showHistory ? (
-        <AssessmentHistory 
-          onBack={handleBackFromHistory}
-          onViewScore={handleViewScore}
-        />
+        <div className="container mx-auto py-8">
+          <AssessmentHistory 
+            onBack={handleBackFromHistory}
+            onViewScore={handleViewScore}
+          />
+        </div>
+      ) : !showAssessment ? (
+        <div>
+          <Hero onStartAssessment={handleStartAssessment} />
+          <Footer />
+        </div>
       ) : (
-        <>
-          <h1 className="text-3xl font-bold text-center mb-8">
-            Startup Investment Readiness Assessment
-          </h1>
-
+        <div className="container mx-auto py-8">
           {currentStep === 1 && (
-            <AssessmentForm
-              onComplete={handleComplete}
-              initialData={assessmentData}
-              onDataChange={updateAssessmentData}
-              isLoading={isLoading}
-            />
+            <div>
+              <div className="mb-6">
+                <Button
+                  onClick={handleBackToHome}
+                  variant="outline"
+                  className="mb-4"
+                >
+                  ← Back to Home
+                </Button>
+              </div>
+              <h1 className="text-3xl font-bold text-center mb-8">
+                Startup Investment Readiness Assessment
+              </h1>
+              <AssessmentForm
+                onComplete={handleComplete}
+                initialData={assessmentData}
+                onDataChange={updateAssessmentData}
+                isLoading={isLoading}
+              />
+            </div>
           )}
 
           {currentStep === 4 && scoreResult && (
@@ -301,10 +337,13 @@ const Index = () => {
                 <Button onClick={() => setShowHistory(true)}>
                   View History
                 </Button>
+                <Button onClick={handleBackToHome} variant="outline">
+                  Back to Home
+                </Button>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
