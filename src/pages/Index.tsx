@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { ScoreDisplay } from '@/components/ScoreDisplay';
 import { ConsentCheckbox } from '@/components/ConsentCheckbox';
+import { Hero } from '@/components/Hero';
+import { Header } from '@/components/Header';
 import { saveAssessment, saveScore, assignBadges, saveBadges } from '@/utils/database';
 import { loadDraft, saveDraft, clearDraft } from '@/utils/autosave';
 import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
@@ -175,56 +178,66 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="container max-w-4xl mx-auto p-4">
-        <header className="py-6">
-          <h1 className="text-3xl font-bold text-center text-gray-900">
-            Startup Investment Readiness Assessment
-          </h1>
-          <p className="text-center text-gray-600 mt-2">
-            Evaluate your startup's potential for investment with our comprehensive assessment tool.
-          </p>
-        </header>
-
-        <main className="mb-8">
-          {!assessmentStarted ? (
-            <Card className="p-8">
-              <div className="space-y-4">
-                <p className="text-lg text-gray-700">
-                  This assessment will help you understand your startup's strengths and weaknesses across key
-                  investment criteria. By answering a series of questions, you'll receive a detailed score and
-                  personalized recommendations to improve your investment readiness.
-                </p>
-                <ConsentCheckbox
-                  checked={consentGiven}
-                  onCheckedChange={setConsentGiven}
-                />
-                <Button onClick={handleStartAssessment} disabled={loadingDraft || !consentGiven} className="w-full">
-                  {loadingDraft ? 'Loading Draft...' : 'Start Assessment'}
-                </Button>
-              </div>
-            </Card>
-          ) : assessmentComplete && scoreResult ? (
-            <ScoreDisplay
-              result={scoreResult}
-              assessmentData={assessmentData}
-              onRestart={handleAssessmentRestart}
-              badges={badges}
-              engagementMessage={engagementMessage}
-            />
-          ) : (
-            <AssessmentWizard
-              onComplete={handleComplete}
-              initialData={assessmentData}
-              onSaveDraft={handleSaveDraft}
-            />
-          )}
-        </main>
-
-        <footer className="text-center text-gray-500 mt-8">
-          <p>&copy; 2024 Startup Assessment Tool. All rights reserved.</p>
-        </footer>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="flex-1">
+        {!assessmentStarted ? (
+          <>
+            <Hero onStartAssessment={handleStartAssessment} />
+            
+            {/* Additional Content Section */}
+            <div className="container max-w-4xl mx-auto p-4">
+              <Card className="p-8">
+                <div className="space-y-4">
+                  <p className="text-lg text-gray-700">
+                    This assessment will help you understand your startup's strengths and weaknesses across key
+                    investment criteria. By answering a series of questions, you'll receive a detailed score and
+                    personalized recommendations to improve your investment readiness.
+                  </p>
+                  <ConsentCheckbox
+                    checked={consentGiven}
+                    onCheckedChange={setConsentGiven}
+                  />
+                  <Button 
+                    onClick={handleStartAssessment} 
+                    disabled={loadingDraft || !consentGiven} 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    {loadingDraft ? 'Loading Draft...' : 'Start Assessment'}
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </>
+        ) : assessmentComplete && scoreResult ? (
+          <ScoreDisplay
+            result={scoreResult}
+            assessmentData={assessmentData}
+            onRestart={handleAssessmentRestart}
+            badges={badges}
+            engagementMessage={engagementMessage}
+          />
+        ) : (
+          <AssessmentWizard
+            onComplete={handleComplete}
+            initialData={assessmentData}
+            onSaveDraft={handleSaveDraft}
+          />
+        )}
       </div>
+
+      <footer className="bg-white border-t border-gray-200 py-8">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-gray-500">
+            <p>&copy; 2024 Auricite InvestX. All rights reserved.</p>
+            <div className="flex justify-center space-x-6 mt-4">
+              <a href="/terms" className="hover:text-gray-700">Terms of Service</a>
+              <a href="/privacy" className="hover:text-gray-700">Privacy Policy</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
