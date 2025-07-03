@@ -126,8 +126,8 @@ export default function Index() {
           .from('assessment_history')
           .insert({
             user_id: user.id,
-            assessment_data: data,
-            score_result: result,
+            assessment_data: data as any,
+            score_result: result as any,
           })
           .select()
           .single();
