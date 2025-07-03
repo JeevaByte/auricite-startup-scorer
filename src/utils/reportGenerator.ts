@@ -1,5 +1,6 @@
 
-import { ScoreResult, AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
+import { AssessmentData } from '@/pages/Index';
 import { RecommendationsData } from '@/utils/recommendationsService';
 
 export const generateReportData = (

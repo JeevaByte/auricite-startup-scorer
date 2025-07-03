@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
 import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
 
 interface AssessmentFormProps {

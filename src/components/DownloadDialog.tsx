@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, FileText, FileSpreadsheet, Share2 } from 'lucide-react';
-import { ScoreResult, AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
+import { AssessmentData } from '@/pages/Index';
 import { RecommendationsData } from '@/utils/recommendationsService';
 import { generateReportData, downloadAsJSON, downloadAsCSV } from '@/utils/reportGenerator';
 

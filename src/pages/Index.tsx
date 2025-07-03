@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +13,6 @@ import { AssessmentHistory } from '@/components/AssessmentHistory';
 import { assignBadges } from '@/utils/database';
 import { checkCachedResponse, cacheResponse, saveAssessment, saveScore } from '@/utils/database';
 import { generateRecommendations } from '@/utils/recommendationsService';
-import { AssessmentData } from './Index';
 import { ScoreResult } from '@/utils/scoreCalculator';
 import { Badge } from '@/utils/database';
 import { calculateEnhancedScore } from '@/utils/enhancedScoreCalculator';
@@ -69,7 +69,7 @@ const Index = () => {
     setAssessmentData(prevData => ({ ...prevData, ...data }));
   };
 
-  const handleSubmit = async (data: AssessmentData) => {
+  const handleComplete = async (data: AssessmentData, result: ScoreResult) => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -208,7 +208,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <AssessmentHistory isOpen={showHistory} onClose={closeHistory} />
+      <AssessmentHistory />
 
       <h1 className="text-3xl font-bold text-center mb-8">
         Startup Investment Readiness Assessment
@@ -216,49 +216,65 @@ const Index = () => {
 
       {currentStep === 1 && (
         <AssessmentForm
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          updateAssessmentData={updateAssessmentData}
+          onComplete={handleComplete}
+          initialData={assessmentData}
+          onDataChange={updateAssessmentData}
         />
       )}
 
       {currentStep === 4 && scoreResult && (
-          <div className="space-y-8">
-            <ScoreDisplay 
-              scoreResult={scoreResult} 
-              badges={badges}
-              onDownload={() => setShowDownloadDialog(true)}
-              onShare={() => setShowShareDialog(true)}
+        <div className="space-y-8">
+          <ScoreDisplay 
+            result={scoreResult} 
+            assessmentData={assessmentData}
+            badges={badges.map(b => ({ name: b.badge_name, explanation: b.explanation }))}
+            engagementMessage="Great work on completing your assessment!"
+            onRestart={() => {
+              setCurrentStep(1);
+              setAssessmentData({});
+              setScoreResult(null);
+              setRecommendations(null);
+              setBadges([]);
+              setBenchmarkData(null);
+            }}
+          />
+          
+          {benchmarkData && (
+            <BenchmarkDisplay percentiles={benchmarkData} />
+          )}
+          
+          {recommendations && (
+            <RecommendationsDisplay 
+              recommendations={recommendations}
+              scores={{
+                businessIdea: scoreResult.businessIdea,
+                financials: scoreResult.financials,
+                team: scoreResult.team,
+                traction: scoreResult.traction,
+              }}
             />
-            
-            {benchmarkData && (
-              <BenchmarkDisplay percentiles={benchmarkData} />
-            )}
-            
-            {recommendations && (
-              <RecommendationsDisplay recommendations={recommendations} />
-            )}
-            
-            <div className="flex gap-4 justify-center">
-              <Button
-                onClick={() => {
-                  setCurrentStep(1);
-                  setAssessmentData({});
-                  setScoreResult(null);
-                  setRecommendations(null);
-                  setBadges([]);
-                  setBenchmarkData(null);
-                }}
-                variant="outline"
-              >
-                Start New Assessment
-              </Button>
-              <Button onClick={() => setShowHistory(true)}>
-                View History
-              </Button>
-            </div>
+          )}
+          
+          <div className="flex gap-4 justify-center">
+            <Button
+              onClick={() => {
+                setCurrentStep(1);
+                setAssessmentData({});
+                setScoreResult(null);
+                setRecommendations(null);
+                setBadges([]);
+                setBenchmarkData(null);
+              }}
+              variant="outline"
+            >
+              Start New Assessment
+            </Button>
+            <Button onClick={() => setShowHistory(true)}>
+              View History
+            </Button>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,167 +1,197 @@
 
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
 import { 
+  calculateSectorSpecificScore, 
   determineSectorFromAssessment, 
   determineStageFromAssessment, 
-  calculateSectorSpecificScore 
+  getSectorSpecificWeights 
 } from './sectorSpecificScoring';
 
-export const calculateEnhancedScore = (data: AssessmentData): ScoreResult => {
-  // Validate input data
-  const hasIncompleteData = Object.values(data).some(val => val === null || val === undefined);
-  if (hasIncompleteData) {
-    throw new Error('Incomplete assessment data');
-  }
+export interface InvestorReadinessLevel {
+  level: string;
+  description: string;
+  color: string;
+  confidence: string;
+}
 
-  // Determine sector and stage for context-aware scoring
+export const getInvestorReadinessLevel = (totalScore: number): InvestorReadinessLevel => {
+  if (totalScore >= 800) {
+    return {
+      level: "Investor Ready",
+      description: "Your startup demonstrates exceptional readiness for investment with strong fundamentals across all areas.",
+      color: "text-green-600",
+      confidence: "Very High"
+    };
+  } else if (totalScore >= 700) {
+    return {
+      level: "Nearly Ready",
+      description: "Your startup shows strong potential with most key areas well-developed. Focus on addressing remaining gaps.",
+      color: "text-blue-600",
+      confidence: "High"
+    };
+  } else if (totalScore >= 600) {
+    return {
+      level: "Developing",
+      description: "Your startup has good foundations but needs improvement in several key areas before seeking investment.",
+      color: "text-yellow-600",
+      confidence: "Medium"
+    };
+  } else if (totalScore >= 400) {
+    return {
+      level: "Early Stage",
+      description: "Your startup is in early development. Focus on building core fundamentals before approaching investors.",
+      color: "text-orange-600",
+      confidence: "Low"
+    };
+  } else {
+    return {
+      level: "Pre-Investment",
+      description: "Your startup needs significant development across multiple areas before being investment-ready.",
+      color: "text-red-600",
+      confidence: "Very Low"
+    };
+  }
+};
+
+export const calculateEnhancedScore = (data: AssessmentData): ScoreResult => {
+  // Determine sector and stage
   const sector = determineSectorFromAssessment(data);
   const stage = determineStageFromAssessment(data);
+  
+  console.log(`Detected sector: ${sector}, stage: ${stage}`);
 
-  // Business Idea scoring with sector-specific logic
+  // Get sector-specific weights
+  const weights = getSectorSpecificWeights(sector, stage);
+  
+  console.log('Using weights:', weights);
+
+  // Business Idea scoring with sector considerations
   let businessIdeaScore = 0;
   let businessIdeaExplanation = '';
 
   if (data.prototype) {
-    businessIdeaScore += sector === 'B2C Consumer' ? 70 : 60; // Higher weight for B2C
-    businessIdeaExplanation = 'Strong prototype foundation';
+    businessIdeaScore += sector === 'FinTech' ? 70 : 60; // FinTech values MVP more
+    businessIdeaExplanation = `Strong ${sector} prototype foundation`;
   } else {
-    businessIdeaScore += 20;
-    businessIdeaExplanation = 'No prototype limits validation';
+    businessIdeaScore += 25;
+    businessIdeaExplanation = `${sector} needs validated prototype`;
   }
 
-  // Milestone scoring with stage awareness
-  switch (data.milestones) {
-    case 'concept':
-      businessIdeaScore += stage === 'pre-seed' ? 15 : 10;
-      businessIdeaExplanation += ', early concept stage';
-      break;
-    case 'launch':
-      businessIdeaScore += 30;
-      businessIdeaExplanation += ', MVP launched';
-      break;
-    case 'scale':
-      businessIdeaScore += 40;
-      businessIdeaExplanation += ', proven scalable model';
-      break;
-    case 'exit':
-      businessIdeaScore += 35;
-      businessIdeaExplanation += ', exit preparation phase';
-      break;
+  // Add sector-specific business idea adjustments
+  if (sector === 'HealthTech' && data.milestones) {
+    businessIdeaScore += 15; // Regulatory planning important
+    businessIdeaExplanation += ', regulatory awareness shown';
   }
 
   businessIdeaScore = Math.min(businessIdeaScore, 100);
 
-  // Financials scoring with sector-specific emphasis
+  // Financials scoring with sector considerations
   let financialsScore = 0;
   let financialsExplanation = '';
 
   if (data.revenue) {
-    financialsScore += sector === 'FinTech' ? 50 : 40; // Higher weight for FinTech
-    financialsExplanation = 'Revenue generating';
+    financialsScore += sector === 'E-commerce' ? 50 : 40;
+    financialsExplanation = `${sector} revenue generation`;
   } else {
-    financialsScore += stage === 'pre-seed' ? 20 : 15;
-    financialsExplanation = 'Pre-revenue stage';
+    financialsScore += sector === 'B2C Consumer' ? 20 : 15;
+    financialsExplanation = `Pre-revenue ${sector} stage`;
   }
 
-  // MRR scoring with B2B SaaS emphasis
+  // MRR considerations by sector
+  const mrrMultiplier = sector === 'B2B SaaS' ? 1.2 : 1.0;
   switch (data.mrr) {
-    case 'none':
-      financialsScore += 10;
-      financialsExplanation += ', no recurring revenue';
-      break;
-    case 'low':
-      financialsScore += sector === 'B2B SaaS' ? 30 : 25;
-      financialsExplanation += ', low MRR';
-      break;
-    case 'medium':
-      financialsScore += sector === 'B2B SaaS' ? 40 : 35;
-      financialsExplanation += ', solid MRR foundation';
-      break;
     case 'high':
-      financialsScore += sector === 'B2B SaaS' ? 50 : 45;
+      financialsScore += Math.floor(45 * mrrMultiplier);
       financialsExplanation += ', strong recurring revenue';
       break;
+    case 'medium':
+      financialsScore += Math.floor(35 * mrrMultiplier);
+      financialsExplanation += ', solid recurring revenue';
+      break;
+    case 'low':
+      financialsScore += Math.floor(25 * mrrMultiplier);
+      financialsExplanation += ', early recurring revenue';
+      break;
+    default:
+      financialsScore += 10;
+      financialsExplanation += ', no recurring revenue';
   }
 
   if (data.capTable) {
     financialsScore += 20;
-    financialsExplanation += ', documented cap table';
-  }
-
-  if (data.externalCapital) {
-    financialsScore += sector === 'FinTech' ? 20 : 15;
-    financialsExplanation += ', external funding secured';
+    financialsExplanation += ', documented ownership';
   }
 
   financialsScore = Math.min(financialsScore, 100);
 
-  // Team scoring with sector-specific requirements
+  // Team scoring with sector considerations
   let teamScore = 0;
   let teamExplanation = '';
 
   if (data.fullTimeTeam) {
-    teamScore += sector === 'HealthTech' ? 70 : 60; // Higher weight for HealthTech
-    teamExplanation = 'Full-time committed team';
+    teamScore += sector === 'HealthTech' ? 70 : 60; // HealthTech values commitment more
+    teamExplanation = `Full-time ${sector} team`;
   } else {
-    teamScore += 25;
-    teamExplanation = 'Part-time team commitment';
+    teamScore += 30;
+    teamExplanation = `Part-time ${sector} team`;
   }
 
+  // Employee count with sector context
   switch (data.employees) {
-    case '1-2':
-      teamScore += stage === 'pre-seed' ? 20 : 15;
-      teamExplanation += ', lean founding team';
+    case '11-50':
+      teamScore += sector === 'FinTech' ? 45 : 40; // FinTech needs more people
+      teamExplanation += ', established team size';
       break;
     case '3-10':
       teamScore += 35;
-      teamExplanation += ', growing team size';
+      teamExplanation += ', growing team';
       break;
-    case '11-50':
-      teamScore += 40;
-      teamExplanation += ', established organization';
+    case '1-2':
+      teamScore += 20;
+      teamExplanation += ', founding team';
       break;
-    case '50+':
-      teamScore += stage === 'seed' ? 35 : 25;
-      teamExplanation += ', large team structure';
-      break;
+    default:
+      teamScore += 50; // 50+ employees
+      teamExplanation += ', large organization';
   }
 
   teamScore = Math.min(teamScore, 100);
 
-  // Traction scoring with sector-specific metrics
+  // Traction scoring with sector considerations
   let tractionScore = 0;
   let tractionExplanation = '';
 
   if (data.termSheets) {
-    tractionScore += 50;
+    tractionScore += 55;
     tractionExplanation = 'Term sheets received';
   } else {
-    tractionScore += stage === 'pre-seed' ? 25 : 20;
+    tractionScore += 25;
     tractionExplanation = 'No term sheets yet';
   }
 
+  // Investor type relevance by sector
   switch (data.investors) {
-    case 'none':
-      tractionScore += 10;
-      tractionExplanation += ', no investor engagement';
+    case 'vc':
+      tractionScore += sector === 'B2B SaaS' ? 45 : 40;
+      tractionExplanation += ', VC engagement';
       break;
     case 'angels':
-      tractionScore += sector === 'B2C Consumer' ? 35 : 30;
-      tractionExplanation += ', angel investor interest';
-      break;
-    case 'vc':
-      tractionScore += 40;
-      tractionExplanation += ', VC engagement active';
+      tractionScore += 35;
+      tractionExplanation += ', angel interest';
       break;
     case 'lateStage':
-      tractionScore += stage === 'seed' ? 40 : 35;
-      tractionExplanation += ', late-stage investor interest';
+      tractionScore += 40;
+      tractionExplanation += ', late-stage interest';
       break;
+    default:
+      tractionScore += 15;
+      tractionExplanation += ', early investor engagement';
   }
 
   tractionScore = Math.min(tractionScore, 100);
 
-  // Calculate sector-specific weighted total score
+  // Calculate sector-specific total score
   const totalScore = calculateSectorSpecificScore(
     businessIdeaScore,
     financialsScore,

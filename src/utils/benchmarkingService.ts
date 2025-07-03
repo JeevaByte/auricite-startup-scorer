@@ -1,19 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { AssessmentData, ScoreResult } from '@/pages/Index';
+import { AssessmentData } from '@/pages/Index';
+import { ScoreResult } from '@/utils/scoreCalculator';
+import { determineSectorFromAssessment, determineStageFromAssessment } from './sectorSpecificScoring';
 
-export interface BenchmarkData {
-  sector: string;
-  stage: string;
-  business_idea_avg: number;
-  financials_avg: number;
-  team_avg: number;
-  traction_avg: number;
-  total_score_avg: number;
-  sample_size: number;
-}
-
-export interface PercentileRanking {
+export interface BenchmarkingData {
   business_idea_percentile: number;
   financials_percentile: number;
   team_percentile: number;
@@ -24,155 +15,234 @@ export interface PercentileRanking {
   cluster_id: number;
 }
 
-// Clustering algorithm using k-means approach
-export const calculateCluster = (assessmentData: AssessmentData, scoreResult: ScoreResult): number => {
-  // Simple clustering based on score ranges
-  const totalScore = scoreResult.totalScore;
+// K-means clustering algorithm implementation
+class KMeansClusterer {
+  private k: number;
+  private maxIterations: number;
+  private centroids: number[][];
   
-  if (totalScore >= 800) return 1; // High performers
-  if (totalScore >= 600) return 2; // Above average
-  if (totalScore >= 400) return 3; // Average
-  if (totalScore >= 200) return 4; // Below average
-  return 5; // Early stage
-};
+  constructor(k: number = 3, maxIterations: number = 100) {
+    this.k = k;
+    this.maxIterations = maxIterations;
+    this.centroids = [];
+  }
 
-// Determine sector from assessment data
-export const determineSector = (assessmentData: AssessmentData): string => {
-  // Simple heuristic based on business characteristics
-  if (assessmentData.mrr && assessmentData.revenue) {
-    return 'B2B SaaS';
+  private distance(point1: number[], point2: number[]): number {
+    return Math.sqrt(
+      point1.reduce((sum, val, i) => sum + Math.pow(val - point2[i], 2), 0)
+    );
   }
-  if (assessmentData.externalCapital && assessmentData.termSheets) {
-    return 'FinTech';
-  }
-  if (assessmentData.prototype && !assessmentData.revenue) {
-    return 'B2C Consumer';
-  }
-  return 'B2B SaaS'; // Default
-};
 
-// Determine funding stage
-export const determineStage = (assessmentData: AssessmentData): string => {
-  if (assessmentData.termSheets || assessmentData.externalCapital) {
-    return 'seed';
+  private initializeCentroids(data: number[][]): void {
+    this.centroids = [];
+    for (let i = 0; i < this.k; i++) {
+      const randomIndex = Math.floor(Math.random() * data.length);
+      this.centroids.push([...data[randomIndex]]);
+    }
   }
-  return 'pre-seed';
-};
 
-// Get benchmark data for sector and stage
-export const getBenchmarkData = async (sector: string, stage: string): Promise<BenchmarkData | null> => {
+  cluster(data: number[][]): number[] {
+    if (data.length === 0) return [];
+    
+    this.initializeCentroids(data);
+    const clusters: number[] = new Array(data.length);
+    
+    for (let iteration = 0; iteration < this.maxIterations; iteration++) {
+      // Assign points to clusters
+      for (let i = 0; i < data.length; i++) {
+        let minDistance = Infinity;
+        let assignedCluster = 0;
+        
+        for (let j = 0; j < this.k; j++) {
+          const dist = this.distance(data[i], this.centroids[j]);
+          if (dist < minDistance) {
+            minDistance = dist;
+            assignedCluster = j;
+          }
+        }
+        clusters[i] = assignedCluster;
+      }
+      
+      // Update centroids
+      const newCentroids: number[][] = Array(this.k).fill(null).map(() => 
+        Array(data[0].length).fill(0)
+      );
+      const clusterCounts = Array(this.k).fill(0);
+      
+      for (let i = 0; i < data.length; i++) {
+        const cluster = clusters[i];
+        clusterCounts[cluster]++;
+        for (let j = 0; j < data[i].length; j++) {
+          newCentroids[cluster][j] += data[i][j];
+        }
+      }
+      
+      for (let i = 0; i < this.k; i++) {
+        if (clusterCounts[i] > 0) {
+          for (let j = 0; j < newCentroids[i].length; j++) {
+            newCentroids[i][j] /= clusterCounts[i];
+          }
+        }
+      }
+      
+      this.centroids = newCentroids;
+    }
+    
+    return clusters;
+  }
+}
+
+// Calculate percentile ranking
+function calculatePercentile(value: number, values: number[]): number {
+  if (values.length === 0) return 50;
+  
+  const sortedValues = values.sort((a, b) => a - b);
+  let rank = 0;
+  
+  for (let i = 0; i < sortedValues.length; i++) {
+    if (sortedValues[i] < value) {
+      rank++;
+    }
+  }
+  
+  return Math.round((rank / sortedValues.length) * 100);
+}
+
+export const generateBenchmarking = async (
+  assessmentId: string,
+  assessmentData: AssessmentData,
+  scoreResult: ScoreResult
+): Promise<BenchmarkingData | null> => {
   try {
-    const { data, error } = await supabase
+    const sector = determineSectorFromAssessment(assessmentData);
+    const stage = determineStageFromAssessment(assessmentData);
+    
+    // Get benchmark data for the sector and stage
+    const { data: benchmarkData, error: benchmarkError } = await supabase
       .from('benchmark_data')
       .select('*')
       .eq('sector', sector)
       .eq('stage', stage)
       .single();
-
-    if (error || !data) return null;
-    return data as BenchmarkData;
-  } catch (error) {
-    console.error('Error fetching benchmark data:', error);
-    return null;
-  }
-};
-
-// Calculate percentile rankings
-export const calculatePercentiles = (
-  scoreResult: ScoreResult,
-  benchmarkData: BenchmarkData
-): Omit<PercentileRanking, 'sector' | 'stage' | 'cluster_id'> => {
-  // Simple percentile calculation (in real implementation, this would use historical data)
-  const calculatePercentile = (score: number, average: number): number => {
-    // Simplified percentile calculation
-    const ratio = score / average;
-    if (ratio >= 1.5) return 95;
-    if (ratio >= 1.3) return 85;
-    if (ratio >= 1.1) return 75;
-    if (ratio >= 0.9) return 50;
-    if (ratio >= 0.7) return 25;
-    if (ratio >= 0.5) return 15;
-    return 5;
-  };
-
-  return {
-    business_idea_percentile: calculatePercentile(scoreResult.businessIdea, benchmarkData.business_idea_avg),
-    financials_percentile: calculatePercentile(scoreResult.financials, benchmarkData.financials_avg),
-    team_percentile: calculatePercentile(scoreResult.team, benchmarkData.team_avg),
-    traction_percentile: calculatePercentile(scoreResult.traction, benchmarkData.traction_avg),
-    total_percentile: calculatePercentile(scoreResult.totalScore / 10, benchmarkData.total_score_avg / 10),
-  };
-};
-
-// Save clustering data to database
-export const saveClusteringData = async (
-  assessmentId: string,
-  assessmentData: AssessmentData,
-  scoreResult: ScoreResult,
-  percentiles: PercentileRanking
-): Promise<void> => {
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    throw new Error('Authentication required');
-  }
-
-  try {
-    const { error } = await supabase
-      .from('startup_clusters')
-      .insert({
-        assessment_id: assessmentId,
-        user_id: user.id,
-        sector: percentiles.sector,
-        stage: percentiles.stage,
-        cluster_id: percentiles.cluster_id,
-        percentile_business_idea: percentiles.business_idea_percentile,
-        percentile_financials: percentiles.financials_percentile,
-        percentile_team: percentiles.team_percentile,
-        percentile_traction: percentiles.traction_percentile,
-        percentile_total: percentiles.total_percentile,
-      });
-
-    if (error) {
-      throw new Error('Failed to save clustering data');
+    
+    if (benchmarkError || !benchmarkData) {
+      console.warn('No benchmark data found, using default percentiles');
+      return {
+        business_idea_percentile: 50,
+        financials_percentile: 50,
+        team_percentile: 50,
+        traction_percentile: 50,
+        total_percentile: 50,
+        sector,
+        stage,
+        cluster_id: 1
+      };
     }
-  } catch (error) {
-    console.error('Error saving clustering data:', error);
-    throw new Error('Clustering data could not be saved');
-  }
-};
 
-// Main benchmarking function
-export const generateBenchmarking = async (
-  assessmentId: string,
-  assessmentData: AssessmentData,
-  scoreResult: ScoreResult
-): Promise<PercentileRanking | null> => {
-  try {
-    const sector = determineSector(assessmentData);
-    const stage = determineStage(assessmentData);
-    const clusterId = calculateCluster(assessmentData, scoreResult);
-
-    const benchmarkData = await getBenchmarkData(sector, stage);
-    if (!benchmarkData) {
-      console.warn(`No benchmark data found for ${sector} - ${stage}`);
+    // Get historical scores for percentile calculation
+    const { data: historicalScores, error: scoresError } = await supabase
+      .from('scores')
+      .select('business_idea, financials, team, traction, total_score')
+      .limit(1000); // Get recent scores for comparison
+    
+    if (scoresError || !historicalScores) {
+      console.warn('Could not fetch historical scores for percentile calculation');
       return null;
     }
 
-    const percentiles = calculatePercentiles(scoreResult, benchmarkData);
+    // Calculate percentiles
+    const businessIdeaPercentile = calculatePercentile(
+      scoreResult.businessIdea,
+      historicalScores.map(s => s.business_idea)
+    );
     
-    const fullPercentiles: PercentileRanking = {
-      ...percentiles,
+    const financialsPercentile = calculatePercentile(
+      scoreResult.financials,
+      historicalScores.map(s => s.financials)
+    );
+    
+    const teamPercentile = calculatePercentile(
+      scoreResult.team,
+      historicalScores.map(s => s.team)
+    );
+    
+    const tractionPercentile = calculatePercentile(
+      scoreResult.traction,
+      historicalScores.map(s => s.traction)
+    );
+    
+    const totalPercentile = calculatePercentile(
+      scoreResult.totalScore,
+      historicalScores.map(s => s.total_score)
+    );
+
+    // Perform clustering
+    const scoreVectors = historicalScores.map(score => [
+      score.business_idea,
+      score.financials,
+      score.team,
+      score.traction
+    ]);
+    
+    const clusterer = new KMeansClusterer(5); // 5 clusters
+    const clusters = clusterer.cluster(scoreVectors);
+    
+    // Find which cluster this startup belongs to
+    const currentScoreVector = [
+      scoreResult.businessIdea,
+      scoreResult.financials,
+      scoreResult.team,
+      scoreResult.traction
+    ];
+    
+    let minDistance = Infinity;
+    let clusterId = 0;
+    
+    for (let i = 0; i < scoreVectors.length; i++) {
+      const distance = Math.sqrt(
+        scoreVectors[i].reduce((sum, val, idx) => 
+          sum + Math.pow(val - currentScoreVector[idx], 2), 0
+        )
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        clusterId = clusters[i];
+      }
+    }
+
+    const benchmarkingData: BenchmarkingData = {
+      business_idea_percentile: businessIdeaPercentile,
+      financials_percentile: financialsPercentile,
+      team_percentile: teamPercentile,
+      traction_percentile: tractionPercentile,
+      total_percentile: totalPercentile,
       sector,
       stage,
-      cluster_id: clusterId,
+      cluster_id: clusterId
     };
 
     // Save to database
-    await saveClusteringData(assessmentId, assessmentData, scoreResult, fullPercentiles);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && assessmentId !== 'cached') {
+      await supabase
+        .from('startup_clusters')
+        .insert({
+          assessment_id: assessmentId,
+          user_id: user.id,
+          sector,
+          stage,
+          cluster_id: clusterId,
+          percentile_business_idea: businessIdeaPercentile,
+          percentile_financials: financialsPercentile,
+          percentile_team: teamPercentile,
+          percentile_traction: tractionPercentile,
+          percentile_total: totalPercentile
+        });
+    }
 
-    return fullPercentiles;
+    return benchmarkingData;
   } catch (error) {
-    console.error('Error generating benchmarking:', error);
+    console.error('Benchmarking generation failed:', error);
     return null;
   }
 };
