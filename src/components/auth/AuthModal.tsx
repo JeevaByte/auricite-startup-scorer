@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validatePassword } from '@/utils/passwordValidation';
@@ -23,9 +23,42 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const { toast } = useToast();
 
   const passwordValidation = validatePassword(password);
+
+  const handleSocialSignIn = async (provider: 'google' | 'github' | 'linkedin_oidc' | 'twitter' | 'facebook') => {
+    setSocialLoading(provider);
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+        }
+      });
+
+      if (error) throw error;
+
+      // Don't close modal immediately for OAuth as it will redirect
+      toast({
+        title: 'Redirecting...',
+        description: `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`,
+      });
+    } catch (error: any) {
+      console.error(`${provider} auth error:`, error);
+      toast({
+        title: 'Error',
+        description: error.message || `An error occurred with ${provider} authentication`,
+        variant: 'destructive',
+      });
+    } finally {
+      setSocialLoading(null);
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +169,18 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
+  const SocialButton = ({ provider, icon, label }: { provider: string, icon: string, label: string }) => (
+    <Button
+      variant="outline"
+      className="w-full"
+      onClick={() => handleSocialSignIn(provider as any)}
+      disabled={socialLoading === provider}
+    >
+      <span className="mr-2">{icon}</span>
+      {socialLoading === provider ? 'Connecting...' : `Continue with ${label}`}
+    </Button>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -149,7 +194,27 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="signin">
+          <TabsContent value="signin" className="space-y-4">
+            {/* Social Sign In Options */}
+            <div className="space-y-2">
+              <SocialButton provider="google" icon="🔍" label="Google" />
+              <SocialButton provider="github" icon="⚡" label="GitHub" />
+              <SocialButton provider="linkedin_oidc" icon="💼" label="LinkedIn" />
+              <SocialButton provider="twitter" icon="🐦" label="Twitter" />
+              <SocialButton provider="facebook" icon="📘" label="Facebook" />
+            </div>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <Label htmlFor="email">Email</Label>
@@ -180,7 +245,27 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             </form>
           </TabsContent>
           
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="space-y-4">
+            {/* Social Sign Up Options */}
+            <div className="space-y-2">
+              <SocialButton provider="google" icon="🔍" label="Google" />
+              <SocialButton provider="github" icon="⚡" label="GitHub" />
+              <SocialButton provider="linkedin_oidc" icon="💼" label="LinkedIn" />
+              <SocialButton provider="twitter" icon="🐦" label="Twitter" />
+              <SocialButton provider="facebook" icon="📘" label="Facebook" />
+            </div>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or create account with email
+                </span>
+              </div>
+            </div>
+
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
