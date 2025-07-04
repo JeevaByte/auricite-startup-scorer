@@ -222,7 +222,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     if (question.type === 'textarea') {
       return (
         <Textarea
-          value={String(value || '')}
+          value={value ? String(value) : ''}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateFormData(question.key as keyof AssessmentData, e.target.value)}
           placeholder="Enter your response..."
           rows={4}
@@ -233,7 +233,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     return (
       <Input
         type="text"
-        value={String(value || '')}
+        value={value ? String(value) : ''}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData(question.key as keyof AssessmentData, e.target.value)}
         placeholder="Enter your response..."
       />

@@ -42,8 +42,8 @@ export const saveAssessmentData = async (data: AssessmentData, userId: string) =
       .from('assessment_history')
       .upsert({ 
         user_id: userId, 
-        assessment_data: data,
-        score_result: {} // Will be updated separately
+        assessment_data: data as any,
+        score_result: {} as any
       }, { onConflict: 'user_id' });
 
     if (error) {
@@ -70,7 +70,7 @@ export const getAssessmentData = async (userId: string): Promise<AssessmentData 
       return null;
     }
 
-    return (data?.assessment_data as AssessmentData) || null;
+    return (data?.assessment_data as unknown as AssessmentData) || null;
   } catch (error) {
     console.error('Error fetching assessment data:', error);
     return null;
