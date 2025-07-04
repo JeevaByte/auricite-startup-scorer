@@ -1,3 +1,4 @@
+
 import { AssessmentData } from '@/pages/Index';
 
 export interface ScoreResult {
@@ -11,6 +12,9 @@ export interface ScoreResult {
   tractionExplanation: string;
   totalScore: number;
 }
+
+// Re-export AssessmentData for consistency
+export type { AssessmentData };
 
 export const calculateScore = (data: AssessmentData): ScoreResult => {
   // Validate input data

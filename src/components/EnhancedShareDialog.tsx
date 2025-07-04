@@ -247,6 +247,7 @@ Ready to accelerate my funding journey! 💪`);
                 <QRCode
                   value={shareUrl || generateShareUrl()}
                   size={150}
+                  title="Scan to view assessment results"
                 />
                 <p className="text-xs text-gray-500 mt-2">Scan to view results</p>
               </div>

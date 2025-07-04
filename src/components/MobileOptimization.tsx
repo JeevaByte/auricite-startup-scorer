@@ -135,63 +135,65 @@ export const MobileOptimization = ({ children }: { children: React.ReactNode }) 
       {children}
       {getMobileOptimizations()}
       
-      <style jsx global>{`
-        .mobile-optimized {
-          /* Larger touch targets */
-          --touch-target-size: 44px;
-        }
-        
-        .mobile-optimized button {
-          min-height: var(--touch-target-size);
-          min-width: var(--touch-target-size);
-        }
-        
-        .mobile-optimized input,
-        .mobile-optimized textarea,
-        .mobile-optimized select {
-          min-height: var(--touch-target-size);
-          font-size: 16px; /* Prevents zoom on iOS */
-        }
-        
-        .touch-friendly {
-          /* Better touch interactions */
-          touch-action: manipulation;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          user-select: none;
-        }
-        
-        .touch-friendly input,
-        .touch-friendly textarea {
-          -webkit-user-select: text;
-          user-select: text;
-        }
-        
-        .safe-area-inset {
-          /* Handle notches and home indicators */
-          padding-top: env(safe-area-inset-top);
-          padding-bottom: env(safe-area-inset-bottom);
-          padding-left: env(safe-area-inset-left);
-          padding-right: env(safe-area-inset-right);
-        }
-        
-        /* Mobile-specific scroll behavior */
-        @media (max-width: 768px) {
+      <style dangerouslySetInnerHTML={{
+        __html: `
           .mobile-optimized {
-            overflow-x: hidden;
+            /* Larger touch targets */
+            --touch-target-size: 44px;
           }
           
-          .mobile-optimized .scroll-container {
-            -webkit-overflow-scrolling: touch;
+          .mobile-optimized button {
+            min-height: var(--touch-target-size);
+            min-width: var(--touch-target-size);
           }
           
-          /* Sticky positioning adjustments for mobile */
-          .mobile-optimized .sticky {
-            position: -webkit-sticky;
-            position: sticky;
+          .mobile-optimized input,
+          .mobile-optimized textarea,
+          .mobile-optimized select {
+            min-height: var(--touch-target-size);
+            font-size: 16px; /* Prevents zoom on iOS */
           }
-        }
-      `}</style>
+          
+          .touch-friendly {
+            /* Better touch interactions */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+          }
+          
+          .touch-friendly input,
+          .touch-friendly textarea {
+            -webkit-user-select: text;
+            user-select: text;
+          }
+          
+          .safe-area-inset {
+            /* Handle notches and home indicators */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+          }
+          
+          /* Mobile-specific scroll behavior */
+          @media (max-width: 768px) {
+            .mobile-optimized {
+              overflow-x: hidden;
+            }
+            
+            .mobile-optimized .scroll-container {
+              -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Sticky positioning adjustments for mobile */
+            .mobile-optimized .sticky {
+              position: -webkit-sticky;
+              position: sticky;
+            }
+          }
+        `
+      }} />
     </div>
   );
 };
