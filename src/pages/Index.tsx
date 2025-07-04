@@ -43,8 +43,23 @@ export default function Index() {
   const loadExistingDraft = async () => {
     try {
       const draft = await loadDraft();
-      if (draft) {
-        setAssessmentData(draft.draft_data);
+      if (draft && draft.draft_data) {
+        // Merge draft data with default values to ensure all required properties exist
+        const mergedData: AssessmentData = {
+          prototype: null,
+          externalCapital: null,
+          revenue: null,
+          fullTimeTeam: null,
+          termSheets: null,
+          capTable: null,
+          mrr: null,
+          employees: null,
+          fundingGoal: null,
+          investors: null,
+          milestones: null,
+          ...draft.draft_data
+        };
+        setAssessmentData(mergedData);
         setCurrentStep(draft.step);
         toast({
           title: "Draft Loaded",

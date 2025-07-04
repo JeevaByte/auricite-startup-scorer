@@ -1,10 +1,11 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { AssessmentData } from '@/utils/scoreCalculator';
 
 export const fetchBenchmarkData = async (assessmentData: AssessmentData) => {
   try {
     const { data, error } = await supabase
-      .from('startup_benchmarks')
+      .from('benchmark_data')
       .select('*');
 
     if (error) {
