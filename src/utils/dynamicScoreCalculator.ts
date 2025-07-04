@@ -1,5 +1,4 @@
-import { AssessmentData } from '@/pages/Index';
-import { ScoreResult } from '@/utils/scoreCalculator';
+import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 
 interface ScoreWeights {
   businessIdea: number;

@@ -1,12 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ScoreResult } from '@/utils/scoreCalculator';
-import { AssessmentData } from '@/pages/Index';
+import { ScoreResult, AssessmentData } from '@/utils/scoreCalculator';
 import { RecommendationsDisplay } from './RecommendationsDisplay';
 import { DownloadDialog } from './DownloadDialog';
 import { ShareDialog } from './ShareDialog';

@@ -1,6 +1,5 @@
-
-import { AssessmentData } from '@/pages/Index';
-import { ScoreResult } from '@/utils/scoreCalculator';
+import { calculateScore } from './scoreCalculator';
+import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { 
   calculateSectorSpecificScore, 
   determineSectorFromAssessment, 

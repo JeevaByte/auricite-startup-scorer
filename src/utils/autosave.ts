@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { AssessmentData } from '@/pages/Index';
+import { AssessmentData } from '@/utils/scoreCalculator';
 
 export interface DraftAssessment {
   id?: string;

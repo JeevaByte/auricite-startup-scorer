@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Clock, CheckCircle } from 'lucide-react';
-import { AssessmentData } from '@/pages/Index';
+import { AssessmentData } from '@/utils/scoreCalculator';
 
 interface DraftSavingProps {
   assessmentData: AssessmentData;
