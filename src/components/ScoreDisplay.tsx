@@ -17,7 +17,7 @@ import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
 import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText } from 'lucide-react';
+import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -90,30 +90,140 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
       score: result.businessIdea,
       explanation: result.businessIdeaExplanation,
       weight: '30%',
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
+      detailBreakdown: getBusinessIdeaBreakdown(assessmentData)
     },
     {
       name: 'Financials',
       score: result.financials,
       explanation: result.financialsExplanation,
       weight: '25%',
-      color: 'bg-green-500'
+      color: 'bg-green-500',
+      detailBreakdown: getFinancialBreakdown(assessmentData)
     },
     {
       name: 'Team',
       score: result.team,
       explanation: result.teamExplanation,
       weight: '25%',
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
+      detailBreakdown: getTeamBreakdown(assessmentData)
     },
     {
       name: 'Traction',
       score: result.traction,
       explanation: result.tractionExplanation,
       weight: '20%',
-      color: 'bg-orange-500'
+      color: 'bg-orange-500',
+      detailBreakdown: getTractionBreakdown(assessmentData)
     }
   ];
+
+  function getBusinessIdeaBreakdown(data: AssessmentData) {
+    return [
+      { 
+        factor: 'Prototype Development', 
+        status: data.prototype ? 'Complete' : 'Missing',
+        impact: data.prototype ? 'High' : 'High',
+        points: data.prototype ? 60 : 20
+      },
+      { 
+        factor: 'Milestone Achievement', 
+        status: data.milestones === 'concept' ? 'Early Stage' : 
+                data.milestones === 'launch' ? 'MVP Launched' :
+                data.milestones === 'scale' ? 'Scaling' : 'Exit Ready',
+        impact: 'Medium',
+        points: data.milestones === 'concept' ? 10 : 
+                data.milestones === 'launch' ? 30 :
+                data.milestones === 'scale' ? 40 : 35
+      }
+    ];
+  }
+
+  function getFinancialBreakdown(data: AssessmentData) {
+    return [
+      { 
+        factor: 'Revenue Generation', 
+        status: data.revenue ? 'Generating Revenue' : 'Pre-Revenue',
+        impact: 'High',
+        points: data.revenue ? 40 : 15
+      },
+      { 
+        factor: 'Monthly Recurring Revenue', 
+        status: data.mrr === 'none' ? 'No MRR' :
+                data.mrr === 'low' ? 'Low MRR' :
+                data.mrr === 'medium' ? 'Medium MRR' : 'High MRR',
+        impact: 'High',
+        points: data.mrr === 'none' ? 10 :
+                data.mrr === 'low' ? 25 :
+                data.mrr === 'medium' ? 35 : 45
+      },
+      { 
+        factor: 'Cap Table', 
+        status: data.capTable ? 'Documented' : 'Missing',
+        impact: 'Medium',
+        points: data.capTable ? 20 : 0
+      },
+      { 
+        factor: 'External Capital', 
+        status: data.externalCapital ? 'Raised' : 'Not Raised',
+        impact: 'Medium',
+        points: data.externalCapital ? 15 : 0
+      }
+    ];
+  }
+
+  function getTeamBreakdown(data: AssessmentData) {
+    return [
+      { 
+        factor: 'Team Commitment', 
+        status: data.fullTimeTeam ? 'Full-Time' : 'Part-Time',
+        impact: 'High',
+        points: data.fullTimeTeam ? 60 : 25
+      },
+      { 
+        factor: 'Team Size', 
+        status: data.employees === '1-2' ? 'Founding Team' :
+                data.employees === '3-10' ? 'Small Team' :
+                data.employees === '11-50' ? 'Medium Team' : 'Large Team',
+        impact: 'Medium',
+        points: data.employees === '1-2' ? 15 :
+                data.employees === '3-10' ? 35 :
+                data.employees === '11-50' ? 40 : 30
+      }
+    ];
+  }
+
+  function getTractionBreakdown(data: AssessmentData) {
+    return [
+      { 
+        factor: 'Term Sheets', 
+        status: data.termSheets ? 'Received' : 'None',
+        impact: 'High',
+        points: data.termSheets ? 50 : 20
+      },
+      { 
+        factor: 'Investor Interest', 
+        status: data.investors === 'none' ? 'No Interest' :
+                data.investors === 'angels' ? 'Angel Interest' :
+                data.investors === 'vc' ? 'VC Interest' : 'Late Stage Interest',
+        impact: 'High',
+        points: data.investors === 'none' ? 10 :
+                data.investors === 'angels' ? 30 :
+                data.investors === 'vc' ? 40 : 35
+      }
+    ];
+  }
+
+  const getStatusIcon = (status: string) => {
+    if (status.includes('Complete') || status.includes('Full-Time') || status.includes('Generating') || status.includes('Received')) {
+      return <CheckCircle className="h-4 w-4 text-green-600" />;
+    }
+    if (status.includes('Missing') || status.includes('None') || status.includes('No ')) {
+      return <XCircle className="h-4 w-4 text-red-600" />;
+    }
+    return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -166,9 +276,9 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
             <Target className="h-4 w-4" />
             <span>Recommendations</span>
           </TabsTrigger>
-          <TabsTrigger value="insights" className="flex items-center space-x-2">
+          <TabsTrigger value="detailed" className="flex items-center space-x-2">
             <ExternalLink className="h-4 w-4" />
-            <span>Investor Insights</span>
+            <span>Detailed Analysis</span>
           </TabsTrigger>
         </TabsList>
 
@@ -230,54 +340,29 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
           )}
         </TabsContent>
 
-        <TabsContent value="insights">
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What Angels Look For</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Strong Signals ✅</h4>
-                  <ul className="space-y-1 text-sm text-gray-600">
-                    {result.businessIdea >= 70 && <li>• Clear market opportunity</li>}
-                    {result.financials >= 70 && <li>• Solid financial foundation</li>}
-                    {result.team >= 70 && <li>• Committed team</li>}
-                    {result.traction >= 70 && <li>• Market validation</li>}
-                    {result.totalScore >= 600 && <li>• Investment-ready fundamentals</li>}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Improvement Areas 🎯</h4>
-                  <ul className="space-y-1 text-sm text-gray-600">
-                    {result.businessIdea < 70 && <li>• Strengthen business model</li>}
-                    {result.financials < 70 && <li>• Improve financial metrics</li>}
-                    {result.team < 70 && <li>• Build stronger team</li>}
-                    {result.traction < 70 && <li>• Increase market traction</li>}
-                  </ul>
-                </div>
+        <TabsContent value="detailed" className="space-y-6">
+          {categories.map((category) => (
+            <Card key={category.name} className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{category.name} - Detailed Breakdown</h3>
+              <div className="space-y-4">
+                {category.detailBreakdown.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(item.status)}
+                      <div>
+                        <p className="font-medium text-gray-900">{item.factor}</p>
+                        <p className="text-sm text-gray-600">{item.status}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-semibold text-gray-900">{item.points} pts</p>
+                      <p className="text-xs text-gray-500">{item.impact} Impact</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
-
-            <Card className="p-6 bg-blue-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Steps</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl mb-2">📊</div>
-                  <h4 className="font-medium mb-1">Improve Score</h4>
-                  <p className="text-sm text-gray-600">Focus on your lowest scoring areas first</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl mb-2">🤝</div>
-                  <h4 className="font-medium mb-1">Network</h4>
-                  <p className="text-sm text-gray-600">Connect with angels in your industry</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl mb-2">📈</div>
-                  <h4 className="font-medium mb-1">Track Progress</h4>
-                  <p className="text-sm text-gray-600">Retake assessment monthly</p>
-                </div>
-              </div>
-            </Card>
-          </div>
+          ))}
         </TabsContent>
       </Tabs>
 

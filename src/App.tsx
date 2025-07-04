@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Results from "./pages/Results";
+import Profile from "./pages/Profile";
+import InvestorDirectory from "./pages/InvestorDirectory";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/results" element={<Results />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/investors" element={<InvestorDirectory />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFound />} />
