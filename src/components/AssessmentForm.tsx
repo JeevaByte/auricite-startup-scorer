@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -206,7 +205,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     if (question.type === 'select') {
       return (
         <RadioGroup
-          value={value || ''}
+          value={value ? String(value) : ''}
           onValueChange={(val: string) => updateFormData(question.key as keyof AssessmentData, val)}
         >
           {question.options?.map((option: any) => (
