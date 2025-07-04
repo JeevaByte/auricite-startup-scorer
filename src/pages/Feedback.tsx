@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TallyFormIntegration } from '@/components/TallyFormIntegration';
 import { AIFeedbackSystem } from '@/components/AIFeedbackSystem';
-import { MessageSquare, Brain, Send } from 'lucide-react';
+import { PitchDeckValidator } from '@/components/PitchDeckValidator';
+import { MessageSquare, Brain, FileText, Send } from 'lucide-react';
 
 export default function Feedback() {
   return (
@@ -12,15 +13,19 @@ export default function Feedback() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Feedback & AI Analysis</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Get AI-powered feedback on your content and share your thoughts with our team
+            Get AI-powered feedback on your content, validate your pitch deck, and share your thoughts with our team
           </p>
         </div>
 
         <Tabs defaultValue="ai-feedback" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="ai-feedback" className="flex items-center space-x-2">
               <Brain className="h-4 w-4" />
               <span>AI Content Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger value="pitch-deck" className="flex items-center space-x-2">
+              <FileText className="h-4 w-4" />
+              <span>Pitch Deck Validator</span>
             </TabsTrigger>
             <TabsTrigger value="user-feedback" className="flex items-center space-x-2">
               <MessageSquare className="h-4 w-4" />
@@ -30,6 +35,10 @@ export default function Feedback() {
 
           <TabsContent value="ai-feedback">
             <AIFeedbackSystem />
+          </TabsContent>
+
+          <TabsContent value="pitch-deck">
+            <PitchDeckValidator />
           </TabsContent>
 
           <TabsContent value="user-feedback">

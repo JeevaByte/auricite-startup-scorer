@@ -1,4 +1,3 @@
-
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
@@ -14,6 +13,7 @@ import { getInvestmentReadinessLevel } from '@/utils/dynamicScoreCalculator';
 import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
 import { shareResults } from '@/utils/shareUtils';
 import { useToast } from '@/hooks/use-toast';
+import { EnhancedShareDialog } from '@/components/EnhancedShareDialog';
 
 export default function Results() {
   const location = useLocation();
@@ -157,10 +157,7 @@ export default function Results() {
                 <FileText className="h-4 w-4 mr-2" />
                 {exportingPDF ? 'Generating...' : 'Export PDF'}
               </Button>
-              <Button variant="outline" onClick={handleShare}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <EnhancedShareDialog scoreResult={scoreResult} />
             </div>
           </div>
         </div>
