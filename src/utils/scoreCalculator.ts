@@ -1,5 +1,17 @@
 
-import { AssessmentData } from '@/pages/Index';
+export interface AssessmentData {
+  prototype: boolean | null;
+  externalCapital: boolean | null;
+  revenue: boolean | null;
+  fullTimeTeam: boolean | null;
+  termSheets: boolean | null;
+  capTable: boolean | null;
+  mrr: 'none' | 'low' | 'medium' | 'high' | null;
+  employees: '1-2' | '3-10' | '11-50' | '50+' | null;
+  fundingGoal: string | null;
+  investors: 'none' | 'angels' | 'vc' | 'lateStage' | null;
+  milestones: 'concept' | 'launch' | 'scale' | 'exit' | null;
+}
 
 export interface ScoreResult {
   businessIdea: number;
@@ -12,9 +24,6 @@ export interface ScoreResult {
   tractionExplanation: string;
   totalScore: number;
 }
-
-// Re-export AssessmentData for consistency
-export type { AssessmentData };
 
 export const calculateScore = (data: AssessmentData): ScoreResult => {
   // Validate input data

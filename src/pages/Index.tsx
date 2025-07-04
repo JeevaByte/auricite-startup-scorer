@@ -6,12 +6,10 @@ import { DraftSaving } from '@/components/DraftSaving';
 import { MobileOptimization } from '@/components/MobileOptimization';
 import { Footer } from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
-import { AssessmentData as ImportedAssessmentData, ScoreResult } from '@/utils/scoreCalculator';
+import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { useAuth } from '@/hooks/useAuth';
 import { saveDraft, loadDraft, clearDraft } from '@/utils/autosave';
 import { useToast } from '@/hooks/use-toast';
-
-export interface AssessmentData extends ImportedAssessmentData {}
 
 export default function Index() {
   const [currentView, setCurrentView] = useState<'hero' | 'assessment' | 'results'>('hero');

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { AssessmentData } from '@/pages/Index';
-import { ScoreResult } from '@/utils/scoreCalculator';
+import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
 
 interface AssessmentFormProps {
@@ -190,7 +188,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return (
         <RadioGroup
           value={value === null ? '' : String(value)}
-          onValueChange={(val) => updateFormData(question.key, val === 'true')}
+          onValueChange={(val: string) => updateFormData(question.key as keyof AssessmentData, val === 'true')}
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="true" id={`${question.key}-yes`} />
@@ -208,7 +206,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return (
         <RadioGroup
           value={value || ''}
-          onValueChange={(val) => updateFormData(question.key, val)}
+          onValueChange={(val: string) => updateFormData(question.key as keyof AssessmentData, val)}
         >
           {question.options?.map((option: any) => (
             <div key={option.value} className="flex items-center space-x-2">
@@ -224,7 +222,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return (
         <Textarea
           value={value || ''}
-          onChange={(e) => updateFormData(question.key, e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateFormData(question.key as keyof AssessmentData, e.target.value)}
           placeholder="Enter your response..."
           rows={4}
         />
@@ -235,7 +233,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <Input
         type="text"
         value={value || ''}
-        onChange={(e) => updateFormData(question.key, e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData(question.key as keyof AssessmentData, e.target.value)}
         placeholder="Enter your response..."
       />
     );
