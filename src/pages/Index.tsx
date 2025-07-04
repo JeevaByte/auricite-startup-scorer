@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +19,7 @@ import { Badge } from '@/utils/database';
 import { calculateEnhancedScore } from '@/utils/enhancedScoreCalculator';
 import { generateBenchmarking } from '@/utils/benchmarkingService';
 import { BenchmarkDisplay } from '@/components/BenchmarkDisplay';
+import { ReadinessBadges } from '@/components/ReadinessBadges';
 
 export interface AssessmentData {
   prototype?: boolean | null;
@@ -307,6 +307,13 @@ const Index = () => {
               {benchmarkData && (
                 <BenchmarkDisplay percentiles={benchmarkData} />
               )}
+
+              <div className="mt-8">
+                <ReadinessBadges 
+                  assessmentData={assessmentData}
+                  scoreResult={scoreResult}
+                />
+              </div>
               
               {recommendations && (
                 <RecommendationsDisplay 

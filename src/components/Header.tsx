@@ -20,6 +20,7 @@ export const Header = ({ onViewHistory }: HeaderProps) => {
   const navigation = [
     { name: 'Assessment', href: '/' },
     { name: 'Investors', href: '/investors' },
+    { name: 'Feedback', href: '/feedback' },
     ...(user ? [{ name: 'Profile', href: '/profile' }] : []),
   ];
 
@@ -32,7 +33,7 @@ export const Header = ({ onViewHistory }: HeaderProps) => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center space-x-3">
-                <div className="bg-blue-600 p-2 rounded-lg">
+                <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg shadow-lg">
                   <Building2 className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -47,10 +48,10 @@ export const Header = ({ onViewHistory }: HeaderProps) => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`text-sm font-medium transition-colors ${
+                    className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
                       isActive(item.href)
-                        ? 'text-blue-600 border-b-2 border-blue-600 pb-4'
-                        : 'text-gray-500 hover:text-gray-900'
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     {item.name}
@@ -79,7 +80,10 @@ export const Header = ({ onViewHistory }: HeaderProps) => {
                 user ? (
                   <UserMenu onViewHistory={onViewHistory} />
                 ) : (
-                  <Button onClick={() => setShowAuthModal(true)}>
+                  <Button 
+                    onClick={() => setShowAuthModal(true)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
                     Sign In
                   </Button>
                 )
@@ -96,10 +100,10 @@ export const Header = ({ onViewHistory }: HeaderProps) => {
                     key={item.name}
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`text-sm font-medium transition-colors ${
+                    className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
                       isActive(item.href)
-                        ? 'text-blue-600'
-                        : 'text-gray-500 hover:text-gray-900'
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     {item.name}

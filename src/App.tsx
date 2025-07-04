@@ -13,6 +13,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Results from "./pages/Results";
 import Profile from "./pages/Profile";
 import InvestorDirectory from "./pages/InvestorDirectory";
+import Feedback from "./pages/Feedback";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
                 <Route path="/results" element={<Results />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/investors" element={<InvestorDirectory />} />
+                <Route path="/feedback" element={<Feedback />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFound />} />
