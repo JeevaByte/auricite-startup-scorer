@@ -44,9 +44,9 @@ const TermsOfService = () => {
             <h2 className="text-xl font-semibold mt-6 mb-4">3. User Responsibilities</h2>
             <ul className="list-disc pl-6 mb-4">
               <li>Provide accurate and truthful information in assessments</li>
-              <li>Maintain the confidentiality of your account credentials</li>
               <li>Use the service only for lawful purposes</li>
               <li>Respect intellectual property rights</li>
+              <li>Maintain the confidentiality of your account credentials</li>
             </ul>
 
             <h2 className="text-xl font-semibold mt-6 mb-4">4. Data Usage and Privacy</h2>

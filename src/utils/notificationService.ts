@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 export interface NotificationPreference {
   id: string;
@@ -50,15 +49,18 @@ export const createNotificationPreference = async (
   }
 };
 
-export const getNotificationPreferences = async (): Promise<NotificationPreference[]> => {
+export const getNotificationPreferences = async (userId?: string): Promise<NotificationPreference[]> => {
   try {
-    const { data, error } = await supabase
-      .from('notification_preferences')
-      .select('*');
+    let query = supabase.from('notification_preferences').select('*');
+    
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     
-    // Fix type conversion for frequency
     return (data || []).map(item => ({
       ...item,
       frequency: item.frequency as 'immediate' | 'daily' | 'weekly'
@@ -66,6 +68,92 @@ export const getNotificationPreferences = async (): Promise<NotificationPreferen
   } catch (error) {
     console.error('Error fetching notification preferences:', error);
     return [];
+  }
+};
+
+export const getNotifications = async (userId: string): Promise<QueuedNotification[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('notification_queue')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'sent' | 'failed'
+    }));
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    return [];
+  }
+};
+
+export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('notification_queue')
+      .update({ status: 'sent', sent_at: new Date().toISOString() })
+      .eq('id', notificationId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+  }
+};
+
+export const updateNotificationPreferences = async (
+  userId: string,
+  type: string,
+  enabled: boolean,
+  frequency: string
+): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('notification_preferences')
+      .upsert({
+        user_id: userId,
+        notification_type: type,
+        enabled,
+        frequency
+      }, { onConflict: 'user_id,notification_type' });
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating notification preferences:', error);
+  }
+};
+
+export const scheduleNotification = async (
+  userId: string,
+  notificationType: string,
+  title: string,
+  message: string,
+  data?: any,
+  scheduledFor?: Date
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { error } = await supabase
+      .from('notification_queue')
+      .insert({
+        user_id: userId,
+        notification_type: notificationType,
+        title,
+        message,
+        data,
+        scheduled_for: scheduledFor?.toISOString() || new Date().toISOString()
+      });
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error scheduling notification:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
 };
 
@@ -102,30 +190,9 @@ export const queueNotification = async (
   }
 };
 
-export const getQueuedNotifications = async (): Promise<QueuedNotification[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('notification_queue')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    
-    // Fix type conversion for status
-    return (data || []).map(item => ({
-      ...item,
-      status: item.status as 'pending' | 'sent' | 'failed'
-    }));
-  } catch (error) {
-    console.error('Error fetching queued notifications:', error);
-    return [];
-  }
-};
-
 // Auto-notification triggers
 export const triggerAssessmentReminder = async (userId: string): Promise<void> => {
   try {
-    // Check if user has incomplete assessments
     const { data: drafts } = await supabase
       .from('assessment_drafts')
       .select('*')

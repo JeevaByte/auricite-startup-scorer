@@ -9,13 +9,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-interface UserMenuProps {
-  onViewHistory: () => void;
-}
-
-export const UserMenu = ({ onViewHistory }: UserMenuProps) => {
+export const UserMenu = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleViewHistory = () => {
+    navigate('/profile');
+  };
 
   if (!user) return null;
 
@@ -28,7 +30,7 @@ export const UserMenu = ({ onViewHistory }: UserMenuProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onViewHistory}>
+        <DropdownMenuItem onClick={handleViewHistory}>
           <FileText className="h-4 w-4 mr-2" />
           Assessment History
         </DropdownMenuItem>
