@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface NotificationPreference {
   id: string;
@@ -26,9 +27,13 @@ export const createNotificationPreference = async (
   frequency: 'immediate' | 'daily' | 'weekly' = 'immediate'
 ): Promise<{ success: boolean; error?: string }> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { error } = await supabase
       .from('notification_preferences')
       .upsert({
+        user_id: user.id,
         notification_type: notificationType,
         enabled,
         frequency
@@ -52,7 +57,12 @@ export const getNotificationPreferences = async (): Promise<NotificationPreferen
       .select('*');
 
     if (error) throw error;
-    return data || [];
+    
+    // Fix type conversion for frequency
+    return (data || []).map(item => ({
+      ...item,
+      frequency: item.frequency as 'immediate' | 'daily' | 'weekly'
+    }));
   } catch (error) {
     console.error('Error fetching notification preferences:', error);
     return [];
@@ -67,9 +77,13 @@ export const queueNotification = async (
   scheduledFor?: Date
 ): Promise<{ success: boolean; error?: string }> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { error } = await supabase
       .from('notification_queue')
       .insert({
+        user_id: user.id,
         notification_type: notificationType,
         title,
         message,
@@ -96,7 +110,12 @@ export const getQueuedNotifications = async (): Promise<QueuedNotification[]> =>
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Fix type conversion for status
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'sent' | 'failed'
+    }));
   } catch (error) {
     console.error('Error fetching queued notifications:', error);
     return [];

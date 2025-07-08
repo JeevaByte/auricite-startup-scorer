@@ -1,7 +1,21 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { calculateConfigBasedScore } from './configBasedScoring';
-import { AssessmentData } from './scoreCalculator';
+
+// Create a proper AssessmentData interface that matches our needs
+interface RescoreAssessmentData {
+  prototype: boolean;
+  externalCapital: boolean;
+  revenue: boolean;
+  fullTimeTeam: boolean;
+  termSheets: boolean;
+  capTable: boolean;
+  mrr: string;
+  employees: string;
+  fundingGoal: string;
+  investors: string;
+  milestones: string;
+}
 
 export interface RescoreResult {
   assessmentId: string;
@@ -29,8 +43,8 @@ export const rescoreAssessment = async (
     // Get current score
     const currentScore = assessment.scores?.[0]?.total_score || 0;
 
-    // Convert assessment to AssessmentData format
-    const assessmentData: AssessmentData = {
+    // Convert assessment to proper format for scoring
+    const assessmentData: RescoreAssessmentData = {
       prototype: assessment.prototype,
       externalCapital: assessment.external_capital,
       revenue: assessment.revenue,
@@ -45,7 +59,7 @@ export const rescoreAssessment = async (
     };
 
     // Calculate new score
-    const result = await calculateConfigBasedScore(assessmentData);
+    const result = await calculateConfigBasedScore(assessmentData as any);
 
     // Update the score
     const { error: updateError } = await supabase

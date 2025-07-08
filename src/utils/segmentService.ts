@@ -16,9 +16,13 @@ export const createUserSegment = async (
   weights: any
 ): Promise<{ success: boolean; error?: string }> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { error } = await supabase
       .from('user_segments')
       .insert({
+        user_id: user.id,
         segment_name: segmentName,
         segment_criteria: criteria,
         scoring_weights: weights

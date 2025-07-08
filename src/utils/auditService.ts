@@ -37,7 +37,12 @@ export const getAuditLogs = async (
     const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    
+    // Fix type conversion for ip_address
+    return (data || []).map(item => ({
+      ...item,
+      ip_address: item.ip_address ? String(item.ip_address) : undefined
+    }));
   } catch (error) {
     console.error('Error fetching audit logs:', error);
     return [];
