@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Download, Search, Users, TrendingUp, FileText, Settings } from 'lucide-react';
+import { Download, Search, Users, TrendingUp, FileText, Settings, History, RefreshCw, FileSearch } from 'lucide-react';
+import { ScoringVersionManager } from '@/components/admin/ScoringVersionManager';
+import { RescoreManager } from '@/components/admin/RescoreManager';
+import { AuditTrail } from '@/components/admin/AuditTrail';
 
 interface AssessmentWithUser {
   id: string;
@@ -263,7 +265,10 @@ export default function AdminDashboard() {
       <Tabs defaultValue="assessments" className="space-y-4">
         <TabsList>
           <TabsTrigger value="assessments">All Assessments</TabsTrigger>
-          <TabsTrigger value="config">Scoring Config</TabsTrigger>
+          <TabsTrigger value="scoring">Scoring Management</TabsTrigger>
+          <TabsTrigger value="rescore">Dynamic Re-Scoring</TabsTrigger>
+          <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+          <TabsTrigger value="config">System Config</TabsTrigger>
         </TabsList>
 
         <TabsContent value="assessments" className="space-y-4">
@@ -323,14 +328,26 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="scoring">
+          <ScoringVersionManager />
+        </TabsContent>
+
+        <TabsContent value="rescore">
+          <RescoreManager />
+        </TabsContent>
+
+        <TabsContent value="audit">
+          <AuditTrail />
+        </TabsContent>
+
         <TabsContent value="config">
           <Card>
             <CardHeader>
-              <CardTitle>Scoring Configuration</CardTitle>
+              <CardTitle>System Configuration</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Scoring configuration management will be available in the next update.
+                Advanced system configuration options will be available in the next update.
               </p>
             </CardContent>
           </Card>

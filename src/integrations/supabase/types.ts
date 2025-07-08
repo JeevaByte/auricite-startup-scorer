@@ -107,6 +107,47 @@ export type Database = {
         }
         Relationships: []
       }
+      assessment_stages: {
+        Row: {
+          assessment_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          stage_data: Json
+          stage_name: string
+          stage_number: number
+          updated_at: string
+        }
+        Insert: {
+          assessment_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          stage_data: Json
+          stage_name: string
+          stage_number: number
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          stage_data?: Json
+          stage_name?: string
+          stage_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_stages_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           cap_table: boolean
@@ -158,6 +199,45 @@ export type Database = {
           term_sheets?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id: string
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -378,6 +458,78 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          frequency: string
+          id: string
+          last_sent: string | null
+          notification_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          last_sent?: string | null
+          notification_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          last_sent?: string | null
+          notification_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_queue: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          notification_type: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          notification_type: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          notification_type?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company_name: string | null
@@ -466,28 +618,105 @@ export type Database = {
       }
       scoring_config: {
         Row: {
+          change_reason: string | null
           config_data: Json
           config_name: string
           created_at: string
+          created_by: string | null
           id: string
           is_active: boolean
           updated_at: string
+          version: number
         }
         Insert: {
+          change_reason?: string | null
           config_data: Json
           config_name: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           updated_at?: string
+          version?: number
         }
         Update: {
+          change_reason?: string | null
           config_data?: Json
           config_name?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      scoring_config_history: {
+        Row: {
+          change_reason: string | null
+          config_data: Json
+          config_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          previous_version: number | null
+          version: number
+        }
+        Insert: {
+          change_reason?: string | null
+          config_data: Json
+          config_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          previous_version?: number | null
+          version: number
+        }
+        Update: {
+          change_reason?: string | null
+          config_data?: Json
+          config_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          previous_version?: number | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scoring_config_history_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "scoring_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scoring_validation_rules: {
+        Row: {
+          created_at: string
+          error_message: string
+          id: string
+          is_active: boolean
+          rule_name: string
+          validation_logic: Json
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          id?: string
+          is_active?: boolean
+          rule_name: string
+          validation_logic: Json
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          id?: string
+          is_active?: boolean
+          rule_name?: string
+          validation_logic?: Json
         }
         Relationships: []
       }
@@ -574,12 +803,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_segments: {
+        Row: {
+          created_at: string
+          id: string
+          scoring_weights: Json
+          segment_criteria: Json
+          segment_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scoring_weights: Json
+          segment_criteria: Json
+          segment_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scoring_weights?: Json
+          segment_criteria?: Json
+          segment_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_scoring_config: {
+        Args: { config_data: Json }
+        Returns: {
+          is_valid: boolean
+          errors: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
