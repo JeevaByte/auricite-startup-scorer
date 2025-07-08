@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -52,10 +53,12 @@ export const AssessmentWizard: React.FC = () => {
   }, [user]);
 
   const loadDraft = async () => {
+    if (!user) return;
+    
     try {
       const { data, error } = await supabase
         .from('assessment_drafts')
-        .select('data')
+        .select('draft_data')
         .eq('user_id', user.id)
         .single();
 
@@ -69,8 +72,8 @@ export const AssessmentWizard: React.FC = () => {
         return;
       }
 
-      if (data?.data) {
-        setAssessmentData(data.data as AssessmentData);
+      if (data?.draft_data) {
+        setAssessmentData(data.draft_data as AssessmentData);
       }
     } catch (error) {
       console.error('Error loading draft:', error);
@@ -89,12 +92,14 @@ export const AssessmentWizard: React.FC = () => {
   }, [assessmentData, user]);
 
   const saveDraft = async () => {
+    if (!user) return;
+    
     try {
       const { error } = await supabase
         .from('assessment_drafts')
         .upsert({
           user_id: user.id,
-          data: assessmentData,
+          draft_data: assessmentData,
         }, { onConflict: 'user_id' });
 
       if (error) {
@@ -105,13 +110,24 @@ export const AssessmentWizard: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
-
+  const handleSwitchChange = (field: keyof AssessmentData, checked: boolean) => {
     setAssessmentData(prevData => ({
       ...prevData,
-      [name]: newValue,
+      [field]: checked,
+    }));
+  };
+
+  const handleSelectChange = (field: keyof AssessmentData, value: string) => {
+    setAssessmentData(prevData => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleInputChange = (field: keyof AssessmentData, value: string) => {
+    setAssessmentData(prevData => ({
+      ...prevData,
+      [field]: value,
     }));
   };
 
@@ -231,39 +247,63 @@ export const AssessmentWizard: React.FC = () => {
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="prototype">Do you have a working prototype?</Label>
-            <Switch id="prototype" name="prototype" checked={assessmentData.prototype || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, prototype: checked }))} />
+            <Switch 
+              id="prototype" 
+              checked={assessmentData.prototype || false} 
+              onCheckedChange={(checked) => handleSwitchChange('prototype', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="externalCapital">Have you raised external capital?</Label>
-            <Switch id="externalCapital" name="externalCapital" checked={assessmentData.externalCapital || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, externalCapital: checked }))} />
+            <Switch 
+              id="externalCapital" 
+              checked={assessmentData.externalCapital || false} 
+              onCheckedChange={(checked) => handleSwitchChange('externalCapital', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="revenue">Are you generating revenue?</Label>
-            <Switch id="revenue" name="revenue" checked={assessmentData.revenue || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, revenue: checked }))} />
+            <Switch 
+              id="revenue" 
+              checked={assessmentData.revenue || false} 
+              onCheckedChange={(checked) => handleSwitchChange('revenue', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="fullTimeTeam">Is your team full-time?</Label>
-            <Switch id="fullTimeTeam" name="fullTimeTeam" checked={assessmentData.fullTimeTeam || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, fullTimeTeam: checked }))} />
+            <Switch 
+              id="fullTimeTeam" 
+              checked={assessmentData.fullTimeTeam || false} 
+              onCheckedChange={(checked) => handleSwitchChange('fullTimeTeam', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="termSheets">Have you received term sheets?</Label>
-            <Switch id="termSheets" name="termSheets" checked={assessmentData.termSheets || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, termSheets: checked }))} />
+            <Switch 
+              id="termSheets" 
+              checked={assessmentData.termSheets || false} 
+              onCheckedChange={(checked) => handleSwitchChange('termSheets', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="capTable">Do you have a documented cap table?</Label>
-            <Switch id="capTable" name="capTable" checked={assessmentData.capTable || false} onCheckedChange={(checked) => setAssessmentData(prev => ({ ...prev, capTable: checked }))} />
+            <Switch 
+              id="capTable" 
+              checked={assessmentData.capTable || false} 
+              onCheckedChange={(checked) => handleSwitchChange('capTable', checked)} 
+            />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="mrr">Monthly Recurring Revenue (MRR)</Label>
-            <Select onValueChange={(value) => setAssessmentData(prev => ({ ...prev, mrr: value as AssessmentData['mrr'] }))}>
+            <Select onValueChange={(value) => handleSelectChange('mrr', value)} value={assessmentData.mrr || ''}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select MRR" defaultValue={assessmentData.mrr || ''} />
+                <SelectValue placeholder="Select MRR" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
@@ -276,9 +316,9 @@ export const AssessmentWizard: React.FC = () => {
 
           <div className="grid gap-2">
             <Label htmlFor="employees">Number of Employees</Label>
-            <Select onValueChange={(value) => setAssessmentData(prev => ({ ...prev, employees: value as AssessmentData['employees'] }))}>
+            <Select onValueChange={(value) => handleSelectChange('employees', value)} value={assessmentData.employees || ''}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Employee Count" defaultValue={assessmentData.employees || ''} />
+                <SelectValue placeholder="Select Employee Count" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1-2">1-2</SelectItem>
@@ -294,18 +334,17 @@ export const AssessmentWizard: React.FC = () => {
             <Input
               type="text"
               id="fundingGoal"
-              name="fundingGoal"
               value={assessmentData.fundingGoal || ''}
-              onChange={handleChange}
+              onChange={(e) => handleInputChange('fundingGoal', e.target.value)}
               placeholder="Enter funding goal"
             />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="investors">Type of Investors</Label>
-            <Select onValueChange={(value) => setAssessmentData(prev => ({ ...prev, investors: value as AssessmentData['investors'] }))}>
+            <Select onValueChange={(value) => handleSelectChange('investors', value)} value={assessmentData.investors || ''}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Investor Type" defaultValue={assessmentData.investors || ''} />
+                <SelectValue placeholder="Select Investor Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
@@ -318,9 +357,9 @@ export const AssessmentWizard: React.FC = () => {
 
           <div className="grid gap-2">
             <Label htmlFor="milestones">Current Milestone</Label>
-            <Select onValueChange={(value) => setAssessmentData(prev => ({ ...prev, milestones: value as AssessmentData['milestones'] }))}>
+            <Select onValueChange={(value) => handleSelectChange('milestones', value)} value={assessmentData.milestones || ''}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Milestone" defaultValue={assessmentData.milestones || ''} />
+                <SelectValue placeholder="Select Milestone" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="concept">Concept</SelectItem>

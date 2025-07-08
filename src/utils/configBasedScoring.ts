@@ -40,7 +40,7 @@ export const getScoringConfig = async (): Promise<ScoringConfig> => {
       return getDefaultConfig();
     }
 
-    const config = data.config_data as ScoringConfig;
+    const config = data.config_data as unknown as ScoringConfig;
     
     // Cache the config
     cachedConfig = config;
