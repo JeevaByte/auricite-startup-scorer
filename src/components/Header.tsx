@@ -1,44 +1,29 @@
+
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { UserMenu } from './UserMenu';
+import { ModeToggle } from './ModeToggle';
+import { NotificationBell } from './notifications/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { UserMenu } from '@/components/UserMenu';
-import { ModeToggle } from '@/components/ModeToggle';
 
-interface HeaderProps {
-  onViewHistory: () => void;
-}
-
-export const Header = ({ onViewHistory }: HeaderProps) => {
+export const Header = () => {
   const { user } = useAuth();
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 py-4">
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-gray-900 dark:text-white">
-          Investment Readiness
-        </Link>
-
-        <div className="flex items-center space-x-4">
-          {user && (
-            <>
-              <Button variant="ghost" asChild>
-                <Link to="/profile">Profile</Link>
-              </Button>
-              {/* Add admin link if user is admin - you can add admin check here */}
-              <Button variant="ghost" asChild>
-                <Link to="/admin">Admin</Link>
-              </Button>
-            </>
-          )}
-          
-          <ModeToggle />
-          {user ? (
-            <UserMenu onViewHistory={onViewHistory} />
-          ) : (
-            <Button variant="ghost" asChild>
-              <Link to="/profile">Sign In</Link>
-            </Button>
-          )}
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="text-xl font-bold">StartupScore</span>
+          </Link>
+        </div>
+        
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center space-x-2">
+            {user && <NotificationBell />}
+            <ModeToggle />
+            <UserMenu />
+          </nav>
         </div>
       </div>
     </header>

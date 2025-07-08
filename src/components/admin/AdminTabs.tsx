@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { RescoreManager } from './RescoreManager';
 import { AuditTrail } from './AuditTrail';
 import { AssessmentsTable } from './AssessmentsTable';
 import { SearchFilter } from './SearchFilter';
+import { ApiAccessManager } from './ApiAccessManager';
 
 interface AssessmentWithUser {
   id: string;
@@ -47,6 +47,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({
         <TabsTrigger value="scoring">Scoring Management</TabsTrigger>
         <TabsTrigger value="rescore">Dynamic Re-Scoring</TabsTrigger>
         <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+        <TabsTrigger value="api">API Access</TabsTrigger>
         <TabsTrigger value="config">System Config</TabsTrigger>
       </TabsList>
 
@@ -65,6 +66,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({
 
       <TabsContent value="audit">
         <AuditTrail />
+      </TabsContent>
+
+      <TabsContent value="api">
+        <ApiAccessManager />
       </TabsContent>
 
       <TabsContent value="config">
