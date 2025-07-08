@@ -45,8 +45,8 @@ export const NotificationSettings = () => {
         .eq('id', user.id)
         .single();
 
-      if (!error && data?.notification_preferences) {
-        setPreferences({ ...preferences, ...data.notification_preferences });
+      if (!error && data && data.notification_preferences) {
+        setPreferences({ ...preferences, ...data.notification_preferences as NotificationPreferences });
       }
     } catch (error) {
       console.error('Error loading preferences:', error);
