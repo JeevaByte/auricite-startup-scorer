@@ -3,21 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-interface AssessmentWithUser {
-  id: string;
-  created_at: string;
-  prototype: boolean;
-  revenue: boolean;
-  full_time_team: boolean;
-  employees: string;
-  funding_goal: string;
-  user_id: string;
-  user_email?: string;
-  user_name?: string;
-  company_name?: string;
-  total_score?: number;
-}
+import { AssessmentWithUser } from '@/types/admin';
 
 interface AssessmentsTableProps {
   assessments: AssessmentWithUser[];

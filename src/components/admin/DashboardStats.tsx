@@ -2,16 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, TrendingUp, Users, Settings } from 'lucide-react';
-
-interface DashboardStats {
-  totalAssessments: number;
-  avgScore: number;
-  completionRate: number;
-  recentAssessments: number;
-}
+import { DashboardStats as DashboardStatsType } from '@/types/admin';
 
 interface DashboardStatsProps {
-  stats: DashboardStats;
+  stats: DashboardStatsType;
 }
 
 export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
