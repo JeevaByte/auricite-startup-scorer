@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/components/notifications/NotificationService";
+import { CookieConsent } from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import Results from "./pages/Results";
 import Profile from "./pages/Profile";
@@ -48,6 +49,7 @@ const App = () => {
             </main>
             <Footer />
             {user && <NotificationService />}
+            <CookieConsent />
           </div>
         </BrowserRouter>
       </TooltipProvider>

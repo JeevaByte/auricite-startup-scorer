@@ -16,7 +16,7 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  type: string;
+  notification_type: string;
   status: string;
   created_at: string;
   data?: any;
@@ -46,7 +46,17 @@ export const NotificationCenter: React.FC = () => {
   const loadNotifications = async () => {
     if (!user) return;
     const data = await getNotifications(user.id);
-    setNotifications(data);
+    // Transform the data to match our interface
+    const transformedData: Notification[] = data.map(item => ({
+      id: item.id,
+      title: item.title,
+      message: item.message,
+      notification_type: item.notification_type,
+      status: item.status,
+      created_at: item.scheduled_for, // Use scheduled_for as created_at
+      data: item.data
+    }));
+    setNotifications(transformedData);
     setLoading(false);
   };
 
@@ -161,7 +171,7 @@ export const NotificationCenter: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">{notification.title}</h4>
                       <Badge variant="secondary" className="text-xs">
-                        {notification.type}
+                        {notification.notification_type}
                       </Badge>
                       {notification.status === 'pending' && (
                         <Badge variant="default" className="text-xs">New</Badge>
