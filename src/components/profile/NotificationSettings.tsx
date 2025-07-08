@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +45,7 @@ export const NotificationSettings = () => {
         .single();
 
       if (!error && data && data.notification_preferences) {
-        setPreferences({ ...preferences, ...data.notification_preferences as NotificationPreferences });
+        setPreferences({ ...preferences, ...(data.notification_preferences as unknown as NotificationPreferences) });
       }
     } catch (error) {
       console.error('Error loading preferences:', error);
