@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User, History, Settings, FileText, Trash2, Eye } from 'lucide-react';
+import { User, History, Settings, FileText, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { DataPrivacySettings } from '@/components/profile/DataPrivacySettings';
+import { NotificationSettings } from '@/components/profile/NotificationSettings';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -215,41 +216,10 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
-              <div className="space-y-6">
-                <div className="border-b pb-6">
-                  <h4 className="font-medium text-gray-900 mb-2">Data & Privacy</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Manage your data and privacy preferences
-                  </p>
-                  <Button variant="outline" size="sm">
-                    Download My Data
-                  </Button>
-                </div>
-                
-                <div className="border-b pb-6">
-                  <h4 className="font-medium text-gray-900 mb-2">Notifications</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Control how you receive updates and notifications
-                  </p>
-                  <Button variant="outline" size="sm">
-                    Notification Preferences
-                  </Button>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-red-900 mb-2">Danger Zone</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Permanently delete your account and all associated data
-                  </p>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <div className="space-y-6">
+              <DataPrivacySettings />
+              <NotificationSettings />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
