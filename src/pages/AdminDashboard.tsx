@@ -4,60 +4,47 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Download, Search, Users, TrendingUp, FileText, Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
-interface AssessmentWithProfile {
+interface AssessmentWithUser {
   id: string;
   created_at: string;
   prototype: boolean;
-  external_capital: boolean;
   revenue: boolean;
   full_time_team: boolean;
-  term_sheets: boolean;
-  cap_table: boolean;
-  mrr: string;
   employees: string;
   funding_goal: string;
-  investors: string;
-  milestones: string;
-  user_profile?: {
-    email: string;
-    full_name?: string;
-    company_name?: string;
-  };
-  score?: {
-    total_score: number;
-    business_idea: number;
-    financials: number;
-    team: number;
-    traction: number;
-  };
+  user_id: string;
+  user_email?: string;
+  user_name?: string;
+  company_name?: string;
+  total_score?: number;
 }
 
 interface DashboardStats {
   totalAssessments: number;
-  averageScore: number;
-  uniqueUsers: number;
+  avgScore: number;
+  completionRate: number;
   recentAssessments: number;
 }
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<AssessmentWithProfile[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentWithUser[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalAssessments: 0,
-    averageScore: 0,
-    uniqueUsers: 0,
-    recentAssessments: 0,
+    avgScore: 0,
+    completionRate: 0,
+    recentAssessments: 0
   });
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -72,13 +59,12 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from('admin_users')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error checking admin status:', error);
-        navigate('/');
         return;
       }
 
@@ -91,63 +77,75 @@ export default function AdminDashboard() {
           description: 'You do not have admin privileges.',
           variant: 'destructive',
         });
-        navigate('/');
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
-      navigate('/');
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadDashboardData = async () => {
-    setLoading(true);
     try {
-      // Load assessments with profiles and scores
+      // Load assessments with user info and scores
       const { data: assessmentsData, error: assessmentsError } = await supabase
         .from('assessments')
         .select(`
           *,
-          profiles!inner(email, full_name, company_name),
-          scores(total_score, business_idea, financials, team, traction)
+          scores(total_score)
         `)
         .order('created_at', { ascending: false });
 
       if (assessmentsError) {
+        console.error('Error loading assessments:', assessmentsError);
         throw assessmentsError;
       }
 
-      const formattedAssessments: AssessmentWithProfile[] = assessmentsData?.map(assessment => ({
-        ...assessment,
-        user_profile: {
-          email: assessment.profiles?.email || 'Unknown',
-          full_name: assessment.profiles?.full_name,
-          company_name: assessment.profiles?.company_name,
-        },
-        score: assessment.scores?.[0] || undefined,
-      })) || [];
+      // Get user profiles separately
+      const userIds = [...new Set(assessmentsData?.map(a => a.user_id) || [])];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, company_name')
+        .in('id', userIds);
 
-      setAssessments(formattedAssessments);
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError);
+      }
+
+      // Combine assessment and profile data
+      const enrichedAssessments: AssessmentWithUser[] = (assessmentsData || []).map(assessment => {
+        const profile = profilesData?.find(p => p.id === assessment.user_id);
+        return {
+          ...assessment,
+          user_email: profile?.email || 'N/A',
+          user_name: profile?.full_name || 'N/A',
+          company_name: profile?.company_name || 'N/A',
+          total_score: assessment.scores?.[0]?.total_score || 0
+        };
+      });
+
+      setAssessments(enrichedAssessments);
 
       // Calculate stats
-      const totalAssessments = formattedAssessments.length;
-      const uniqueUsers = new Set(formattedAssessments.map(a => a.user_id)).size;
-      const scoresWithData = formattedAssessments.filter(a => a.score);
-      const averageScore = scoresWithData.length > 0
-        ? scoresWithData.reduce((sum, a) => sum + (a.score?.total_score || 0), 0) / scoresWithData.length
+      const totalAssessments = enrichedAssessments.length;
+      const scoresWithValues = enrichedAssessments.filter(a => a.total_score && a.total_score > 0);
+      const avgScore = scoresWithValues.length > 0 
+        ? scoresWithValues.reduce((sum, a) => sum + (a.total_score || 0), 0) / scoresWithValues.length 
         : 0;
       
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      const recentAssessments = formattedAssessments.filter(
-        a => new Date(a.created_at) > oneWeekAgo
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 7);
+      const recentAssessments = enrichedAssessments.filter(
+        a => new Date(a.created_at) > recentDate
       ).length;
 
       setStats({
         totalAssessments,
-        averageScore: Math.round(averageScore),
-        uniqueUsers,
-        recentAssessments,
+        avgScore: Math.round(avgScore),
+        completionRate: scoresWithValues.length > 0 ? Math.round((scoresWithValues.length / totalAssessments) * 100) : 0,
+        recentAssessments
       });
+
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
@@ -155,106 +153,72 @@ export default function AdminDashboard() {
         description: 'Failed to load dashboard data.',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const exportData = async () => {
-    try {
-      const csvData = assessments.map(assessment => ({
-        ID: assessment.id,
-        'Created At': new Date(assessment.created_at).toLocaleDateString(),
-        Email: assessment.user_profile?.email || 'Unknown',
-        'Full Name': assessment.user_profile?.full_name || '',
-        'Company Name': assessment.user_profile?.company_name || '',
-        'Total Score': assessment.score?.total_score || 'N/A',
-        'Business Idea': assessment.score?.business_idea || 'N/A',
-        Financials: assessment.score?.financials || 'N/A',
-        Team: assessment.score?.team || 'N/A',
-        Traction: assessment.score?.traction || 'N/A',
-        Prototype: assessment.prototype ? 'Yes' : 'No',
-        'External Capital': assessment.external_capital ? 'Yes' : 'No',
-        Revenue: assessment.revenue ? 'Yes' : 'No',
-        'Full Time Team': assessment.full_time_team ? 'Yes' : 'No',
-        'Term Sheets': assessment.term_sheets ? 'Yes' : 'No',
-        'Cap Table': assessment.cap_table ? 'Yes' : 'No',
-        MRR: assessment.mrr,
-        Employees: assessment.employees,
-        'Funding Goal': assessment.funding_goal,
-        Investors: assessment.investors,
-        Milestones: assessment.milestones,
-      }));
+  const exportToCSV = () => {
+    const headers = ['Date', 'User Email', 'User Name', 'Company', 'Score', 'Prototype', 'Revenue', 'Team Size'];
+    const csvData = [
+      headers.join(','),
+      ...filteredAssessments.map(assessment => [
+        new Date(assessment.created_at).toLocaleDateString(),
+        assessment.user_email || '',
+        assessment.user_name || '',
+        assessment.company_name || '',
+        assessment.total_score || 0,
+        assessment.prototype ? 'Yes' : 'No',
+        assessment.revenue ? 'Yes' : 'No',
+        assessment.employees
+      ].join(','))
+    ].join('\n');
 
-      const csvContent = [
-        Object.keys(csvData[0]).join(','),
-        ...csvData.map(row => Object.values(row).join(','))
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `assessments-export-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: 'Export Complete',
-        description: 'Assessment data has been exported to CSV.',
-      });
-    } catch (error) {
-      console.error('Error exporting data:', error);
-      toast({
-        title: 'Export Failed',
-        description: 'Failed to export assessment data.',
-        variant: 'destructive',
-      });
-    }
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `assessments_export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const filteredAssessments = assessments.filter(assessment =>
-    (assessment.user_profile?.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (assessment.user_profile?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (assessment.user_profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    assessment.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    assessment.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    assessment.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isAdmin) {
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Access Denied</h1>
-          <p className="text-gray-600 mt-2">You do not have permission to view this page.</p>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading admin dashboard...</div>
         </div>
       </div>
     );
   }
 
-  if (loading) {
+  if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-red-600">Access denied. Admin privileges required.</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={exportData} className="flex items-center gap-2">
+        <Button onClick={exportToCSV} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
-          Export Data
+          Export CSV
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Assessments</CardTitle>
@@ -271,17 +235,17 @@ export default function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageScore}</div>
+            <div className="text-2xl font-bold">{stats.avgScore}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
+            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueUsers}</div>
+            <div className="text-2xl font-bold">{stats.completionRate}%</div>
           </CardContent>
         </Card>
 
@@ -296,80 +260,82 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Search and Filter */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Tabs defaultValue="assessments" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="assessments">All Assessments</TabsTrigger>
+          <TabsTrigger value="config">Scoring Config</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="assessments" className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by email, name, or company..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="max-w-sm"
             />
           </div>
-        </div>
-      </div>
 
-      {/* Assessments Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Assessments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Date</th>
-                  <th className="text-left p-2">User</th>
-                  <th className="text-left p-2">Company</th>
-                  <th className="text-left p-2">Score</th>
-                  <th className="text-left p-2">Stage</th>
-                  <th className="text-left p-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAssessments.map((assessment) => (
-                  <tr key={assessment.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">{new Date(assessment.created_at).toLocaleDateString()}</td>
-                    <td className="p-2">
-                      <div>
-                        <div className="font-medium">{assessment.user_profile?.full_name || 'Unknown'}</div>
-                        <div className="text-sm text-gray-500">{assessment.user_profile?.email || 'Unknown'}</div>
-                      </div>
-                    </td>
-                    <td className="p-2">{assessment.user_profile?.company_name || 'N/A'}</td>
-                    <td className="p-2">
-                      {assessment.score ? (
-                        <Badge variant={assessment.score.total_score >= 70 ? 'default' : 'secondary'}>
-                          {assessment.score.total_score}
+          <Card>
+            <CardHeader>
+              <CardTitle>Assessment Submissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssessments.map((assessment) => (
+                    <TableRow key={assessment.id}>
+                      <TableCell>
+                        {new Date(assessment.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{assessment.user_name}</div>
+                          <div className="text-sm text-muted-foreground">{assessment.user_email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{assessment.company_name}</TableCell>
+                      <TableCell>
+                        <Badge variant={assessment.total_score && assessment.total_score > 600 ? "default" : "secondary"}>
+                          {assessment.total_score || 'Pending'}
                         </Badge>
-                      ) : (
-                        <Badge variant="outline">No Score</Badge>
-                      )}
-                    </td>
-                    <td className="p-2">
-                      <Badge variant="outline">{assessment.milestones}</Badge>
-                    </td>
-                    <td className="p-2">
-                      <Badge variant={assessment.revenue ? 'default' : 'secondary'}>
-                        {assessment.revenue ? 'Revenue' : 'Pre-Revenue'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={assessment.total_score ? "default" : "secondary"}>
+                          {assessment.total_score ? 'Complete' : 'Incomplete'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {filteredAssessments.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No assessments found matching your criteria.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <TabsContent value="config">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scoring Configuration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Scoring configuration management will be available in the next update.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -73,7 +72,11 @@ export const AssessmentWizard: React.FC = () => {
       }
 
       if (data?.draft_data) {
-        setAssessmentData(data.draft_data as AssessmentData);
+        // Type assertion with proper validation
+        const draftData = data.draft_data as unknown;
+        if (typeof draftData === 'object' && draftData !== null) {
+          setAssessmentData(draftData as AssessmentData);
+        }
       }
     } catch (error) {
       console.error('Error loading draft:', error);
@@ -99,7 +102,7 @@ export const AssessmentWizard: React.FC = () => {
         .from('assessment_drafts')
         .upsert({
           user_id: user.id,
-          draft_data: assessmentData,
+          draft_data: assessmentData as any, // Type assertion for Json compatibility
         }, { onConflict: 'user_id' });
 
       if (error) {
