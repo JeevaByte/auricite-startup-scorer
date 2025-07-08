@@ -8,8 +8,44 @@ import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { RescoreManager } from './RescoreManager';
 import { ScoringVersionManager } from './ScoringVersionManager';
 import { AuditTrail } from './AuditTrail';
+import { SearchFilter } from './SearchFilter';
 
-export const AdminTabs: React.FC = () => {
+interface DashboardStats {
+  totalAssessments: number;
+  avgScore: number;
+  completionRate: number;
+  recentAssessments: number;
+}
+
+interface AssessmentWithUser {
+  id: string;
+  created_at: string;
+  prototype: boolean;
+  revenue: boolean;
+  full_time_team: boolean;
+  employees: string;
+  funding_goal: string;
+  user_id: string;
+  user_email?: string;
+  user_name?: string;
+  company_name?: string;
+  total_score?: number;
+}
+
+interface AdminTabsProps {
+  stats: DashboardStats;
+  assessments: AssessmentWithUser[];
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+}
+
+export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, searchTerm, onSearchChange }) => {
+  const filteredAssessments = assessments.filter(assessment =>
+    assessment.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    assessment.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    assessment.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
       <TabsList className="grid w-full grid-cols-7">
@@ -23,11 +59,14 @@ export const AdminTabs: React.FC = () => {
       </TabsList>
 
       <TabsContent value="dashboard">
-        <DashboardStats />
+        <DashboardStats stats={stats} />
       </TabsContent>
 
       <TabsContent value="assessments">
-        <AssessmentsTable />
+        <div className="space-y-4">
+          <SearchFilter searchTerm={searchTerm} onSearchChange={onSearchChange} />
+          <AssessmentsTable assessments={filteredAssessments} />
+        </div>
       </TabsContent>
 
       <TabsContent value="analytics">

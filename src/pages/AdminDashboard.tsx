@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { DashboardStats } from '@/components/admin/DashboardStats';
 import { AdminTabs } from '@/components/admin/AdminTabs';
 
 interface AssessmentWithUser {
@@ -206,8 +205,8 @@ export default function AdminDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <AdminHeader onExportCSV={exportToCSV} />
-      <DashboardStats stats={stats} />
       <AdminTabs 
+        stats={stats}
         assessments={assessments}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
