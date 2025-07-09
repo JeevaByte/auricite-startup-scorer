@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -131,7 +129,7 @@ const Assessment: React.FC = () => {
     currentStepFields.forEach(field => {
       const value = assessmentData[field as keyof AssessmentData];
       if (value === null || value === undefined || value === '') {
-        const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        const fieldName = field.replace(/([A-Z])/g, ' $1').replace /^./, str => str.toUpperCase());
         stepErrors.push(`${fieldName} is required`);
       }
     });
@@ -237,46 +235,84 @@ const Assessment: React.FC = () => {
 
             <div className="space-y-2">
               <Label htmlFor="businessModel" className="text-base font-medium">Business Model *</Label>
-              <Textarea
-                id="businessModel"
-                value={assessmentData.businessModel}
-                onChange={(e) => handleInputChange('businessModel', e.target.value)}
-                placeholder="Describe your business model and how you generate revenue"
-                className="min-h-[100px]"
-              />
+              <Select value={assessmentData.businessModel} onValueChange={(value) => handleInputChange('businessModel', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your business model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="saas">Software as a Service (SaaS)</SelectItem>
+                  <SelectItem value="marketplace">Marketplace</SelectItem>
+                  <SelectItem value="ecommerce">E-commerce</SelectItem>
+                  <SelectItem value="subscription">Subscription Service</SelectItem>
+                  <SelectItem value="advertising">Advertising/Media</SelectItem>
+                  <SelectItem value="freemium">Freemium</SelectItem>
+                  <SelectItem value="licensing">Licensing</SelectItem>
+                  <SelectItem value="consulting">Consulting/Services</SelectItem>
+                  <SelectItem value="hardware">Hardware Sales</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="targetMarket" className="text-base font-medium">Target Market *</Label>
-              <Textarea
-                id="targetMarket"
-                value={assessmentData.targetMarket}
-                onChange={(e) => handleInputChange('targetMarket', e.target.value)}
-                placeholder="Describe your target market and customer segments"
-                className="min-h-[80px]"
-              />
+              <Select value={assessmentData.targetMarket} onValueChange={(value) => handleInputChange('targetMarket', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your target market" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="b2b-enterprise">B2B Enterprise</SelectItem>
+                  <SelectItem value="b2b-smb">B2B Small/Medium Business</SelectItem>
+                  <SelectItem value="b2c-consumer">B2C Consumer</SelectItem>
+                  <SelectItem value="b2c-premium">B2C Premium/Luxury</SelectItem>
+                  <SelectItem value="b2g">B2G Government</SelectItem>
+                  <SelectItem value="b2b2c">B2B2C</SelectItem>
+                  <SelectItem value="niche-vertical">Niche Industry Vertical</SelectItem>
+                  <SelectItem value="global-mass">Global Mass Market</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="uniqueValueProposition" className="text-base font-medium">Unique Value Proposition *</Label>
-              <Textarea
-                id="uniqueValueProposition"
-                value={assessmentData.uniqueValueProposition}
-                onChange={(e) => handleInputChange('uniqueValueProposition', e.target.value)}
-                placeholder="What makes your solution unique and valuable?"
-                className="min-h-[80px]"
-              />
+              <Select value={assessmentData.uniqueValueProposition} onValueChange={(value) => handleInputChange('uniqueValueProposition', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your main value proposition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cost-reduction">Significant Cost Reduction</SelectItem>
+                  <SelectItem value="time-saving">Time Saving/Efficiency</SelectItem>
+                  <SelectItem value="new-capability">Enables New Capabilities</SelectItem>
+                  <SelectItem value="better-experience">Better User Experience</SelectItem>
+                  <SelectItem value="automation">Process Automation</SelectItem>
+                  <SelectItem value="data-insights">Data Insights/Analytics</SelectItem>
+                  <SelectItem value="security">Enhanced Security</SelectItem>
+                  <SelectItem value="scalability">Improved Scalability</SelectItem>
+                  <SelectItem value="integration">Better Integration</SelectItem>
+                  <SelectItem value="innovation">Breakthrough Innovation</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="competitiveAdvantage" className="text-base font-medium">Competitive Advantage *</Label>
-              <Textarea
-                id="competitiveAdvantage"
-                value={assessmentData.competitiveAdvantage}
-                onChange={(e) => handleInputChange('competitiveAdvantage', e.target.value)}
-                placeholder="What gives you an edge over competitors?"
-                className="min-h-[80px]"
-              />
+              <Select value={assessmentData.competitiveAdvantage} onValueChange={(value) => handleInputChange('competitiveAdvantage', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your competitive advantage" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proprietary-technology">Proprietary Technology</SelectItem>
+                  <SelectItem value="network-effects">Network Effects</SelectItem>
+                  <SelectItem value="first-mover">First Mover Advantage</SelectItem>
+                  <SelectItem value="exclusive-partnerships">Exclusive Partnerships</SelectItem>
+                  <SelectItem value="brand-recognition">Strong Brand Recognition</SelectItem>
+                  <SelectItem value="regulatory-moat">Regulatory Barriers</SelectItem>
+                  <SelectItem value="data-advantage">Unique Data Access</SelectItem>
+                  <SelectItem value="cost-structure">Superior Cost Structure</SelectItem>
+                  <SelectItem value="team-expertise">Team Expertise</SelectItem>
+                  <SelectItem value="customer-lock-in">High Customer Lock-in</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
@@ -328,32 +364,52 @@ const Assessment: React.FC = () => {
 
             <div className="space-y-2">
               <Label htmlFor="fundingGoal" className="text-base font-medium">Funding Goal *</Label>
-              <Input
-                id="fundingGoal"
-                value={assessmentData.fundingGoal}
-                onChange={(e) => handleInputChange('fundingGoal', e.target.value)}
-                placeholder="e.g., $500K, $1M, $5M"
-              />
+              <Select value={assessmentData.fundingGoal} onValueChange={(value) => handleInputChange('fundingGoal', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your funding goal" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-100k">Under $100K</SelectItem>
+                  <SelectItem value="100k-500k">$100K - $500K</SelectItem>
+                  <SelectItem value="500k-1m">$500K - $1M</SelectItem>
+                  <SelectItem value="1m-5m">$1M - $5M</SelectItem>
+                  <SelectItem value="5m-10m">$5M - $10M</SelectItem>
+                  <SelectItem value="over-10m">Over $10M</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="burnRate" className="text-base font-medium">Monthly Burn Rate *</Label>
-              <Input
-                id="burnRate"
-                value={assessmentData.burnRate}
-                onChange={(e) => handleInputChange('burnRate', e.target.value)}
-                placeholder="e.g., $50K/month"
-              />
+              <Select value={assessmentData.burnRate} onValueChange={(value) => handleInputChange('burnRate', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your monthly burn rate" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-10k">Under $10K</SelectItem>
+                  <SelectItem value="10k-25k">$10K - $25K</SelectItem>
+                  <SelectItem value="25k-50k">$25K - $50K</SelectItem>
+                  <SelectItem value="50k-100k">$50K - $100K</SelectItem>
+                  <SelectItem value="100k-250k">$100K - $250K</SelectItem>
+                  <SelectItem value="over-250k">Over $250K</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="runway" className="text-base font-medium">Current Runway *</Label>
-              <Input
-                id="runway"
-                value={assessmentData.runway}
-                onChange={(e) => handleInputChange('runway', e.target.value)}
-                placeholder="e.g., 12 months, 18 months"
-              />
+              <Select value={assessmentData.runway} onValueChange={(value) => handleInputChange('runway', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your current runway" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-6m">Less than 6 months</SelectItem>
+                  <SelectItem value="6m-12m">6-12 months</SelectItem>
+                  <SelectItem value="12m-18m">12-18 months</SelectItem>
+                  <SelectItem value="18m-24m">18-24 months</SelectItem>
+                  <SelectItem value="over-24m">Over 24 months</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-3">
@@ -421,25 +477,38 @@ const Assessment: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="keyTeamMembers" className="text-base font-medium">Key Team Members *</Label>
-              <Textarea
-                id="keyTeamMembers"
-                value={assessmentData.keyTeamMembers}
-                onChange={(e) => handleInputChange('keyTeamMembers', e.target.value)}
-                placeholder="Describe your key team members, their roles, and backgrounds"
-                className="min-h-[100px]"
-              />
+              <Label htmlFor="keyTeamMembers" className="text-base font-medium">Key Team Members Background *</Label>
+              <Select value={assessmentData.keyTeamMembers} onValueChange={(value) => handleInputChange('keyTeamMembers', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team background" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="first-time">First-time entrepreneurs</SelectItem>
+                  <SelectItem value="some-experience">Some startup experience</SelectItem>
+                  <SelectItem value="serial-entrepreneurs">Serial entrepreneurs</SelectItem>
+                  <SelectItem value="industry-veterans">Industry veterans</SelectItem>
+                  <SelectItem value="tech-experts">Technical experts</SelectItem>
+                  <SelectItem value="domain-experts">Domain experts</SelectItem>
+                  <SelectItem value="mixed-background">Mixed backgrounds</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="advisors" className="text-base font-medium">Advisors *</Label>
-              <Textarea
-                id="advisors"
-                value={assessmentData.advisors}
-                onChange={(e) => handleInputChange('advisors', e.target.value)}
-                placeholder="List your advisors and their expertise (or 'None' if no advisors)"
-                className="min-h-[80px]"
-              />
+              <Label htmlFor="advisors" className="text-base font-medium">Advisory Board *</Label>
+              <Select value={assessmentData.advisors} onValueChange={(value) => handleInputChange('advisors', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select advisor status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No advisors</SelectItem>
+                  <SelectItem value="informal">Informal mentors</SelectItem>
+                  <SelectItem value="formal-advisors">Formal advisory board</SelectItem>
+                  <SelectItem value="industry-experts">Industry expert advisors</SelectItem>
+                  <SelectItem value="investor-advisors">Investor advisors</SelectItem>
+                  <SelectItem value="strategic-advisors">Strategic advisors</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
@@ -449,43 +518,68 @@ const Assessment: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="customers" className="text-base font-medium">Customer Base *</Label>
-              <Input
-                id="customers"
-                value={assessmentData.customers}
-                onChange={(e) => handleInputChange('customers', e.target.value)}
-                placeholder="e.g., 1000 active users, 50 paying customers"
-              />
+              <Select value={assessmentData.customers} onValueChange={(value) => handleInputChange('customers', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your customer base size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-customers">No customers yet</SelectItem>
+                  <SelectItem value="1-10">1-10 customers</SelectItem>
+                  <SelectItem value="11-100">11-100 customers</SelectItem>
+                  <SelectItem value="101-1000">101-1,000 customers</SelectItem>
+                  <SelectItem value="1001-10000">1,001-10,000 customers</SelectItem>
+                  <SelectItem value="over-10000">Over 10,000 customers</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="marketSize" className="text-base font-medium">Market Size *</Label>
-              <Input
-                id="marketSize"
-                value={assessmentData.marketSize}
-                onChange={(e) => handleInputChange('marketSize', e.target.value)}
-                placeholder="e.g., $500M TAM, $50M SAM"
-              />
+              <Label htmlFor="marketSize" className="text-base font-medium">Market Size (TAM) *</Label>
+              <Select value={assessmentData.marketSize} onValueChange={(value) => handleInputChange('marketSize', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select total addressable market" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-100m">Under $100M</SelectItem>
+                  <SelectItem value="100m-1b">$100M - $1B</SelectItem>
+                  <SelectItem value="1b-10b">$1B - $10B</SelectItem>
+                  <SelectItem value="10b-100b">$10B - $100B</SelectItem>
+                  <SelectItem value="over-100b">Over $100B</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="growthRate" className="text-base font-medium">Growth Rate *</Label>
-              <Input
-                id="growthRate"
-                value={assessmentData.growthRate}
-                onChange={(e) => handleInputChange('growthRate', e.target.value)}
-                placeholder="e.g., 20% MoM, 300% YoY"
-              />
+              <Select value={assessmentData.growthRate} onValueChange={(value) => handleInputChange('growthRate', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your growth rate" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-growth">No growth/declining</SelectItem>
+                  <SelectItem value="slow">Slow growth (0-10% monthly)</SelectItem>
+                  <SelectItem value="moderate">Moderate growth (10-20% monthly)</SelectItem>
+                  <SelectItem value="high">High growth (20-50% monthly)</SelectItem>
+                  <SelectItem value="hypergrowth">Hypergrowth (50%+ monthly)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="partnerships" className="text-base font-medium">Key Partnerships *</Label>
-              <Textarea
-                id="partnerships"
-                value={assessmentData.partnerships}
-                onChange={(e) => handleInputChange('partnerships', e.target.value)}
-                placeholder="Describe key partnerships or strategic relationships (or 'None' if no partnerships)"
-                className="min-h-[80px]"
-              />
+              <Select value={assessmentData.partnerships} onValueChange={(value) => handleInputChange('partnerships', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select partnership status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No partnerships</SelectItem>
+                  <SelectItem value="exploring">Exploring partnerships</SelectItem>
+                  <SelectItem value="signed-mous">Signed MOUs/LOIs</SelectItem>
+                  <SelectItem value="active-partnerships">Active partnerships</SelectItem>
+                  <SelectItem value="strategic-partnerships">Strategic partnerships</SelectItem>
+                  <SelectItem value="enterprise-partnerships">Enterprise partnerships</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
@@ -529,23 +623,38 @@ const Assessment: React.FC = () => {
 
             <div className="space-y-2">
               <Label htmlFor="intellectualProperty" className="text-base font-medium">Intellectual Property *</Label>
-              <Textarea
-                id="intellectualProperty"
-                value={assessmentData.intellectualProperty}
-                onChange={(e) => handleInputChange('intellectualProperty', e.target.value)}
-                placeholder="Describe patents, trademarks, copyrights, or trade secrets (or 'None' if no IP)"
-                className="min-h-[80px]"
-              />
+              <Select value={assessmentData.intellectualProperty} onValueChange={(value) => handleInputChange('intellectualProperty', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select IP status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No IP protection</SelectItem>
+                  <SelectItem value="trade-secrets">Trade secrets</SelectItem>
+                  <SelectItem value="copyrights">Copyrights</SelectItem>
+                  <SelectItem value="trademarks">Trademarks</SelectItem>
+                  <SelectItem value="patent-pending">Patents pending</SelectItem>
+                  <SelectItem value="patents-granted">Patents granted</SelectItem>
+                  <SelectItem value="comprehensive-ip">Comprehensive IP portfolio</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="legalStructure" className="text-base font-medium">Legal Structure *</Label>
-              <Input
-                id="legalStructure"
-                value={assessmentData.legalStructure}
-                onChange={(e) => handleInputChange('legalStructure', e.target.value)}
-                placeholder="e.g., Delaware C-Corp, LLC, Partnership"
-              />
+              <Select value={assessmentData.legalStructure} onValueChange={(value) => handleInputChange('legalStructure', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select legal structure" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sole-proprietorship">Sole Proprietorship</SelectItem>
+                  <SelectItem value="partnership">Partnership</SelectItem>
+                  <SelectItem value="llc">LLC</SelectItem>
+                  <SelectItem value="c-corp">C-Corporation</SelectItem>
+                  <SelectItem value="s-corp">S-Corporation</SelectItem>
+                  <SelectItem value="delaware-c-corp">Delaware C-Corporation</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
