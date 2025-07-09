@@ -1,46 +1,42 @@
 
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { MainNav } from '@/components/navigation/MainNav';
-import { MobileNav } from '@/components/navigation/MobileNav';
-import { UserMenu } from '@/components/UserMenu';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/ModeToggle';
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { AccessibilityMenu } from '@/components/accessibility/AccessibilityMenu';
-import { useTranslation } from '@/utils/i18n';
-import { LogIn } from 'lucide-react';
+import { UserMenu } from './UserMenu';
+import { useAuth } from '@/hooks/useAuth';
+import { MainNav } from './navigation/MainNav';
+import { MobileNav } from './navigation/MobileNav';
 
 export const Header: React.FC = () => {
-  const { user, signInWithGoogle } = useAuth();
-  const { t } = useTranslation();
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="font-bold text-xl">InvestmentReady</div>
-          <MainNav />
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="font-bold text-xl">InvestmentReady</span>
+          </Link>
         </div>
         
-        <div className="flex items-center gap-2">
-          <LanguageSelector />
-          <ModeToggle />
-          
-          {user ? (
-            <UserMenu />
-          ) : (
-            <Button onClick={signInWithGoogle} variant="outline" size="sm">
-              <LogIn className="h-4 w-4 mr-2" />
-              Sign In
-            </Button>
-          )}
-          
-          <MobileNav />
+        <MainNav />
+        <MobileNav />
+        
+        <div className="flex flex-1 items-center justify-end space-x-4">
+          <nav className="flex items-center space-x-2">
+            {!loading && (
+              user ? (
+                <UserMenu />
+              ) : (
+                <Button asChild variant="default" size="sm">
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              )
+            )}
+          </nav>
         </div>
       </div>
-      
-      <AccessibilityMenu />
     </header>
   );
 };

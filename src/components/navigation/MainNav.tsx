@@ -1,43 +1,36 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from '@/utils/i18n';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/assessment', label: 'Take Assessment' },
+  { href: '/ai-feedback', label: 'AI Feedback' },
+  { href: '/pricing', label: 'Pricing' },
+];
 
 export const MainNav: React.FC = () => {
-  const { t } = useTranslation();
+  const location = useLocation();
 
   return (
-    <nav className="hidden md:flex items-center space-x-6">
-      <Link 
-        to="/" 
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        {t('nav.home')}
-      </Link>
-      <Link 
-        to="/assessment" 
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        Take Assessment
-      </Link>
-      <Link 
-        to="/investors" 
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        Investors
-      </Link>
-      <Link 
-        to="/feedback" 
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        {t('nav.feedback')}
-      </Link>
-      <Link 
-        to="/pricing" 
-        className="text-sm font-medium transition-colors hover:text-primary"
-      >
-        Pricing
-      </Link>
-    </nav>
+    <div className="mr-4 hidden md:flex">
+      <nav className="flex items-center space-x-6 text-sm font-medium">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            className={cn(
+              "transition-colors hover:text-foreground/80",
+              location.pathname === item.href
+                ? "text-foreground"
+                : "text-foreground/60"
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 };
