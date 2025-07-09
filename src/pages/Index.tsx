@@ -6,7 +6,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText } from 'lucide-react';
 import { Header } from '@/components/Header';
 
 export default function Index() {
@@ -61,10 +61,11 @@ export default function Index() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate('/ai-feedback')}
                 className="text-lg px-8 py-6"
               >
-                View Pricing
+                <Brain className="mr-2 h-5 w-5" />
+                Try AI Tools
               </Button>
             </div>
 
@@ -114,54 +115,104 @@ export default function Index() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Card className="hover:shadow-lg transition-shadow">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/?assessment=true')}>
               <CardHeader>
                 <Target className="h-10 w-10 text-primary mb-4" />
                 <CardTitle>Investment Assessment</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Comprehensive evaluation of your startup's readiness for investment across 
-                  key metrics including team, traction, financials, and business model.
+                  Comprehensive evaluation of your startup's readiness for investment across key metrics.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/ai-feedback')}>
+              <CardHeader>
+                <Brain className="h-10 w-10 text-primary mb-4" />
+                <CardTitle>AI Content Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Get AI-powered feedback on your pitch deck, business plan, and marketing materials.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/ai-feedback')}>
+              <CardHeader>
+                <FileText className="h-10 w-10 text-primary mb-4" />
+                <CardTitle>Pitch Deck Validator</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Validate your pitch deck against investor expectations and best practices.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleInvestorDashboard}>
               <CardHeader>
                 <Users className="h-10 w-10 text-primary mb-4" />
                 <CardTitle>Investor Matching</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Connect with investors who are actively looking for startups in your 
-                  stage and sector. Get introduced to the right people at the right time.
+                  Connect with investors who are actively looking for startups in your stage and sector.
                 </p>
                 <Badge className="mt-2 bg-yellow-100 text-yellow-800">
                   Premium Feature
                 </Badge>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <TrendingUp className="h-10 w-10 text-primary mb-4" />
-                <CardTitle>Detailed Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  In-depth analysis of your strengths and areas for improvement, 
-                  with actionable recommendations to increase your funding chances.
-                </p>
-              </CardContent>
-            </Card>
+      {/* Quick Actions Section */}
+      <section className="py-16 bg-muted/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Quick Actions</h2>
+            <p className="text-lg text-muted-foreground">
+              Jump into the tools that matter most to your startup journey
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Button
+              variant="outline"
+              className="h-24 flex-col space-y-2"
+              onClick={handleGetStarted}
+            >
+              <BarChart3 className="h-6 w-6" />
+              <span>Start Assessment</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-24 flex-col space-y-2"
+              onClick={() => navigate('/ai-feedback')}
+            >
+              <Brain className="h-6 w-6" />
+              <span>AI Analysis</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-24 flex-col space-y-2"
+              onClick={() => navigate('/pricing')}
+            >
+              <Crown className="h-6 w-6" />
+              <span>View Pricing</span>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-muted/50">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Choose InvestReady?</h2>
@@ -209,7 +260,7 @@ export default function Index() {
             
             <div className="flex items-start space-x-4">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                <BarChart3 className="h-5 w-5 text-primary" />
+                <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Benchmarking</h3>
@@ -247,11 +298,11 @@ export default function Index() {
             <Button
               size="lg"
               variant="outline"
-              onClick={handleInvestorDashboard}
+              onClick={() => navigate('/ai-feedback')}
               className="text-lg px-8 py-6 bg-transparent border-white text-white hover:bg-white hover:text-primary"
             >
-              <Crown className="mr-2 h-5 w-5" />
-              Investor Dashboard
+              <Brain className="mr-2 h-5 w-5" />
+              Try AI Tools
             </Button>
           </div>
         </div>
@@ -276,9 +327,10 @@ export default function Index() {
             <div>
               <h3 className="font-semibold mb-3">Product</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="/#assessment" className="hover:text-foreground">Assessment</a></li>
-                <li><a href="/pricing" className="hover:text-foreground">Pricing</a></li>
-                <li><a href="/investor-dashboard" className="hover:text-foreground">Investor Dashboard</a></li>
+                <li><button onClick={handleGetStarted} className="hover:text-foreground">Assessment</button></li>
+                <li><button onClick={() => navigate('/ai-feedback')} className="hover:text-foreground">AI Tools</button></li>
+                <li><button onClick={() => navigate('/pricing')} className="hover:text-foreground">Pricing</button></li>
+                <li><button onClick={handleInvestorDashboard} className="hover:text-foreground">Investor Dashboard</button></li>
               </ul>
             </div>
             
@@ -296,7 +348,7 @@ export default function Index() {
               <ul className="space-y-2 text-muted-foreground">
                 <li><a href="#" className="hover:text-foreground">Help Center</a></li>
                 <li><a href="#" className="hover:text-foreground">Documentation</a></li>
-                <li><a href="#" className="hover:text-foreground">Community</a></li>
+                <li><button onClick={() => navigate('/ai-feedback')} className="hover:text-foreground">Feedback</button></li>
               </ul>
             </div>
           </div>

@@ -235,19 +235,19 @@ export const AssessmentWizard: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      // Convert form data to AssessmentData format
+      // Convert form data to AssessmentData format with proper defaults
       const assessmentData: AssessmentData = {
-        prototype: formData.prototype,
-        externalCapital: formData.externalCapital,
-        revenue: formData.revenue,
-        fullTimeTeam: formData.fullTimeTeam,
-        termSheets: formData.termSheets,
-        capTable: formData.capTable,
-        mrr: formData.mrr,
-        employees: formData.employees,
-        fundingGoal: formData.fundingGoal || '100k', // Provide default value
-        investors: formData.investors,
-        milestones: formData.milestones,
+        prototype: formData.prototype ?? false,
+        externalCapital: formData.externalCapital ?? false,
+        revenue: formData.revenue ?? false,
+        fullTimeTeam: formData.fullTimeTeam ?? false,
+        termSheets: formData.termSheets ?? false,
+        capTable: formData.capTable ?? false,
+        mrr: formData.mrr || 'none',
+        employees: formData.employees || '1-2',
+        fundingGoal: formData.fundingGoal || '100k',
+        investors: formData.investors || 'none',
+        milestones: formData.milestones || 'concept',
       };
 
       console.log('Submitting assessment data:', assessmentData);
@@ -267,11 +267,11 @@ export const AssessmentWizard: React.FC = () => {
           full_time_team: assessmentData.fullTimeTeam,
           term_sheets: assessmentData.termSheets,
           cap_table: assessmentData.capTable,
-          mrr: assessmentData.mrr || 'none',
-          employees: assessmentData.employees || '1-2',
-          funding_goal: assessmentData.fundingGoal || '100k',
-          investors: assessmentData.investors || 'none',
-          milestones: assessmentData.milestones || 'concept',
+          mrr: assessmentData.mrr,
+          employees: assessmentData.employees,
+          funding_goal: assessmentData.fundingGoal,
+          investors: assessmentData.investors,
+          milestones: assessmentData.milestones,
         })
         .select()
         .single();
