@@ -129,7 +129,7 @@ const Assessment: React.FC = () => {
     currentStepFields.forEach(field => {
       const value = assessmentData[field as keyof AssessmentData];
       if (value === null || value === undefined || value === '') {
-        const fieldName = field.replace(/([A-Z])/g, ' $1').replace /^./, str => str.toUpperCase());
+        const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
         stepErrors.push(`${fieldName} is required`);
       }
     });
