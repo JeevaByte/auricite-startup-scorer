@@ -89,6 +89,46 @@ const translations: Translations = {
     pt: 'Pontuação Total',
     zh: '总分',
     ja: '総スコア'
+  },
+  'admin.manual_correction': {
+    en: 'Manual Data Correction',
+    es: 'Corrección Manual de Datos',
+    fr: 'Correction Manuelle des Données',
+    de: 'Manuelle Datenkorrektur',
+    it: 'Correzione Manuale dei Dati',
+    pt: 'Correção Manual de Dados',
+    zh: '手动数据更正',
+    ja: '手動データ修正'
+  },
+  'admin.webhook_management': {
+    en: 'Webhook Management',
+    es: 'Gestión de Webhooks',
+    fr: 'Gestion des Webhooks',
+    de: 'Webhook-Verwaltung',
+    it: 'Gestione Webhook',
+    pt: 'Gerenciamento de Webhooks',
+    zh: 'Webhook管理',
+    ja: 'Webhook管理'
+  },
+  'security.bot_protection': {
+    en: 'Bot Protection',
+    es: 'Protección contra Bots',
+    fr: 'Protection contre les Bots',
+    de: 'Bot-Schutz',
+    it: 'Protezione Bot',
+    pt: 'Proteção contra Bots',
+    zh: '机器人保护',
+    ja: 'ボット保護'
+  },
+  'accessibility.menu': {
+    en: 'Accessibility Menu',
+    es: 'Menú de Accesibilidad',
+    fr: 'Menu d\'Accessibilité',
+    de: 'Barrierefreiheits-Menü',
+    it: 'Menu Accessibilità',
+    pt: 'Menu de Acessibilidade',
+    zh: '无障碍菜单',
+    ja: 'アクセシビリティメニュー'
   }
 };
 
@@ -122,34 +162,4 @@ export const useTranslation = () => {
     changeLanguage,
     t
   };
-};
-
-export const LanguageSelector: React.FC = () => {
-  const { currentLanguage, changeLanguage } = useTranslation();
-
-  const languages = [
-    { code: 'en' as Language, name: 'English' },
-    { code: 'es' as Language, name: 'Español' },
-    { code: 'fr' as Language, name: 'Français' },
-    { code: 'de' as Language, name: 'Deutsch' },
-    { code: 'it' as Language, name: 'Italiano' },
-    { code: 'pt' as Language, name: 'Português' },
-    { code: 'zh' as Language, name: '中文' },
-    { code: 'ja' as Language, name: '日本語' }
-  ];
-
-  return (
-    <select
-      value={currentLanguage}
-      onChange={(e) => changeLanguage(e.target.value as Language)}
-      className="bg-background border border-border rounded px-2 py-1 text-sm"
-      aria-label="Select language"
-    >
-      {languages.map((lang) => (
-        <option key={lang.code} value={lang.code}>
-          {lang.name}
-        </option>
-      ))}
-    </select>
-  );
 };

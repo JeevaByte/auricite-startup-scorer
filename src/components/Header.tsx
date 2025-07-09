@@ -6,7 +6,7 @@ import { MobileNav } from '@/components/navigation/MobileNav';
 import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ModeToggle';
-import { LanguageSelector } from '@/utils/i18n';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { AccessibilityMenu } from '@/components/accessibility/AccessibilityMenu';
 import { useTranslation } from '@/utils/i18n';
 import { LogIn } from 'lucide-react';
