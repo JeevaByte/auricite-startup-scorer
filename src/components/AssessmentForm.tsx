@@ -12,14 +12,12 @@ interface AssessmentFormProps {
   onComplete: (data: AssessmentData, result: ScoreResult) => void;
   initialData?: AssessmentData;
   onDataChange?: (data: AssessmentData) => void;
-  isLoading?: boolean;
 }
 
 export const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onComplete,
   initialData,
   onDataChange,
-  isLoading = false,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<AssessmentData>(
@@ -47,6 +45,15 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     if (onDataChange) {
       onDataChange(newData);
     }
+  };
+
+  // Check if current step is valid (all required questions answered)
+  const isCurrentStepValid = () => {
+    const currentStepData = assessmentSteps[currentStep];
+    return currentStepData.questions.every(question => {
+      const value = formData[question.key as keyof AssessmentData];
+      return value !== null && value !== undefined && value !== '';
+    });
   };
 
   const handleNext = () => {
@@ -97,11 +104,13 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
           />
 
           <FormNavigation
-            currentStep={currentStep}
+            currentStep={currentStep + 1}
             totalSteps={assessmentSteps.length}
-            isLastStep={isLastStep}
+            isValid={isCurrentStepValid()}
             isSubmitting={isSubmitting}
-            isLoading={isLoading}
+            canGoBack={currentStep > 0}
+            canGoNext={isCurrentStepValid()}
+            isLastStep={isLastStep}
             onPrevious={handlePrevious}
             onNext={handleNext}
             onSubmit={handleSubmit}

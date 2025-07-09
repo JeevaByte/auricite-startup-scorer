@@ -6,10 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 interface SubscriptionPlan {
   id: string;
   name: string;
-  price_monthly: number;
-  price_yearly: number;
+  price_monthly: number | null;
+  price_yearly: number | null;
   features: string[];
-  max_assessments: number;
+  max_assessments: number | null;
   is_active: boolean;
 }
 
@@ -45,7 +45,19 @@ export const useSubscription = () => {
         .eq('is_active', true);
 
       if (plansError) throw plansError;
-      setPlans(plansData || []);
+      
+      // Transform the data to match our interface
+      const transformedPlans: SubscriptionPlan[] = (plansData || []).map(plan => ({
+        id: plan.id,
+        name: plan.name,
+        price_monthly: plan.price_monthly,
+        price_yearly: plan.price_yearly,
+        features: Array.isArray(plan.features) ? plan.features as string[] : [],
+        max_assessments: plan.max_assessments,
+        is_active: plan.is_active,
+      }));
+      
+      setPlans(transformedPlans);
 
       if (user) {
         // Load user subscription
@@ -62,7 +74,27 @@ export const useSubscription = () => {
           throw subError;
         }
 
-        setSubscription(subData);
+        if (subData) {
+          // Transform the subscription data
+          const transformedSubscription: UserSubscription = {
+            id: subData.id,
+            plan_id: subData.plan_id,
+            status: subData.status,
+            current_period_end: subData.current_period_end,
+            plan: {
+              id: subData.subscription_plans.id,
+              name: subData.subscription_plans.name,
+              price_monthly: subData.subscription_plans.price_monthly,
+              price_yearly: subData.subscription_plans.price_yearly,
+              features: Array.isArray(subData.subscription_plans.features) 
+                ? subData.subscription_plans.features as string[] 
+                : [],
+              max_assessments: subData.subscription_plans.max_assessments,
+              is_active: subData.subscription_plans.is_active,
+            }
+          };
+          setSubscription(transformedSubscription);
+        }
 
         // Check premium access
         const { data: premiumData, error: premiumError } = await supabase

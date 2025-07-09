@@ -21,7 +21,7 @@ interface Question {
 interface QuestionRendererProps {
   question: Question;
   value: any;
-  onChange: (value: any) => void;
+  onChange: (questionId: string, value: any) => void;
   error?: string;
 }
 
@@ -31,6 +31,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   onChange,
   error
 }) => {
+  const handleChange = (newValue: any) => {
+    onChange(question.id, newValue);
+  };
+
   const renderInput = () => {
     switch (question.type) {
       case 'boolean':
@@ -39,7 +43,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <Button
               type="button"
               variant={value === true ? "default" : "outline"}
-              onClick={() => onChange(true)}
+              onClick={() => handleChange(true)}
               className={cn(
                 "h-12 transition-all",
                 value === true && "ring-2 ring-primary"
@@ -50,7 +54,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <Button
               type="button"
               variant={value === false ? "default" : "outline"}
-              onClick={() => onChange(false)}
+              onClick={() => handleChange(false)}
               className={cn(
                 "h-12 transition-all",
                 value === false && "ring-2 ring-primary"
@@ -63,7 +67,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       case 'radio':
         return (
-          <RadioGroup value={value || ''} onValueChange={onChange}>
+          <RadioGroup value={value || ''} onValueChange={handleChange}>
             <div className="grid gap-3">
               {question.options?.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -79,7 +83,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       case 'select':
         return (
-          <Select value={value || ''} onValueChange={onChange}>
+          <Select value={value || ''} onValueChange={handleChange}>
             <SelectTrigger className="h-12">
               <SelectValue placeholder={question.placeholder || 'Select an option'} />
             </SelectTrigger>
@@ -97,7 +101,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <Textarea
             value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             placeholder={question.placeholder}
             className="min-h-[120px]"
           />
@@ -109,7 +113,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           <Input
             type="text"
             value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             placeholder={question.placeholder}
             className="h-12"
           />
