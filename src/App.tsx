@@ -18,6 +18,7 @@ import Feedback from "./pages/Feedback";
 import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
@@ -39,11 +40,13 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/assessment" element={<Assessment />} />
                   <Route path="/results" element={<Results />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
+                  <Route path="/investors" element={<InvestorDirectory />} />
                   <Route path="/ai-feedback" element={<AIFeedback />} />
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/pricing" element={<Pricing />} />

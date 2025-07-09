@@ -30,6 +30,16 @@ const translations: Translations = {
     zh: '评估',
     ja: '評価'
   },
+  'nav.feedback': {
+    en: 'Feedback',
+    es: 'Comentarios',
+    fr: 'Commentaires',
+    de: 'Feedback',
+    it: 'Feedback',
+    pt: 'Feedback',
+    zh: '反馈',
+    ja: 'フィードバック'
+  },
   'nav.results': {
     en: 'Results',
     es: 'Resultados',
@@ -39,6 +49,26 @@ const translations: Translations = {
     pt: 'Resultados',
     zh: '结果',
     ja: '結果'
+  },
+  'nav.pricing': {
+    en: 'Pricing',
+    es: 'Precios',
+    fr: 'Tarifs',
+    de: 'Preise',
+    it: 'Prezzi',
+    pt: 'Preços',
+    zh: '定价',
+    ja: '価格'
+  },
+  'nav.investors': {
+    en: 'Investors',
+    es: 'Inversores',
+    fr: 'Investisseurs',
+    de: 'Investoren',
+    it: 'Investitori',
+    pt: 'Investidores',
+    zh: '投资者',
+    ja: '投資家'
   },
   'button.start': {
     en: 'Start Assessment',
@@ -59,6 +89,16 @@ const translations: Translations = {
     pt: 'Enviar',
     zh: '提交',
     ja: '送信'
+  },
+  'button.sign_in': {
+    en: 'Sign In',
+    es: 'Iniciar Sesión',
+    fr: 'Se connecter',
+    de: 'Anmelden',
+    it: 'Accedi',
+    pt: 'Entrar',
+    zh: '登录',
+    ja: 'サインイン'
   },
   'form.prototype': {
     en: 'Do you have a working prototype?',
@@ -90,36 +130,6 @@ const translations: Translations = {
     zh: '总分',
     ja: '総スコア'
   },
-  'admin.manual_correction': {
-    en: 'Manual Data Correction',
-    es: 'Corrección Manual de Datos',
-    fr: 'Correction Manuelle des Données',
-    de: 'Manuelle Datenkorrektur',
-    it: 'Correzione Manuale dei Dati',
-    pt: 'Correção Manual de Dados',
-    zh: '手动数据更正',
-    ja: '手動データ修正'
-  },
-  'admin.webhook_management': {
-    en: 'Webhook Management',
-    es: 'Gestión de Webhooks',
-    fr: 'Gestion des Webhooks',
-    de: 'Webhook-Verwaltung',
-    it: 'Gestione Webhook',
-    pt: 'Gerenciamento de Webhooks',
-    zh: 'Webhook管理',
-    ja: 'Webhook管理'
-  },
-  'security.bot_protection': {
-    en: 'Bot Protection',
-    es: 'Protección contra Bots',
-    fr: 'Protection contre les Bots',
-    de: 'Bot-Schutz',
-    it: 'Protezione Bot',
-    pt: 'Proteção contra Bots',
-    zh: '机器人保护',
-    ja: 'ボット保護'
-  },
   'accessibility.menu': {
     en: 'Accessibility Menu',
     es: 'Menú de Accesibilidad',
@@ -129,6 +139,16 @@ const translations: Translations = {
     pt: 'Menu de Acessibilidade',
     zh: '无障碍菜单',
     ja: 'アクセシビリティメニュー'
+  },
+  'pricing.choose_plan': {
+    en: 'Choose Your Plan',
+    es: 'Elige tu Plan',
+    fr: 'Choisissez votre forfait',
+    de: 'Wählen Sie Ihren Plan',
+    it: 'Scegli il tuo piano',
+    pt: 'Escolha seu plano',
+    zh: '选择您的计划',
+    ja: 'プランを選択'
   }
 };
 

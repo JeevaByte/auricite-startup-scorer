@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -18,9 +17,45 @@ export const PitchDeckValidator = () => {
   const [isValidating, setIsValidating] = useState(false);
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [overallScore, setOverallScore] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ];
+      
+      if (allowedTypes.includes(file.type)) {
+        setSelectedFile(file);
+        toast({
+          title: 'File Selected',
+          description: `Selected: ${file.name}`,
+        });
+      } else {
+        toast({
+          title: 'Invalid File Type',
+          description: 'Please select a PDF, PPT, or PPTX file.',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
+
   const validatePitchDeck = async () => {
+    if (!selectedFile) {
+      toast({
+        title: 'No File Selected',
+        description: 'Please select a file to validate.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsValidating(true);
     
     // Simulate validation process
@@ -129,9 +164,25 @@ export const PitchDeckValidator = () => {
             <p className="text-sm text-gray-600 mb-4">
               Upload your pitch deck (PDF, PPT, or PPTX) for comprehensive analysis
             </p>
-            <Button variant="outline" className="mb-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.ppt,.pptx"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <Button 
+              variant="outline" 
+              className="mb-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
               Choose File
             </Button>
+            {selectedFile && (
+              <p className="text-sm text-green-600 mb-2">
+                Selected: {selectedFile.name}
+              </p>
+            )}
             <p className="text-xs text-gray-500">
               Or click "Analyze Sample Deck" to see how the validator works
             </p>
@@ -142,7 +193,7 @@ export const PitchDeckValidator = () => {
             disabled={isValidating}
             className="w-full"
           >
-            {isValidating ? 'Validating...' : 'Analyze Sample Deck'}
+            {isValidating ? 'Validating...' : selectedFile ? 'Analyze Pitch Deck' : 'Analyze Sample Deck'}
           </Button>
         </CardContent>
       </Card>
