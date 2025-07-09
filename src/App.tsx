@@ -21,7 +21,7 @@ import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
-import { CookieConsent } from "./components/CookieConsent";
+import { EnhancedCookieConsent } from "./components/EnhancedCookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -53,7 +53,7 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
-              <CookieConsent />
+              <EnhancedCookieConsent />
             </div>
           </BrowserRouter>
         </TooltipProvider>

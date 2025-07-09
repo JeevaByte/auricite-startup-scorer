@@ -7,14 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText } from 'lucide-react';
-import { Header } from '@/components/Header';
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { Hero } from '@/components/Hero';
 
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPremiumAccess, loading } = useSubscription();
+  const { hasPremiumAccess } = useSubscription();
   const [searchParams] = useSearchParams();
   const showAssessment = searchParams.get('assessment') === 'true';
 
@@ -40,7 +39,6 @@ export default function Index() {
   if (user && showAssessment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-        <Header />
         <AssessmentWizard />
       </div>
     );
@@ -48,8 +46,6 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      <Header />
-
       {/* Hero Section */}
       <section className="py-20">
         <Hero onStartAssessment={handleGetStarted} />
@@ -137,6 +133,7 @@ export default function Index() {
               variant="outline"
               className="h-24 flex-col space-y-2"
               onClick={handleGetStarted}
+              aria-label="Start investment readiness assessment"
             >
               <BarChart3 className="h-6 w-6" />
               <span>Start Assessment</span>
@@ -146,6 +143,7 @@ export default function Index() {
               variant="outline"
               className="h-24 flex-col space-y-2"
               onClick={() => navigate('/ai-feedback')}
+              aria-label="Get AI analysis of your pitch materials"
             >
               <Brain className="h-6 w-6" />
               <span>AI Analysis</span>
@@ -155,6 +153,7 @@ export default function Index() {
               variant="outline"
               className="h-24 flex-col space-y-2"
               onClick={() => navigate('/pricing')}
+              aria-label="View pricing plans"
             >
               <Crown className="h-6 w-6" />
               <span>View Pricing</span>
@@ -242,6 +241,7 @@ export default function Index() {
               variant="secondary"
               onClick={handleGetStarted}
               className="text-lg px-8 py-6"
+              aria-label="Start your investment readiness assessment now"
             >
               Start Your Assessment
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -252,6 +252,7 @@ export default function Index() {
               variant="outline"
               onClick={() => navigate('/ai-feedback')}
               className="text-lg px-8 py-6 bg-transparent border-white text-white hover:bg-white hover:text-primary"
+              aria-label="Try our AI-powered tools"
             >
               <Brain className="mr-2 h-5 w-5" />
               Try AI Tools
@@ -259,57 +260,6 @@ export default function Index() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-background border-t py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">InvestReady</span>
-              </div>
-              <p className="text-muted-foreground">
-                Helping startups prepare for investment and connect with the right investors.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3">Product</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><button onClick={handleGetStarted} className="hover:text-foreground">Assessment</button></li>
-                <li><button onClick={() => navigate('/ai-feedback')} className="hover:text-foreground">AI Tools</button></li>
-                <li><button onClick={() => navigate('/pricing')} className="hover:text-foreground">Pricing</button></li>
-                <li><button onClick={handleInvestorDashboard} className="hover:text-foreground">Investor Dashboard</button></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3">Company</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">About</a></li>
-                <li><a href="#" className="hover:text-foreground">Contact</a></li>
-                <li><a href="#" className="hover:text-foreground">Privacy</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3">Support</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground">Documentation</a></li>
-                <li><button onClick={() => navigate('/ai-feedback')} className="hover:text-foreground">Feedback</button></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 InvestReady. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
