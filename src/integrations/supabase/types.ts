@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_reports: {
+        Row: {
+          assessment_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          report_type: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          report_type: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          report_type?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abuse_reports_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -82,6 +129,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      assessment_edits: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          edit_reason: string | null
+          edited_by: string
+          field_name: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          edit_reason?: string | null
+          edited_by: string
+          field_name: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          edit_reason?: string | null
+          edited_by?: string
+          field_name?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_edits_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       assessment_history: {
         Row: {
@@ -315,6 +403,30 @@ export type Database = {
           total_score_avg?: number
           traction_avg?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      honeypot_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          submission_data: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          submission_data?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          submission_data?: Json | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -936,6 +1048,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_configs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          events: string[]
+          id: string
+          is_active: boolean
+          name: string
+          secret_key: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          name: string
+          secret_key?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          name?: string
+          secret_key?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
     }
     Views: {

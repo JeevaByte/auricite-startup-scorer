@@ -1,122 +1,146 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
-import { calculateDynamicScore } from '@/utils/dynamicScoreCalculator';
-import { assessmentSteps } from '@/utils/assessmentQuestions';
-import { StepContent } from './assessment/StepContent';
-import { FormNavigation } from './assessment/FormNavigation';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { BotProtection } from '@/components/security/BotProtection';
+import { useTranslation } from '@/utils/i18n';
 
-interface AssessmentFormProps {
-  onComplete: (data: AssessmentData, result: ScoreResult) => void;
-  initialData?: AssessmentData;
-  onDataChange?: (data: AssessmentData) => void;
-}
+export const AssessmentForm: React.FC = () => {
+  const { toast } = useToast();
+  const { t } = useTranslation();
+  const [isVerified, setIsVerified] = useState(false);
+  const [formData, setFormData] = useState({
+    prototype: false,
+    revenue: false,
+    fullTimeTeam: false,
+    externalCapital: false,
+    termSheets: false,
+    capTable: false,
+    mrr: '',
+    employees: '',
+    fundingGoal: '',
+    investors: '',
+    milestones: ''
+  });
 
-export const AssessmentForm: React.FC<AssessmentFormProps> = ({
-  onComplete,
-  initialData,
-  onDataChange,
-}) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<AssessmentData>(
-    initialData || {
-      prototype: null,
-      externalCapital: null,
-      revenue: null,
-      fullTimeTeam: null,
-      termSheets: null,
-      capTable: null,
-      mrr: null,
-      employees: null,
-      fundingGoal: null,
-      investors: null,
-      milestones: null,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isVerified) {
+      toast({
+        title: 'Verification Required',
+        description: 'Please complete the security verification',
+        variant: 'destructive',
+      });
+      return;
     }
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const progress = ((currentStep + 1) / assessmentSteps.length) * 100;
-
-  const updateFormData = (key: keyof AssessmentData, value: any) => {
-    const newData = { ...formData, [key]: value };
-    setFormData(newData);
-    if (onDataChange) {
-      onDataChange(newData);
-    }
-  };
-
-  // Check if current step is valid (all required questions answered)
-  const isCurrentStepValid = () => {
-    const currentStepData = assessmentSteps[currentStep];
-    return currentStepData.questions.every(question => {
-      const value = formData[question.key as keyof AssessmentData];
-      return value !== null && value !== undefined && value !== '';
-    });
-  };
-
-  const handleNext = () => {
-    if (currentStep < assessmentSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
     try {
-      const result = await calculateDynamicScore(formData);
-      onComplete(formData, result);
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please sign in to submit your assessment',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { error } = await supabase.from('assessments').insert({
+        user_id: user.user.id,
+        prototype: formData.prototype,
+        revenue: formData.revenue,
+        full_time_team: formData.fullTimeTeam,
+        external_capital: formData.externalCapital,
+        term_sheets: formData.termSheets,
+        cap_table: formData.capTable,
+        mrr: formData.mrr,
+        employees: formData.employees,
+        funding_goal: formData.fundingGoal,
+        investors: formData.investors,
+        milestones: formData.milestones
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assessment submitted successfully',
+      });
+
+      // Reset form
+      setFormData({
+        prototype: false,
+        revenue: false,
+        fullTimeTeam: false,
+        externalCapital: false,
+        termSheets: false,
+        capTable: false,
+        mrr: '',
+        employees: '',
+        fundingGoal: '',
+        investors: '',
+        milestones: ''
+      });
     } catch (error) {
-      console.error('Error calculating score:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error submitting assessment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to submit assessment',
+        variant: 'destructive',
+      });
     }
   };
-
-  const currentStepData = assessmentSteps[currentStep];
-  const isLastStep = currentStep === assessmentSteps.length - 1;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <Progress value={progress} className="w-full" />
-        <p className="text-sm text-gray-600 mt-2">
-          Step {currentStep + 1} of {assessmentSteps.length}
-        </p>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Investment Readiness Assessment</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="prototype"
+                checked={formData.prototype}
+                onChange={(e) => setFormData({...formData, prototype: e.target.checked})}
+                aria-describedby="prototype-description"
+              />
+              <label htmlFor="prototype" className="font-medium">
+                {t('form.prototype')}
+              </label>
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{currentStepData.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <StepContent
-            step={currentStepData}
-            formData={formData}
-            onDataChange={updateFormData}
-          />
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="revenue"
+                checked={formData.revenue}
+                onChange={(e) => setFormData({...formData, revenue: e.target.checked})}
+                aria-describedby="revenue-description"
+              />
+              <label htmlFor="revenue" className="font-medium">
+                {t('form.revenue')}
+              </label>
+            </div>
+          </div>
 
-          <FormNavigation
-            currentStep={currentStep + 1}
-            totalSteps={assessmentSteps.length}
-            isValid={isCurrentStepValid()}
-            isSubmitting={isSubmitting}
-            canGoBack={currentStep > 0}
-            canGoNext={isCurrentStepValid()}
-            isLastStep={isLastStep}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onSubmit={handleSubmit}
-          />
-        </CardContent>
-      </Card>
-    </div>
+          <BotProtection onVerificationChange={setIsVerified} />
+
+          <Button 
+            type="submit" 
+            disabled={!isVerified}
+            className="w-full"
+            aria-label="Submit assessment form"
+          >
+            {t('button.submit')}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
