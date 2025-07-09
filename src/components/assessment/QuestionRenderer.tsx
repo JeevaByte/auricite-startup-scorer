@@ -21,7 +21,7 @@ interface Question {
 interface QuestionRendererProps {
   question: Question;
   value: any;
-  onChange: (questionId: string, value: any) => void;
+  onChange: (value: any) => void;
   error?: string;
 }
 
@@ -31,43 +31,33 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   onChange,
   error
 }) => {
-  const handleChange = (newValue: any) => {
-    onChange(question.id, newValue);
-  };
-
   const renderInput = () => {
     switch (question.type) {
       case 'boolean':
         return (
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant={value === true ? "default" : "outline"}
-              onClick={() => handleChange(true)}
-              className={cn(
-                "h-12 transition-all",
-                value === true && "ring-2 ring-primary"
-              )}
-            >
-              Yes
-            </Button>
-            <Button
-              type="button"
-              variant={value === false ? "default" : "outline"}
-              onClick={() => handleChange(false)}
-              className={cn(
-                "h-12 transition-all",
-                value === false && "ring-2 ring-primary"
-              )}
-            >
-              No
-            </Button>
-          </div>
+          <RadioGroup 
+            value={value === null || value === undefined ? '' : String(value)} 
+            onValueChange={(val) => onChange(val === 'true')}
+            className="flex flex-col space-y-3"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="true" id={`${question.id}-true`} />
+              <Label htmlFor={`${question.id}-true`} className="flex-1 cursor-pointer">
+                Yes
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="false" id={`${question.id}-false`} />
+              <Label htmlFor={`${question.id}-false`} className="flex-1 cursor-pointer">
+                No
+              </Label>
+            </div>
+          </RadioGroup>
         );
 
       case 'radio':
         return (
-          <RadioGroup value={value || ''} onValueChange={handleChange}>
+          <RadioGroup value={value || ''} onValueChange={onChange}>
             <div className="grid gap-3">
               {question.options?.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -83,7 +73,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       case 'select':
         return (
-          <Select value={value || ''} onValueChange={handleChange}>
+          <Select value={value || ''} onValueChange={onChange}>
             <SelectTrigger className="h-12">
               <SelectValue placeholder={question.placeholder || 'Select an option'} />
             </SelectTrigger>
@@ -101,7 +91,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <Textarea
             value={value || ''}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) => onChange(e.target.value)}
             placeholder={question.placeholder}
             className="min-h-[120px]"
           />
@@ -113,7 +103,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           <Input
             type="text"
             value={value || ''}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) => onChange(e.target.value)}
             placeholder={question.placeholder}
             className="h-12"
           />
