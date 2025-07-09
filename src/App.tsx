@@ -13,6 +13,7 @@ import Pricing from "./pages/Pricing";
 import Results from "./pages/Results";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import Profile from "./pages/Profile";
+import AIFeedback from "./pages/AIFeedback";
 import { useSearchParams } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/results" element={<Results />} />
               <Route path="/investor-dashboard" element={<InvestorDashboard />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/ai-feedback" element={<AIFeedback />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

@@ -95,10 +95,17 @@ const ASSESSMENT_QUESTIONS = [
   {
     id: 'fundingGoal',
     question: 'What is your funding goal?',
-    type: 'text' as const,
+    type: 'select' as const,
     step: 5,
     required: true,
-    placeholder: 'e.g., $500k, $2M, $10M'
+    options: [
+      { value: '50k', label: 'Under $50k' },
+      { value: '100k', label: '$50k - $100k' },
+      { value: '500k', label: '$100k - $500k' },
+      { value: '1m', label: '$500k - $1M' },
+      { value: '5m', label: '$1M - $5M' },
+      { value: '10m+', label: 'Over $5M' }
+    ]
   },
   {
     id: 'investors',
@@ -238,7 +245,7 @@ export const AssessmentWizard: React.FC = () => {
         capTable: formData.capTable,
         mrr: formData.mrr,
         employees: formData.employees,
-        fundingGoal: formData.fundingGoal,
+        fundingGoal: formData.fundingGoal || '100k', // Provide default value
         investors: formData.investors,
         milestones: formData.milestones,
       };
@@ -249,7 +256,7 @@ export const AssessmentWizard: React.FC = () => {
       const result = await calculateConfigBasedScore(assessmentData);
       console.log('Calculated score result:', result);
 
-      // Save to database
+      // Save to database with proper data types
       const { data: assessment, error: assessmentError } = await supabase
         .from('assessments')
         .insert({
@@ -260,11 +267,11 @@ export const AssessmentWizard: React.FC = () => {
           full_time_team: assessmentData.fullTimeTeam,
           term_sheets: assessmentData.termSheets,
           cap_table: assessmentData.capTable,
-          mrr: assessmentData.mrr || '',
-          employees: assessmentData.employees || '',
-          funding_goal: assessmentData.fundingGoal || '',
-          investors: assessmentData.investors || '',
-          milestones: assessmentData.milestones || '',
+          mrr: assessmentData.mrr || 'none',
+          employees: assessmentData.employees || '1-2',
+          funding_goal: assessmentData.fundingGoal || '100k',
+          investors: assessmentData.investors || 'none',
+          milestones: assessmentData.milestones || 'concept',
         })
         .select()
         .single();
