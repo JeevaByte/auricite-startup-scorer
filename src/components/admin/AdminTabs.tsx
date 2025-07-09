@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from './DashboardStats';
 import { AssessmentsTable } from './AssessmentsTable';
 import { ApiAccessManager } from './ApiAccessManager';
-import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { AdminAnalytics } from './AdminAnalytics';
 import { RescoreManager } from './RescoreManager';
 import { ScoringVersionManager } from './ScoringVersionManager';
 import { AuditTrail } from './AuditTrail';
@@ -49,7 +49,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
       </TabsContent>
 
       <TabsContent value="analytics">
-        <AnalyticsDashboard />
+        <AdminAnalytics />
       </TabsContent>
 
       <TabsContent value="scoring">
