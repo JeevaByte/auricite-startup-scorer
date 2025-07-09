@@ -47,7 +47,6 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
           onComplete={onComplete}
           initialData={assessmentData}
           onDataChange={onDataChange}
-          isLoading={isLoading}
         />
       </div>
     </div>
