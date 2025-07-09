@@ -34,7 +34,7 @@ export const StepContent: React.FC<StepContentProps> = ({
             <QuestionRenderer
               question={questionWithRequiredProps}
               value={formData[question.key as keyof AssessmentData]}
-              onChange={(questionId, value) => onDataChange(question.key as keyof AssessmentData, value)}
+              onChange={(value) => onDataChange(question.key as keyof AssessmentData, value)}
             />
           </div>
         );
