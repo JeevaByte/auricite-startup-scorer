@@ -231,17 +231,6 @@ export default function Index() {
     }
   };
 
-  const handleStepChange = (step: number) => {
-    setCurrentStep(step);
-    
-    // Update step completion
-    const updatedSteps = steps.map((stepItem, index) => ({
-      ...stepItem,
-      completed: index < step
-    }));
-    setSteps(updatedSteps);
-  };
-
   if (isLoading && currentView === 'assessment') {
     return (
       <MobileOptimization>
@@ -281,7 +270,7 @@ export default function Index() {
                 onComplete={handleAssessmentComplete}
                 initialData={assessmentData}
                 onDataChange={handleDataChange}
-                onStepChange={handleStepChange}
+                isLoading={isLoading}
               />
             </div>
           </div>
