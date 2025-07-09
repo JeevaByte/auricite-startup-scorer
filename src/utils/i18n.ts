@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 export type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja';
 
@@ -9,6 +9,7 @@ interface Translations {
   };
 }
 
+// Memoized translations object
 const translations: Translations = {
   'nav.home': {
     en: 'Home',
@@ -152,34 +153,44 @@ const translations: Translations = {
   }
 };
 
+// Cache for detected browser language
+let detectedLanguage: Language | null = null;
+
+// Get browser language only once
+const getBrowserLanguage = (): Language => {
+  if (detectedLanguage) return detectedLanguage;
+  
+  const browserLang = navigator.language.split('-')[0] as Language;
+  const supportedLanguages = Object.keys(translations['nav.home']) as Language[];
+  
+  detectedLanguage = supportedLanguages.includes(browserLang) ? browserLang : 'en';
+  return detectedLanguage;
+};
+
 export const useTranslation = () => {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-
-  useEffect(() => {
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
+    // Initialize with saved language or browser language
     const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && Object.keys(translations['nav.home']).includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    } else {
-      // Detect browser language
-      const browserLang = navigator.language.split('-')[0] as Language;
-      if (Object.keys(translations['nav.home']).includes(browserLang)) {
-        setCurrentLanguage(browserLang);
-      }
-    }
-  }, []);
+    return savedLanguage || getBrowserLanguage();
+  });
 
-  const changeLanguage = (lang: Language) => {
+  // Memoized translation function
+  const t = useCallback((key: string): string => {
+    return translations[key]?.[currentLanguage] || key;
+  }, [currentLanguage]);
+
+  // Optimized language change function
+  const changeLanguage = useCallback((lang: Language) => {
     setCurrentLanguage(lang);
     localStorage.setItem('language', lang);
-  };
+  }, []);
 
-  const t = (key: string): string => {
-    return translations[key]?.[currentLanguage] || key;
-  };
-
-  return {
+  // Memoized return object
+  const returnValue = useMemo(() => ({
     currentLanguage,
     changeLanguage,
     t
-  };
+  }), [currentLanguage, changeLanguage, t]);
+
+  return returnValue;
 };
