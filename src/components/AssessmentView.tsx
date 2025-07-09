@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { AssessmentForm } from '@/components/AssessmentForm';
 import { DraftSaving } from '@/components/DraftSaving';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { useAuth } from '@/hooks/useAuth';
+import { AssessmentWizard } from '@/components/AssessmentWizard';
 
 interface AssessmentViewProps {
   assessmentData: AssessmentData;
@@ -43,11 +43,7 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
       )}
       
       <div className="bg-card rounded-lg shadow-sm border">
-        <AssessmentForm
-          onComplete={onComplete}
-          initialData={assessmentData}
-          onDataChange={onDataChange}
-        />
+        <AssessmentWizard />
       </div>
     </div>
   );

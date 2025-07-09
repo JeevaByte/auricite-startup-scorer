@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from '@/components/ui/button';
@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { AssessmentWizard } from '@/components/AssessmentWizard';
+import { Hero } from '@/components/Hero';
 
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPremiumAccess, loading } = useSubscription();
+  const [searchParams] = useSearchParams();
+  const showAssessment = searchParams.get('assessment') === 'true';
 
   const handleGetStarted = () => {
     if (!user) {
@@ -32,75 +36,23 @@ export default function Index() {
     }
   };
 
+  // If user is authenticated and assessment parameter is true, show the assessment
+  if (user && showAssessment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+        <Header />
+        <AssessmentWizard />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 text-center">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Assess Your Investment Readiness
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              Get a comprehensive evaluation of your startup's investment potential. 
-              Receive personalized insights and connect with the right investors for your stage.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
-              <Button
-                size="lg"
-                onClick={handleGetStarted}
-                className="text-lg px-8 py-6"
-              >
-                Take Assessment
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate('/ai-feedback')}
-                className="text-lg px-8 py-6"
-              >
-                <Brain className="mr-2 h-5 w-5" />
-                Try AI Tools
-              </Button>
-            </div>
-
-            {/* User Status Banner */}
-            {user && (
-              <div className="flex justify-center items-center gap-4 mb-8">
-                <Badge variant="secondary" className="text-sm">
-                  Welcome back, {user.user_metadata?.full_name || user.email}
-                </Badge>
-                {hasPremiumAccess && (
-                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                    <Crown className="h-3 w-3 mr-1" />
-                    Premium
-                  </Badge>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">10,000+</div>
-              <div className="text-muted-foreground">Assessments Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">500+</div>
-              <div className="text-muted-foreground">Startups Funded</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">$2B+</div>
-              <div className="text-muted-foreground">Total Funding Raised</div>
-            </div>
-          </div>
-        </div>
+      <section className="py-20">
+        <Hero onStartAssessment={handleGetStarted} />
       </section>
 
       {/* Features Section */}
