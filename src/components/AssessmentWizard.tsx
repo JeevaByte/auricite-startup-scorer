@@ -1,55 +1,159 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { QuestionRenderer } from '@/components/assessment/QuestionRenderer';
+import { FormNavigation } from '@/components/assessment/FormNavigation';
+import { StepValidation } from '@/components/assessment/StepValidation';
+import { LoadingState } from '@/components/ui/loading-state';
 import { saveAssessmentData } from '@/utils/database';
 import { supabase } from '@/integrations/supabase/client';
 import { AssessmentData } from '@/utils/scoreCalculator';
 import { calculateConfigBasedScore } from '@/utils/configBasedScoring';
 import { sendReportEmail } from '@/utils/emailService';
 
+const ASSESSMENT_QUESTIONS = [
+  {
+    id: 'prototype',
+    question: 'Do you have a working prototype?',
+    type: 'boolean' as const,
+    step: 1,
+    required: true,
+    description: 'A functional version of your product that demonstrates core features'
+  },
+  {
+    id: 'externalCapital',
+    question: 'Have you raised external capital?',
+    type: 'boolean' as const,
+    step: 1,
+    required: true,
+    description: 'Investment from sources outside your personal network'
+  },
+  {
+    id: 'revenue',
+    question: 'Are you generating revenue?',
+    type: 'boolean' as const,
+    step: 2,
+    required: true,
+    description: 'Currently receiving payment from customers'
+  },
+  {
+    id: 'fullTimeTeam',
+    question: 'Is your team full-time?',
+    type: 'boolean' as const,
+    step: 2,
+    required: true,
+    description: 'Core team members are dedicated full-time to this venture'
+  },
+  {
+    id: 'termSheets',
+    question: 'Have you received term sheets?',
+    type: 'boolean' as const,
+    step: 3,
+    required: true,
+    description: 'Formal investment offers from investors'
+  },
+  {
+    id: 'capTable',
+    question: 'Do you have a documented cap table?',
+    type: 'boolean' as const,
+    step: 3,
+    required: true,
+    description: 'Formal documentation of company ownership structure'
+  },
+  {
+    id: 'mrr',
+    question: 'What is your Monthly Recurring Revenue (MRR)?',
+    type: 'select' as const,
+    step: 4,
+    required: true,
+    options: [
+      { value: 'none', label: 'No recurring revenue' },
+      { value: 'low', label: 'Under $10k/month' },
+      { value: 'medium', label: '$10k - $100k/month' },
+      { value: 'high', label: 'Over $100k/month' }
+    ]
+  },
+  {
+    id: 'employees',
+    question: 'How many employees do you have?',
+    type: 'select' as const,
+    step: 4,
+    required: true,
+    options: [
+      { value: '1-2', label: '1-2 employees' },
+      { value: '3-10', label: '3-10 employees' },
+      { value: '11-50', label: '11-50 employees' },
+      { value: '50+', label: '50+ employees' }
+    ]
+  },
+  {
+    id: 'fundingGoal',
+    question: 'What is your funding goal?',
+    type: 'text' as const,
+    step: 5,
+    required: true,
+    placeholder: 'e.g., $500k, $2M, $10M'
+  },
+  {
+    id: 'investors',
+    question: 'What type of investors are you targeting?',
+    type: 'select' as const,
+    step: 5,
+    required: true,
+    options: [
+      { value: 'none', label: 'Not seeking investment' },
+      { value: 'angels', label: 'Angel investors' },
+      { value: 'vc', label: 'Venture capital' },
+      { value: 'lateStage', label: 'Late-stage/growth equity' }
+    ]
+  },
+  {
+    id: 'milestones',
+    question: 'What is your current milestone?',
+    type: 'select' as const,
+    step: 6,
+    required: true,
+    options: [
+      { value: 'concept', label: 'Concept/ideation' },
+      { value: 'launch', label: 'Product launch' },
+      { value: 'scale', label: 'Scaling/growth' },
+      { value: 'exit', label: 'Exit preparation' }
+    ]
+  }
+];
+
+const TOTAL_STEPS = 6;
+
 export const AssessmentWizard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [assessmentData, setAssessmentData] = useState<AssessmentData>({
-    prototype: null,
-    externalCapital: null,
-    revenue: null,
-    fullTimeTeam: null,
-    termSheets: null,
-    capTable: null,
-    mrr: null,
-    employees: null,
-    fundingGoal: null,
-    investors: null,
-    milestones: null,
-  });
-
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
+  const [isStepValid, setIsStepValid] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const checkCompletion = () => {
-      const allFieldsFilled = Object.values(assessmentData).every(value => value !== null);
-      setIsComplete(allFieldsFilled);
-    };
-
-    checkCompletion();
-  }, [assessmentData]);
-
+  // Load draft data
   useEffect(() => {
     if (user) {
       loadDraft();
     }
   }, [user]);
+
+  // Save draft data
+  useEffect(() => {
+    if (user && Object.keys(formData).length > 0) {
+      saveDraft();
+    }
+  }, [formData, currentStep, user]);
 
   const loadDraft = async () => {
     if (!user) return;
@@ -57,91 +161,91 @@ export const AssessmentWizard: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('assessment_drafts')
-        .select('draft_data')
+        .select('draft_data, step')
         .eq('user_id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading draft:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load saved draft.',
-          variant: 'destructive',
-        });
         return;
       }
 
       if (data?.draft_data) {
-        // Type assertion with proper validation
-        const draftData = data.draft_data as unknown;
-        if (typeof draftData === 'object' && draftData !== null) {
-          setAssessmentData(draftData as AssessmentData);
-        }
+        setFormData(data.draft_data as Record<string, any>);
+        setCurrentStep(data.step || 1);
       }
     } catch (error) {
       console.error('Error loading draft:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load saved draft.',
-        variant: 'destructive',
-      });
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      saveDraft();
-    }
-  }, [assessmentData, user]);
 
   const saveDraft = async () => {
     if (!user) return;
     
     try {
-      const { error } = await supabase
+      await supabase
         .from('assessment_drafts')
         .upsert({
           user_id: user.id,
-          draft_data: assessmentData as any, // Type assertion for Json compatibility
+          draft_data: formData,
+          step: currentStep
         }, { onConflict: 'user_id' });
-
-      if (error) {
-        console.error('Error saving draft:', error);
-      }
     } catch (error) {
       console.error('Error saving draft:', error);
     }
   };
 
-  const handleSwitchChange = (field: keyof AssessmentData, checked: boolean) => {
-    setAssessmentData(prevData => ({
-      ...prevData,
-      [field]: checked,
+  const handleInputChange = (questionId: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionId]: value
     }));
+    
+    // Clear error when user provides input
+    if (errors[questionId]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[questionId];
+        return newErrors;
+      });
+    }
   };
 
-  const handleSelectChange = (field: keyof AssessmentData, value: string) => {
-    setAssessmentData(prevData => ({
-      ...prevData,
-      [field]: value,
-    }));
+  const handleNext = () => {
+    if (currentStep < TOTAL_STEPS) {
+      setCurrentStep(prev => prev + 1);
+    }
   };
 
-  const handleInputChange = (field: keyof AssessmentData, value: string) => {
-    setAssessmentData(prevData => ({
-      ...prevData,
-      [field]: value,
-    }));
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!isComplete || !user) return;
+    if (!isStepValid || !user) return;
 
     setIsSubmitting(true);
     try {
+      // Convert form data to AssessmentData format
+      const assessmentData: AssessmentData = {
+        prototype: formData.prototype,
+        externalCapital: formData.externalCapital,
+        revenue: formData.revenue,
+        fullTimeTeam: formData.fullTimeTeam,
+        termSheets: formData.termSheets,
+        capTable: formData.capTable,
+        mrr: formData.mrr,
+        employees: formData.employees,
+        fundingGoal: formData.fundingGoal,
+        investors: formData.investors,
+        milestones: formData.milestones,
+      };
+
       console.log('Submitting assessment data:', assessmentData);
 
-      // Use config-based scoring
+      // Calculate score
       const result = await calculateConfigBasedScore(assessmentData);
       console.log('Calculated score result:', result);
 
@@ -156,11 +260,11 @@ export const AssessmentWizard: React.FC = () => {
           full_time_team: assessmentData.fullTimeTeam,
           term_sheets: assessmentData.termSheets,
           cap_table: assessmentData.capTable,
-          mrr: assessmentData.mrr,
-          employees: assessmentData.employees,
+          mrr: assessmentData.mrr || '',
+          employees: assessmentData.employees || '',
           funding_goal: assessmentData.fundingGoal || '',
-          investors: assessmentData.investors,
-          milestones: assessmentData.milestones,
+          investors: assessmentData.investors || '',
+          milestones: assessmentData.milestones || '',
         })
         .select()
         .single();
@@ -169,8 +273,6 @@ export const AssessmentWizard: React.FC = () => {
         console.error('Assessment save error:', assessmentError);
         throw assessmentError;
       }
-
-      console.log('Assessment saved:', assessment);
 
       // Save score
       const { error: scoreError } = await supabase
@@ -200,22 +302,23 @@ export const AssessmentWizard: React.FC = () => {
       // Send email notification if user has email
       if (user.email) {
         try {
-          const success = await sendReportEmail({
+          await sendReportEmail({
             email: user.email,
             name: user.user_metadata?.full_name,
             totalScore: result.totalScore,
             assessmentId: assessment.id,
           });
 
-          if (success) {
-            toast({
-              title: 'Email Sent!',
-              description: 'Your assessment report has been emailed to you.',
-            });
-          }
+          toast({
+            title: 'Assessment Complete!',
+            description: 'Your results have been emailed to you.',
+          });
         } catch (emailError) {
           console.error('Email sending failed:', emailError);
-          // Don't block the flow if email fails
+          toast({
+            title: 'Assessment Complete!',
+            description: 'Your assessment is complete. Check your results below.',
+          });
         }
       }
 
@@ -241,143 +344,57 @@ export const AssessmentWizard: React.FC = () => {
     }
   };
 
+  const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
+  const progress = (currentStep / TOTAL_STEPS) * 100;
+
   return (
-    <div className="flex items-center justify-center h-full">
-      <Card className="w-full max-w-2xl p-4">
-        <CardHeader>
-          <CardTitle>Investment Readiness Assessment</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="prototype">Do you have a working prototype?</Label>
-            <Switch 
-              id="prototype" 
-              checked={assessmentData.prototype || false} 
-              onCheckedChange={(checked) => handleSwitchChange('prototype', checked)} 
+    <AuthGuard requireAuth>
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-center mb-2">Investment Readiness Assessment</h1>
+          <p className="text-muted-foreground text-center mb-6">
+            Complete all questions to receive your personalized investment readiness score
+          </p>
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Step {currentStep} of {TOTAL_STEPS}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <StepValidation
+              currentStep={currentStep}
+              formData={formData}
+              questions={ASSESSMENT_QUESTIONS}
+              onValidationChange={setIsStepValid}
             />
-          </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="externalCapital">Have you raised external capital?</Label>
-            <Switch 
-              id="externalCapital" 
-              checked={assessmentData.externalCapital || false} 
-              onCheckedChange={(checked) => handleSwitchChange('externalCapital', checked)} 
+            {currentStepQuestions.map((question) => (
+              <QuestionRenderer
+                key={question.id}
+                question={question}
+                value={formData[question.id]}
+                onChange={(value) => handleInputChange(question.id, value)}
+                error={errors[question.id]}
+              />
+            ))}
+
+            <FormNavigation
+              currentStep={currentStep}
+              totalSteps={TOTAL_STEPS}
+              isValid={isStepValid}
+              isSubmitting={isSubmitting}
+              canGoBack={currentStep > 1}
+              canGoNext={currentStep < TOTAL_STEPS}
+              isLastStep={currentStep === TOTAL_STEPS}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              onSubmit={handleSubmit}
             />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="revenue">Are you generating revenue?</Label>
-            <Switch 
-              id="revenue" 
-              checked={assessmentData.revenue || false} 
-              onCheckedChange={(checked) => handleSwitchChange('revenue', checked)} 
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="fullTimeTeam">Is your team full-time?</Label>
-            <Switch 
-              id="fullTimeTeam" 
-              checked={assessmentData.fullTimeTeam || false} 
-              onCheckedChange={(checked) => handleSwitchChange('fullTimeTeam', checked)} 
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="termSheets">Have you received term sheets?</Label>
-            <Switch 
-              id="termSheets" 
-              checked={assessmentData.termSheets || false} 
-              onCheckedChange={(checked) => handleSwitchChange('termSheets', checked)} 
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="capTable">Do you have a documented cap table?</Label>
-            <Switch 
-              id="capTable" 
-              checked={assessmentData.capTable || false} 
-              onCheckedChange={(checked) => handleSwitchChange('capTable', checked)} 
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="mrr">Monthly Recurring Revenue (MRR)</Label>
-            <Select onValueChange={(value) => handleSelectChange('mrr', value)} value={assessmentData.mrr || ''}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select MRR" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="employees">Number of Employees</Label>
-            <Select onValueChange={(value) => handleSelectChange('employees', value)} value={assessmentData.employees || ''}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Employee Count" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1-2">1-2</SelectItem>
-                <SelectItem value="3-10">3-10</SelectItem>
-                <SelectItem value="11-50">11-50</SelectItem>
-                <SelectItem value="50+">50+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="fundingGoal">Funding Goal</Label>
-            <Input
-              type="text"
-              id="fundingGoal"
-              value={assessmentData.fundingGoal || ''}
-              onChange={(e) => handleInputChange('fundingGoal', e.target.value)}
-              placeholder="Enter funding goal"
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="investors">Type of Investors</Label>
-            <Select onValueChange={(value) => handleSelectChange('investors', value)} value={assessmentData.investors || ''}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Investor Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="angels">Angels</SelectItem>
-                <SelectItem value="vc">VC</SelectItem>
-                <SelectItem value="lateStage">Late Stage</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="milestones">Current Milestone</Label>
-            <Select onValueChange={(value) => handleSelectChange('milestones', value)} value={assessmentData.milestones || ''}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Milestone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="concept">Concept</SelectItem>
-                <SelectItem value="launch">Launch</SelectItem>
-                <SelectItem value="scale">Scale</SelectItem>
-                <SelectItem value="exit">Exit</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button onClick={handleSubmit} disabled={isSubmitting || !isComplete}>
-            {isSubmitting ? 'Submitting...' : 'Submit Assessment'}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AuthGuard>
   );
 };

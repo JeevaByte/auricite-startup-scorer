@@ -1,74 +1,142 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { AssessmentQuestion } from '@/utils/assessmentQuestions';
-import { AssessmentData } from '@/utils/scoreCalculator';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+
+interface Question {
+  id: string;
+  question: string;
+  type: 'boolean' | 'select' | 'text' | 'textarea' | 'radio';
+  required: boolean;
+  options?: { value: string; label: string }[];
+  placeholder?: string;
+  description?: string;
+}
 
 interface QuestionRendererProps {
-  question: AssessmentQuestion;
+  question: Question;
   value: any;
-  onChange: (key: keyof AssessmentData, value: any) => void;
+  onChange: (value: any) => void;
+  error?: string;
 }
 
 export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   question,
   value,
   onChange,
+  error
 }) => {
-  if (question.type === 'boolean') {
-    return (
-      <RadioGroup
-        value={value === null ? '' : value === true ? 'true' : 'false'}
-        onValueChange={(val: string) => onChange(question.key as keyof AssessmentData, val === 'true')}
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="true" id={`${question.key}-yes`} />
-          <Label htmlFor={`${question.key}-yes`}>Yes</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="false" id={`${question.key}-no`} />
-          <Label htmlFor={`${question.key}-no`}>No</Label>
-        </div>
-      </RadioGroup>
-    );
-  }
-
-  if (question.type === 'select') {
-    return (
-      <RadioGroup
-        value={value ? String(value) : ''}
-        onValueChange={(val: string) => onChange(question.key as keyof AssessmentData, val)}
-      >
-        {question.options?.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
-            <RadioGroupItem value={option.value} id={`${question.key}-${option.value}`} />
-            <Label htmlFor={`${question.key}-${option.value}`}>{option.label}</Label>
+  const renderInput = () => {
+    switch (question.type) {
+      case 'boolean':
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant={value === true ? "default" : "outline"}
+              onClick={() => onChange(true)}
+              className={cn(
+                "h-12 transition-all",
+                value === true && "ring-2 ring-primary"
+              )}
+            >
+              Yes
+            </Button>
+            <Button
+              type="button"
+              variant={value === false ? "default" : "outline"}
+              onClick={() => onChange(false)}
+              className={cn(
+                "h-12 transition-all",
+                value === false && "ring-2 ring-primary"
+              )}
+            >
+              No
+            </Button>
           </div>
-        ))}
-      </RadioGroup>
-    );
-  }
+        );
 
-  if (question.type === 'textarea') {
-    return (
-      <Textarea
-        value={value ? String(value) : ''}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(question.key as keyof AssessmentData, e.target.value)}
-        placeholder="Enter your response..."
-        rows={4}
-      />
-    );
-  }
+      case 'radio':
+        return (
+          <RadioGroup value={value || ''} onValueChange={onChange}>
+            <div className="grid gap-3">
+              {question.options?.map((option) => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option.value} id={option.value} />
+                  <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </RadioGroup>
+        );
+
+      case 'select':
+        return (
+          <Select value={value || ''} onValueChange={onChange}>
+            <SelectTrigger className="h-12">
+              <SelectValue placeholder={question.placeholder || 'Select an option'} />
+            </SelectTrigger>
+            <SelectContent>
+              {question.options?.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case 'textarea':
+        return (
+          <Textarea
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={question.placeholder}
+            className="min-h-[120px]"
+          />
+        );
+
+      case 'text':
+      default:
+        return (
+          <Input
+            type="text"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={question.placeholder}
+            className="h-12"
+          />
+        );
+    }
+  };
 
   return (
-    <Input
-      type="text"
-      value={value ? String(value) : ''}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(question.key as keyof AssessmentData, e.target.value)}
-      placeholder="Enter your response..."
-    />
+    <div className="space-y-3">
+      <div>
+        <Label className="text-base font-medium flex items-center gap-2">
+          {question.question}
+          {question.required && <span className="text-destructive">*</span>}
+        </Label>
+        {question.description && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {question.description}
+          </p>
+        )}
+      </div>
+      
+      <div className="space-y-2">
+        {renderInput()}
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
+      </div>
+    </div>
   );
 };
