@@ -30,7 +30,7 @@ interface AssessmentData {
   
   // Step 3: Team
   fullTimeTeam: boolean | null;
-  teamSize: string;
+  employees: string;
   keyTeamMembers: string;
   advisors: string;
   
@@ -73,7 +73,7 @@ const Assessment: React.FC = () => {
     
     // Step 3
     fullTimeTeam: null,
-    teamSize: '',
+    employees: '',
     keyTeamMembers: '',
     advisors: '',
     
@@ -101,7 +101,7 @@ const Assessment: React.FC = () => {
     },
     { 
       title: 'Team', 
-      fields: ['fullTimeTeam', 'teamSize', 'keyTeamMembers', 'advisors'] 
+      fields: ['fullTimeTeam', 'employees', 'keyTeamMembers', 'advisors'] 
     },
     { 
       title: 'Traction & Market', 
@@ -178,7 +178,7 @@ const Assessment: React.FC = () => {
           external_capital: assessmentData.externalCapital,
           term_sheets: assessmentData.termSheets,
           cap_table: assessmentData.capTable,
-          employees: assessmentData.teamSize,
+          employees: assessmentData.employees,
           mrr: assessmentData.mrr,
           funding_goal: assessmentData.fundingGoal,
           investors: 'none', // Default value that matches database constraint
@@ -453,8 +453,8 @@ const Assessment: React.FC = () => {
             <div className="space-y-3">
               <Label className="text-base font-medium">Team Size *</Label>
               <RadioGroup
-                value={assessmentData.teamSize}
-                onValueChange={(value) => handleInputChange('teamSize', value)}
+                value={assessmentData.employees}
+                onValueChange={(value) => handleInputChange('employees', value)}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="1-2" id="size1" />
@@ -694,7 +694,7 @@ const Assessment: React.FC = () => {
             </p>
             <Progress value={((currentStep + 1) / steps.length) * 100} className="w-full mt-4" />
             <div className="text-sm text-muted-foreground mt-2">
-              Step {currentStep + 1} of {steps[currentStep].title}
+              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
