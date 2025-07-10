@@ -168,6 +168,8 @@ const Assessment: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      console.log('Submitting assessment with data:', assessmentData);
+      
       const { data, error } = await supabase
         .from('assessments')
         .insert({
@@ -215,6 +217,7 @@ const Assessment: React.FC = () => {
       case 0: // Business Idea
         return (
           <div className="space-y-6">
+            
             <div className="space-y-3">
               <Label className="text-base font-medium">Do you have a working prototype? *</Label>
               <RadioGroup
@@ -368,12 +371,12 @@ const Assessment: React.FC = () => {
                   <SelectValue placeholder="Select your funding goal" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="under-100k">Under $100K</SelectItem>
-                  <SelectItem value="100k-500k">$100K - $500K</SelectItem>
-                  <SelectItem value="500k-1m">$500K - $1M</SelectItem>
-                  <SelectItem value="1m-5m">$1M - $5M</SelectItem>
-                  <SelectItem value="5m-10m">$5M - $10M</SelectItem>
-                  <SelectItem value="over-10m">Over $10M</SelectItem>
+                  <SelectItem value="50k">Under $50k</SelectItem>
+                  <SelectItem value="100k">$50k - $100k</SelectItem>
+                  <SelectItem value="500k">$100k - $500k</SelectItem>
+                  <SelectItem value="1m">$500k - $1M</SelectItem>
+                  <SelectItem value="5m">$1M - $5M</SelectItem>
+                  <SelectItem value="10m+">Over $5M</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -475,6 +478,7 @@ const Assessment: React.FC = () => {
               </RadioGroup>
             </div>
 
+            
             <div className="space-y-2">
               <Label htmlFor="keyTeamMembers" className="text-base font-medium">Key Team Members Background *</Label>
               <Select value={assessmentData.keyTeamMembers} onValueChange={(value) => handleInputChange('keyTeamMembers', value)}>
@@ -515,6 +519,7 @@ const Assessment: React.FC = () => {
       case 3: // Traction & Market
         return (
           <div className="space-y-6">
+            
             <div className="space-y-2">
               <Label htmlFor="customers" className="text-base font-medium">Customer Base *</Label>
               <Select value={assessmentData.customers} onValueChange={(value) => handleInputChange('customers', value)}>
@@ -586,6 +591,7 @@ const Assessment: React.FC = () => {
       case 4: // Legal & Administrative
         return (
           <div className="space-y-6">
+            
             <div className="space-y-3">
               <Label className="text-base font-medium">Do you have term sheets? *</Label>
               <RadioGroup
