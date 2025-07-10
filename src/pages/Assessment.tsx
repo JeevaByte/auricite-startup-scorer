@@ -13,36 +13,32 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AssessmentData {
-  // Step 1: Business Idea
+  // Core fields that exist in database
   prototype: boolean | null;
+  externalCapital: boolean | null;
+  revenue: boolean | null;
+  fullTimeTeam: boolean | null;
+  termSheets: boolean | null;
+  capTable: boolean | null;
+  mrr: string;
+  employees: string;
+  fundingGoal: string;
+  investors: string;
+  milestones: string;
+  
+  // Additional fields for form UI (not saved to database)
   businessModel: string;
   targetMarket: string;
   uniqueValueProposition: string;
   competitiveAdvantage: string;
-  
-  // Step 2: Financial Information
-  revenue: boolean | null;
-  mrr: string;
-  fundingGoal: string;
   burnRate: string;
   runway: string;
-  externalCapital: boolean | null;
-  
-  // Step 3: Team
-  fullTimeTeam: boolean | null;
-  employees: string;
   keyTeamMembers: string;
   advisors: string;
-  
-  // Step 4: Traction & Market
   customers: string;
   marketSize: string;
   growthRate: string;
   partnerships: string;
-  
-  // Step 5: Legal & Administrative
-  termSheets: boolean | null;
-  capTable: boolean | null;
   intellectualProperty: string;
   legalStructure: string;
 }
@@ -56,36 +52,32 @@ const Assessment: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
   
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
-    // Step 1
+    // Database fields
     prototype: null,
+    externalCapital: null,
+    revenue: null,
+    fullTimeTeam: null,
+    termSheets: null,
+    capTable: null,
+    mrr: '',
+    employees: '',
+    fundingGoal: '',
+    investors: '',
+    milestones: '',
+    
+    // UI only fields
     businessModel: '',
     targetMarket: '',
     uniqueValueProposition: '',
     competitiveAdvantage: '',
-    
-    // Step 2
-    revenue: null,
-    mrr: '',
-    fundingGoal: '',
     burnRate: '',
     runway: '',
-    externalCapital: null,
-    
-    // Step 3
-    fullTimeTeam: null,
-    employees: '',
     keyTeamMembers: '',
     advisors: '',
-    
-    // Step 4
     customers: '',
     marketSize: '',
     growthRate: '',
     partnerships: '',
-    
-    // Step 5
-    termSheets: null,
-    capTable: null,
     intellectualProperty: '',
     legalStructure: ''
   });
@@ -170,26 +162,36 @@ const Assessment: React.FC = () => {
     try {
       console.log('Submitting assessment with data:', assessmentData);
       
+      // Map form data to database fields with proper defaults
+      const dbData = {
+        user_id: user.id,
+        prototype: assessmentData.prototype ?? false,
+        external_capital: assessmentData.externalCapital ?? false,
+        revenue: assessmentData.revenue ?? false,
+        full_time_team: assessmentData.fullTimeTeam ?? false,
+        term_sheets: assessmentData.termSheets ?? false,
+        cap_table: assessmentData.capTable ?? false,
+        mrr: assessmentData.mrr || 'none',
+        employees: assessmentData.employees || '1-2',
+        funding_goal: assessmentData.fundingGoal || '100k',
+        investors: assessmentData.investors || 'none',
+        milestones: assessmentData.milestones || 'concept'
+      };
+
+      console.log('Database data to be inserted:', dbData);
+
       const { data, error } = await supabase
         .from('assessments')
-        .insert({
-          user_id: user.id,
-          prototype: assessmentData.prototype,
-          revenue: assessmentData.revenue,
-          full_time_team: assessmentData.fullTimeTeam,
-          external_capital: assessmentData.externalCapital,
-          term_sheets: assessmentData.termSheets,
-          cap_table: assessmentData.capTable,
-          employees: assessmentData.employees,
-          mrr: assessmentData.mrr,
-          funding_goal: assessmentData.fundingGoal,
-          investors: 'none', // Default value that matches database constraint
-          milestones: 'concept' // Default value that matches database constraint
-        })
+        .insert(dbData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Assessment saved successfully:', data);
 
       toast({
         title: 'Assessment Submitted Successfully!',
@@ -660,6 +662,18 @@ const Assessment: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Set default values for missing fields */}
+            {(() => {
+              // Auto-set required fields based on form data
+              if (!assessmentData.investors) {
+                handleInputChange('investors', 'none');
+              }
+              if (!assessmentData.milestones) {
+                handleInputChange('milestones', 'concept');
+              }
+              return null;
+            })()}
           </div>
         );
 
