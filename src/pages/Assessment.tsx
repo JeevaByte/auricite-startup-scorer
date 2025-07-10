@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,8 +181,8 @@ const Assessment: React.FC = () => {
           employees: assessmentData.teamSize,
           mrr: assessmentData.mrr,
           funding_goal: assessmentData.fundingGoal,
-          investors: '0', // Default value
-          milestones: 'in_progress' // Default value
+          investors: 'none', // Default value that matches database constraint
+          milestones: 'concept' // Default value that matches database constraint
         })
         .select()
         .single();
@@ -344,20 +343,20 @@ const Assessment: React.FC = () => {
                 onValueChange={(value) => handleInputChange('mrr', value)}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="0" id="mrr1" />
-                  <Label htmlFor="mrr1">$0</Label>
+                  <RadioGroupItem value="none" id="mrr1" />
+                  <Label htmlFor="mrr1">No recurring revenue</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1k-10k" id="mrr2" />
-                  <Label htmlFor="mrr2">$1K - $10K</Label>
+                  <RadioGroupItem value="low" id="mrr2" />
+                  <Label htmlFor="mrr2">Under $10k/month</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="10k-100k" id="mrr3" />
-                  <Label htmlFor="mrr3">$10K - $100K</Label>
+                  <RadioGroupItem value="medium" id="mrr3" />
+                  <Label htmlFor="mrr3">$10k - $100k/month</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="100k+" id="mrr4" />
-                  <Label htmlFor="mrr4">$100K+</Label>
+                  <RadioGroupItem value="high" id="mrr4" />
+                  <Label htmlFor="mrr4">Over $100k/month</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -458,20 +457,20 @@ const Assessment: React.FC = () => {
                 onValueChange={(value) => handleInputChange('teamSize', value)}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1-5" id="size1" />
-                  <Label htmlFor="size1">1-5 members</Label>
+                  <RadioGroupItem value="1-2" id="size1" />
+                  <Label htmlFor="size1">1-2 employees</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="6-10" id="size2" />
-                  <Label htmlFor="size2">6-10 members</Label>
+                  <RadioGroupItem value="3-10" id="size2" />
+                  <Label htmlFor="size2">3-10 employees</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="11-50" id="size3" />
-                  <Label htmlFor="size3">11-50 members</Label>
+                  <Label htmlFor="size3">11-50 employees</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="50+" id="size4" />
-                  <Label htmlFor="size4">50+ members</Label>
+                  <Label htmlFor="size4">50+ employees</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -695,7 +694,7 @@ const Assessment: React.FC = () => {
             </p>
             <Progress value={((currentStep + 1) / steps.length) * 100} className="w-full mt-4" />
             <div className="text-sm text-muted-foreground mt-2">
-              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+              Step {currentStep + 1} of {steps[currentStep].title}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
