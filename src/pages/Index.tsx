@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,7 +5,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText } from 'lucide-react';
+import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText, BookOpen } from 'lucide-react';
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { Hero } from '@/components/Hero';
 
@@ -128,7 +127,7 @@ export default function Index() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <Button
               variant="outline"
               className="h-24 flex-col space-y-2"
@@ -152,6 +151,16 @@ export default function Index() {
             <Button
               variant="outline"
               className="h-24 flex-col space-y-2"
+              onClick={() => navigate('/learn')}
+              aria-label="Access video tutorials and guides"
+            >
+              <BookOpen className="h-6 w-6" />
+              <span>Learn & Tutorials</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-24 flex-col space-y-2"
               onClick={() => navigate('/pricing')}
               aria-label="View pricing plans"
             >
@@ -162,8 +171,67 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Learning Section */}
       <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Learn & Improve</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Master fundraising with our comprehensive video tutorials and expert insights
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <BookOpen className="h-10 w-10 text-primary mb-4" />
+                <CardTitle>Platform Tutorials</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Step-by-step guides to master every feature of our platform.
+                </p>
+                <Button variant="outline" onClick={() => navigate('/learn')}>
+                  Watch Tutorials
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <TrendingUp className="h-10 w-10 text-primary mb-4" />
+                <CardTitle>Fundraising Strategies</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Expert insights on successful fundraising and investor relations.
+                </p>
+                <Button variant="outline" onClick={() => navigate('/learn')}>
+                  Learn Strategies
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <FileText className="h-10 w-10 text-primary mb-4" />
+                <CardTitle>Pitch Deck Mastery</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Create compelling presentations that capture investor attention.
+                </p>
+                <Button variant="outline" onClick={() => navigate('/learn')}>
+                  Master Pitching
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Choose InvestReady?</h2>
@@ -250,12 +318,12 @@ export default function Index() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => navigate('/ai-feedback')}
+              onClick={() => navigate('/learn')}
               className="text-lg px-8 py-6 bg-transparent border-white text-white hover:bg-white hover:text-primary"
-              aria-label="Try our AI-powered tools"
+              aria-label="Access our learning resources"
             >
-              <Brain className="mr-2 h-5 w-5" />
-              Try AI Tools
+              <BookOpen className="mr-2 h-5 w-5" />
+              Start Learning
             </Button>
           </div>
         </div>

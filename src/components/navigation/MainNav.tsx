@@ -3,34 +3,33 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/assessment', label: 'Take Assessment' },
-  { href: '/ai-feedback', label: 'AI Feedback' },
-  { href: '/pricing', label: 'Pricing' },
-];
-
 export const MainNav: React.FC = () => {
   const location = useLocation();
+  
+  const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Assessment', href: '/assessment' },
+    { name: 'AI Tools', href: '/ai-feedback' },
+    { name: 'Learn', href: '/learn' },
+    { name: 'Pricing', href: '/pricing' },
+  ];
 
   return (
-    <div className="mr-4 hidden md:flex">
-      <nav className="flex items-center space-x-6 text-sm font-medium">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={cn(
-              "transition-colors hover:text-foreground/80",
-              location.pathname === item.href
-                ? "text-foreground"
-                : "text-foreground/60"
-            )}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-    </div>
+    <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+      {navigation.map((item) => (
+        <Link
+          key={item.name}
+          to={item.href}
+          className={cn(
+            'text-sm font-medium transition-colors hover:text-primary',
+            location.pathname === item.href
+              ? 'text-foreground'
+              : 'text-muted-foreground'
+          )}
+        >
+          {item.name}
+        </Link>
+      ))}
+    </nav>
   );
 };

@@ -41,34 +41,63 @@ export default function Auth() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      // Basic validation
+      if (!email || !password || !fullName) {
+        setError('Please fill in all required fields');
+        return;
+      }
+
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
           }
         }
       });
 
       if (error) {
+        console.error('Signup error:', error);
         if (error.message.includes('already registered')) {
           setError('This email is already registered. Please sign in instead.');
+          setIsSignUp(false);
+        } else if (error.message.includes('Invalid email')) {
+          setError('Please enter a valid email address');
+        } else if (error.message.includes('Password')) {
+          setError('Password must be at least 6 characters long');
         } else {
           setError(error.message);
         }
         return;
       }
 
-      toast({
-        title: 'Account created successfully!',
-        description: 'Please check your email to confirm your account.',
-      });
-      
-      // Switch to sign in tab
-      setIsSignUp(false);
-    } catch (error) {
+      if (data.user) {
+        toast({
+          title: 'Account created successfully!',
+          description: data.user.email_confirmed_at 
+            ? 'You can now start using the platform.' 
+            : 'Please check your email to confirm your account before signing in.',
+        });
+        
+        // If email is already confirmed, redirect to main page
+        if (data.user.email_confirmed_at) {
+          const returnTo = searchParams.get('returnTo') || '/';
+          navigate(returnTo);
+        } else {
+          // Switch to sign in tab for email confirmation
+          setIsSignUp(false);
+          setPassword('');
+        }
+      }
+    } catch (error: any) {
+      console.error('Unexpected signup error:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -81,27 +110,42 @@ export default function Auth() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      // Basic validation
+      if (!email || !password) {
+        setError('Please enter both email and password');
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
         password,
       });
 
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password. Please check your credentials.');
+        console.error('Signin error:', error);
+        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
         } else if (error.message.includes('Email not confirmed')) {
           setError('Please check your email and click the confirmation link before signing in.');
+        } else if (error.message.includes('Too many requests')) {
+          setError('Too many login attempts. Please wait a few minutes before trying again.');
         } else {
-          setError(error.message);
+          setError('Unable to sign in. Please check your credentials and try again.');
         }
         return;
       }
 
-      toast({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.',
-      });
-    } catch (error) {
+      if (data.user) {
+        toast({
+          title: 'Welcome back!',
+          description: 'You have been signed in successfully.',
+        });
+        
+        const returnTo = searchParams.get('returnTo') || '/';
+        navigate(returnTo);
+      }
+    } catch (error: any) {
+      console.error('Unexpected signin error:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -140,13 +184,19 @@ export default function Auth() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger 
                   value="signin" 
-                  onClick={() => setIsSignUp(false)}
+                  onClick={() => {
+                    setIsSignUp(false);
+                    setError('');
+                  }}
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup" 
-                  onClick={() => setIsSignUp(true)}
+                  onClick={() => {
+                    setIsSignUp(true);
+                    setError('');
+                  }}
                 >
                   Sign Up
                 </TabsTrigger>
@@ -163,7 +213,7 @@ export default function Auth() {
             <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
               {isSignUp && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -180,7 +230,7 @@ export default function Auth() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -196,7 +246,7 @@ export default function Auth() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password *</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -223,6 +273,11 @@ export default function Auth() {
                     )}
                   </Button>
                 </div>
+                {isSignUp && (
+                  <p className="text-xs text-muted-foreground">
+                    Password must be at least 6 characters long
+                  </p>
+                )}
               </div>
 
               <Button
@@ -247,7 +302,10 @@ export default function Auth() {
                   Already have an account?{' '}
                   <Button
                     variant="link"
-                    onClick={() => setIsSignUp(false)}
+                    onClick={() => {
+                      setIsSignUp(false);
+                      setError('');
+                    }}
                     className="p-0 h-auto"
                   >
                     Sign in
@@ -258,7 +316,10 @@ export default function Auth() {
                   Don't have an account?{' '}
                   <Button
                     variant="link"
-                    onClick={() => setIsSignUp(true)}
+                    onClick={() => {
+                      setIsSignUp(true);
+                      setError('');
+                    }}
                     className="p-0 h-auto"
                   >
                     Sign up

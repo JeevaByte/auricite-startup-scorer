@@ -19,6 +19,7 @@ import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Assessment from "./pages/Assessment";
+import Learn from "./pages/Learn";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
@@ -50,6 +51,7 @@ const App = () => (
                   <Route path="/ai-feedback" element={<AIFeedback />} />
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/learn" element={<Learn />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="*" element={<NotFound />} />

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validatePassword } from '@/utils/passwordValidation';
@@ -24,12 +26,14 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const { toast } = useToast();
 
   const passwordValidation = validatePassword(password);
 
   const handleSocialSignIn = async (provider: 'google' | 'github' | 'linkedin_oidc' | 'twitter' | 'facebook') => {
     setSocialLoading(provider);
+    setError('');
     
     try {
       // Use the current site URL for redirect
@@ -45,11 +49,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       if (error) {
         // Handle specific provider errors
         if (error.message.includes('provider is not enabled')) {
-          toast({
-            title: 'Provider Not Available',
-            description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication is not currently enabled. Please use email signup or contact support.`,
-            variant: 'destructive',
-          });
+          setError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication is not currently enabled. Please use email signup or contact support.`);
         } else {
           throw error;
         }
@@ -61,11 +61,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       }
     } catch (error: any) {
       console.error(`${provider} auth error:`, error);
-      toast({
-        title: 'Authentication Error',
-        description: error.message || `An error occurred with ${provider} authentication`,
-        variant: 'destructive',
-      });
+      setError(error.message || `An error occurred with ${provider} authentication`);
     } finally {
       setSocialLoading(null);
     }
@@ -74,24 +70,34 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const sanitizedEmail = sanitizeEmail(email);
       const sanitizedFullName = sanitizeText(fullName);
       const sanitizedCompanyName = sanitizeText(companyName);
 
+      // Enhanced validation
+      if (!sanitizedEmail || !password || !sanitizedFullName) {
+        setError('Please fill in all required fields');
+        return;
+      }
+
       if (!validateEmail(sanitizedEmail)) {
-        throw new Error('Please enter a valid email address');
+        setError('Please enter a valid email address');
+        return;
       }
 
       if (!passwordValidation.isValid) {
-        throw new Error('Please ensure your password meets all requirements');
+        setError('Please ensure your password meets all requirements');
+        return;
       }
 
       const clientIP = 'signup-' + sanitizedEmail;
       if (authRateLimiter.isRateLimited(clientIP)) {
         const remainingTime = authRateLimiter.getRemainingTime(clientIP);
-        throw new Error(`Too many signup attempts. Please try again in ${remainingTime} seconds.`);
+        setError(`Too many signup attempts. Please try again in ${remainingTime} seconds.`);
+        return;
       }
 
       const redirectUrl = `${window.location.origin}/`;
@@ -109,7 +115,16 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('already registered')) {
+          setError('This email is already registered. Please sign in instead.');
+        } else if (error.message.includes('Invalid email')) {
+          setError('Please enter a valid email address');
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
 
       if (data.user && data.user.email_confirmed_at) {
         await createUserProfile(data.user.id, sanitizedFullName, sanitizedCompanyName, sanitizedEmail);
@@ -125,11 +140,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       onClose();
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'An error occurred during signup',
-        variant: 'destructive',
-      });
+      setError(error.message || 'An error occurred during signup');
     } finally {
       setLoading(false);
     }
@@ -157,30 +168,43 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const sanitizedEmail = sanitizeEmail(email);
 
+      // Enhanced validation
+      if (!sanitizedEmail || !password) {
+        setError('Please enter both email and password');
+        return;
+      }
+
       if (!validateEmail(sanitizedEmail)) {
-        throw new Error('Please enter a valid email address');
+        setError('Please enter a valid email address');
+        return;
       }
 
       const clientIP = 'signin-' + sanitizedEmail;
       if (authRateLimiter.isRateLimited(clientIP)) {
         const remainingTime = authRateLimiter.getRemainingTime(clientIP);
-        throw new Error(`Too many login attempts. Please try again in ${remainingTime} seconds.`);
+        setError(`Too many login attempts. Please try again in ${remainingTime} seconds.`);
+        return;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
         password,
       });
 
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link before signing in.');
+        } else {
+          setError('Unable to sign in. Please check your credentials and try again.');
         }
-        throw error;
+        return;
       }
 
       authRateLimiter.reset('signin-' + sanitizedEmail);
@@ -192,11 +216,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       onClose();
     } catch (error: any) {
       console.error('Signin error:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'An error occurred during signin',
-        variant: 'destructive',
-      });
+      setError(error.message || 'An error occurred during signin');
     } finally {
       setLoading(false);
     }
@@ -228,8 +248,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin" onClick={() => setError('')}>Sign In</TabsTrigger>
+            <TabsTrigger value="signup" onClick={() => setError('')}>Sign Up</TabsTrigger>
           </TabsList>
           
           <TabsContent value="signin" className="space-y-4">
@@ -252,6 +272,12 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               </div>
             </div>
 
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <Label htmlFor="email">Email</Label>
@@ -272,7 +298,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={8}
+                  minLength={6}
                   maxLength={128}
                 />
               </div>
@@ -301,6 +327,12 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 </span>
               </div>
             </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
