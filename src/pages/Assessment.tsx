@@ -478,7 +478,6 @@ const Assessment: React.FC = () => {
               </RadioGroup>
             </div>
 
-            
             <div className="space-y-2">
               <Label htmlFor="keyTeamMembers" className="text-base font-medium">Key Team Members Background *</Label>
               <Select value={assessmentData.keyTeamMembers} onValueChange={(value) => handleInputChange('keyTeamMembers', value)}>
