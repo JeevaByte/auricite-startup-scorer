@@ -335,7 +335,11 @@ export const AssessmentWizard: React.FC = () => {
         .eq('user_id', user.id);
 
       navigate('/results', { 
-        state: { result, assessmentData }
+        state: { 
+          result, 
+          assessmentData,
+          scoreResult: result // Add for compatibility
+        }
       });
 
     } catch (error) {

@@ -30,11 +30,23 @@ const Results: React.FC<ResultsProps> = () => {
 
   useEffect(() => {
     // Extract data passed via React Router's location.state
-    if (location.state && location.state.result && location.state.assessmentData) {
-      setScoreResult(location.state.result);
-      setAssessmentData(location.state.assessmentData);
+    if (location.state) {
+      // Handle both new format (result) and legacy format (scoreResult)
+      const scoreResult = location.state.result || location.state.scoreResult;
+      const assessmentData = location.state.assessmentData;
+      
+      if (scoreResult && assessmentData) {
+        setScoreResult(scoreResult);
+        setAssessmentData(assessmentData);
+      } else {
+        // If no data is passed, redirect to assessment
+        navigate('/assessment');
+      }
+    } else {
+      // If no state at all, redirect to assessment
+      navigate('/assessment');
     }
-  }, [location]);
+  }, [location, navigate]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
