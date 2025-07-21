@@ -36,15 +36,15 @@ export interface DatabaseScore {
   created_at: string;
 }
 
-export const saveAssessmentData = async (data: AssessmentData, userId: string) => {
+export const saveAssessmentData = async (data: AssessmentData, userId: string, scoreResult?: any) => {
   try {
     const { error } = await supabase
       .from('assessment_history')
-      .upsert({ 
+      .insert({ 
         user_id: userId, 
         assessment_data: data as any,
-        score_result: {} as any
-      }, { onConflict: 'user_id' });
+        score_result: scoreResult || {} as any
+      });
 
     if (error) {
       console.error('Error saving assessment data:', error);

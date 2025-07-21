@@ -303,7 +303,7 @@ export const AssessmentWizard: React.FC = () => {
       }
 
       // Save to assessment history
-      await saveAssessmentData(assessmentData, user.id);
+      await saveAssessmentData(assessmentData, user.id, result);
 
       // Send email notification if user has email
       if (user.email) {
