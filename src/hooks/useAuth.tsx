@@ -36,19 +36,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Log security events
+        // Handle different auth events
         if (event === 'SIGNED_IN' && session?.user) {
-          logSecurityEvent({
-            type: 'AUTH_FAILURE',
-            userId: session.user.id,
-            details: 'User signed in successfully',
-            timestamp: new Date()
-          });
+          // Successful sign in
+          setTimeout(() => {
+            logSecurityEvent({
+              type: 'AUTH_SUCCESS',
+              userId: session.user.id,
+              details: 'User signed in successfully',
+              timestamp: new Date()
+            });
+          }, 0);
         }
         
         if (event === 'SIGNED_OUT') {
@@ -57,23 +62,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           sessionStorage.clear();
           
           // Clear any cached user data
-          if (user) {
-            logSecurityEvent({
-              type: 'AUTH_FAILURE',
-              userId: user.id,
-              details: 'User signed out',
-              timestamp: new Date()
-            });
-          }
+          setTimeout(() => {
+            if (user) {
+              logSecurityEvent({
+                type: 'AUTH_SUCCESS',
+                userId: user.id,
+                details: 'User signed out',
+                timestamp: new Date()
+              });
+            }
+          }, 0);
         }
         
-        if (event === 'TOKEN_REFRESHED') {
-          logSecurityEvent({
-            type: 'AUTH_FAILURE',
-            userId: session?.user?.id,
-            details: 'Token refreshed',
-            timestamp: new Date()
-          });
+        if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Token successfully refreshed
+          setTimeout(() => {
+            logSecurityEvent({
+              type: 'AUTH_SUCCESS',
+              userId: session.user.id,
+              details: 'Token refreshed successfully',
+              timestamp: new Date()
+            });
+          }, 0);
+        }
+        
+        // Handle authentication errors - check if session is invalid
+        if (!session && event === 'SIGNED_OUT') {
+          // Check if this was due to token issues
+          setTimeout(async () => {
+            try {
+              const { error } = await supabase.auth.getSession();
+              if (error?.message?.includes('refresh_token_not_found') || error?.message?.includes('Invalid Refresh Token')) {
+                console.error('Invalid refresh token detected, clearing auth state');
+                logSecurityEvent({
+                  type: 'AUTH_FAILURE',
+                  details: 'Invalid refresh token - user session cleared',
+                  timestamp: new Date()
+                });
+              }
+            } catch (err) {
+              console.error('Error checking session:', err);
+            }
+          }, 0);
         }
       }
     );
@@ -81,14 +111,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        logSecurityEvent({
-          type: 'AUTH_FAILURE',
-          details: 'Error getting session',
-          timestamp: new Date()
-        });
+        console.error('Error getting session:', error);
+        setTimeout(() => {
+          logSecurityEvent({
+            type: 'AUTH_FAILURE',
+            details: `Error getting session: ${error.message}`,
+            timestamp: new Date()
+          });
+        }, 0);
+        
+        // If there's an error getting session, clear any corrupted auth data
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          console.log('Existing session found for user:', session.user.id);
+        }
       }
-      setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
     });
 

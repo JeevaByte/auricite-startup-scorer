@@ -1,7 +1,7 @@
 
 // Security-focused logging utility
 interface SecurityEvent {
-  type: 'AUTH_FAILURE' | 'UNAUTHORIZED_ACCESS' | 'SUSPICIOUS_ACTIVITY' | 'DATA_ACCESS';
+  type: 'AUTH_SUCCESS' | 'AUTH_FAILURE' | 'UNAUTHORIZED_ACCESS' | 'SUSPICIOUS_ACTIVITY' | 'DATA_ACCESS';
   userId?: string;
   details: string;
   timestamp: Date;
