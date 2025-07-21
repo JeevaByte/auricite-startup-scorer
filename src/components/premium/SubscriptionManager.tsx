@@ -83,18 +83,27 @@ export const SubscriptionManager: React.FC = () => {
   const handleUpgrade = async (planId: string) => {
     setUpgrading(planId);
     try {
-      // In a real implementation, this would integrate with Stripe
-      // For now, we'll show a placeholder
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planId }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+      
       toast({
-        title: 'Feature Coming Soon',
-        description: 'Payment integration will be available in the next release.',
+        title: "Redirecting to payment...",
+        description: "Please complete your payment in the new tab.",
       });
     } catch (error) {
-      console.error('Error upgrading subscription:', error);
+      console.error('Checkout error:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to process subscription upgrade',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to start checkout process. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setUpgrading(null);
