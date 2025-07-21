@@ -6,10 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User, History, Settings, FileText, Eye } from 'lucide-react';
+import { User, History, Settings, FileText, Eye, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DataPrivacySettings } from '@/components/profile/DataPrivacySettings';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
+import { ProfileEdit } from '@/components/profile/ProfileEdit';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -87,10 +88,14 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="edit" className="flex items-center space-x-2">
+              <Edit className="h-4 w-4" />
+              <span>Edit Profile</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center space-x-2">
               <History className="h-4 w-4" />
@@ -138,6 +143,10 @@ export default function Profile() {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="edit" className="mt-6">
+            <ProfileEdit />
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
