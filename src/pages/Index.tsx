@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
+import { OnboardingTour, defaultOnboardingSteps } from '@/components/onboarding/OnboardingTour';
+import { InAppFeedback } from '@/components/feedback/InAppFeedback';
+import { HelpCenter } from '@/components/help/HelpCenter';
+import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +19,15 @@ export default function Index() {
   const { hasPremiumAccess } = useSubscription();
   const [searchParams] = useSearchParams();
   const showAssessment = searchParams.get('assessment') === 'true';
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showHelpCenter, setShowHelpCenter] = useState(false);
+
+  useEffect(() => {
+    if (user && !localStorage.getItem('onboarding-completed')) {
+      const timer = setTimeout(() => setShowOnboarding(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   const handleGetStarted = () => {
     if (!user) {
@@ -328,6 +341,39 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* Help Button */}
+      <Button
+        onClick={() => setShowHelpCenter(true)}
+        className="fixed bottom-20 right-4 z-40 rounded-full w-12 h-12"
+        size="icon"
+        variant="outline"
+      >
+        <HelpCircle className="w-5 h-5" />
+      </Button>
+
+      {/* Onboarding Tour */}
+      <OnboardingTour
+        steps={defaultOnboardingSteps}
+        isVisible={showOnboarding}
+        onComplete={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('onboarding-completed', 'true');
+        }}
+        onSkip={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('onboarding-skipped', 'true');
+        }}
+      />
+
+      {/* Help Center */}
+      <HelpCenter
+        isOpen={showHelpCenter}
+        onClose={() => setShowHelpCenter(false)}
+      />
+
+      {/* In-App Feedback */}
+      <InAppFeedback />
     </div>
   );
 }

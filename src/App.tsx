@@ -6,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AccessibilityProvider } from "@/components/accessibility/AccessibilityProvider";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ErrorBoundary } from "@/components/monitoring/ErrorBoundary";
+import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
+import { UserBehaviorTracker } from "@/components/analytics/UserBehaviorTracker";
+import { PWAPrompt } from "@/components/pwa/PWAPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Results from "./pages/Results";
@@ -28,17 +32,20 @@ import { EnhancedCookieConsent } from "./components/EnhancedCookieConsent";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AccessibilityProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-1">
-                <Routes>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AccessibilityProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <PerformanceMonitor />
+              <UserBehaviorTracker />
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">
+                  <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/assessment" element={<Assessment />} />
@@ -55,16 +62,18 @@ const App = () => (
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-              <EnhancedCookieConsent />
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AccessibilityProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+                  </Routes>
+                </main>
+                <Footer />
+                <EnhancedCookieConsent />
+                <PWAPrompt />
+              </div>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AccessibilityProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
