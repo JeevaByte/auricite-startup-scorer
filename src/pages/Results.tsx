@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,9 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
 import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
+import { shareResults } from '@/utils/shareUtils';
+import { generateReportData, downloadAsJSON } from '@/utils/reportGenerator';
+import { useToast } from '@/hooks/use-toast';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 interface ResultsProps {
@@ -18,6 +21,8 @@ interface ResultsProps {
 
 const Results: React.FC<ResultsProps> = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [result, setScoreResult] = useState<ScoreResult | null>(null);
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
@@ -210,6 +215,51 @@ const Results: React.FC<ResultsProps> = () => {
     return <AlertCircle className="h-4 w-4 text-yellow-600" />;
   };
 
+  const handleTakeAgain = () => {
+    navigate('/');
+  };
+
+  const handleDownloadReport = async () => {
+    if (!result || !assessmentData) return;
+    
+    try {
+      const reportData = generateReportData(assessmentData, result, recommendations);
+      await downloadAsJSON(reportData, `investment-readiness-report-${new Date().toISOString().split('T')[0]}.json`);
+      toast({
+        title: "Report Downloaded",
+        description: "Your investment readiness report has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download the report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!result) return;
+    
+    try {
+      const wasNativeShare = await shareResults(result);
+      if (!wasNativeShare) {
+        toast({
+          title: "Copied to Clipboard",
+          description: "Your results have been copied to the clipboard.",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing results:', error);
+      toast({
+        title: "Share Failed",
+        description: "Failed to share results. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-8">
@@ -353,15 +403,15 @@ const Results: React.FC<ResultsProps> = () => {
 
       {/* Action Buttons */}
       <div className="flex justify-center mt-8">
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleTakeAgain}>
           <RotateCcw className="h-4 w-4 mr-2" />
           Take Again
         </Button>
-        <Button className="ml-4">
+        <Button className="ml-4" onClick={handleDownloadReport}>
           <Download className="h-4 w-4 mr-2" />
           Download Report
         </Button>
-        <Button className="ml-4">
+        <Button className="ml-4" onClick={handleShare}>
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </Button>
