@@ -334,6 +334,7 @@ export const AssessmentWizard: React.FC = () => {
         .delete()
         .eq('user_id', user.id);
 
+      console.log('AssessmentWizard - Navigating to results with:', { result, assessmentData });
       navigate('/results', { 
         state: { 
           result, 

@@ -30,19 +30,26 @@ const Results: React.FC<ResultsProps> = () => {
 
   useEffect(() => {
     // Extract data passed via React Router's location.state
+    console.log('Results page - location.state:', location.state);
+    
     if (location.state) {
       // Handle both new format (result) and legacy format (scoreResult)
       const scoreResult = location.state.result || location.state.scoreResult;
       const assessmentData = location.state.assessmentData;
       
+      console.log('Results page - scoreResult:', scoreResult);
+      console.log('Results page - assessmentData:', assessmentData);
+      
       if (scoreResult && assessmentData) {
         setScoreResult(scoreResult);
         setAssessmentData(assessmentData);
       } else {
+        console.log('Results page - Missing data, redirecting to assessment');
         // If no data is passed, redirect to assessment
         navigate('/assessment');
       }
     } else {
+      console.log('Results page - No location state, redirecting to assessment');
       // If no state at all, redirect to assessment
       navigate('/assessment');
     }
