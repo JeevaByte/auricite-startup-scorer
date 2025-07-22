@@ -164,7 +164,7 @@ export const SubscriptionManager: React.FC = () => {
       <div>
         <h2 className="text-2xl font-bold mb-6">Available Plans</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
+          {plans.slice(0, 3).map((plan) => {
             const isCurrentPlan = currentPlan?.id === plan.id;
             const isFree = plan.price_monthly === 0;
             
@@ -250,7 +250,7 @@ export const SubscriptionManager: React.FC = () => {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2">Feature</th>
-                  {plans.map(plan => (
+                  {plans.slice(0, 3).map(plan => (
                     <th key={plan.id} className="text-center p-2">{plan.name}</th>
                   ))}
                 </tr>
@@ -258,7 +258,7 @@ export const SubscriptionManager: React.FC = () => {
               <tbody>
                 <tr className="border-b">
                   <td className="p-2">Basic Assessment</td>
-                  {plans.map(plan => (
+                  {plans.slice(0, 3).map(plan => (
                     <td key={plan.id} className="text-center p-2">
                       <Check className="h-4 w-4 text-green-500 mx-auto" />
                     </td>
@@ -266,7 +266,7 @@ export const SubscriptionManager: React.FC = () => {
                 </tr>
                 <tr className="border-b">
                   <td className="p-2">Detailed Reports</td>
-                  {plans.map(plan => (
+                  {plans.slice(0, 3).map(plan => (
                     <td key={plan.id} className="text-center p-2">
                       {plan.name !== 'Free' ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
@@ -278,7 +278,7 @@ export const SubscriptionManager: React.FC = () => {
                 </tr>
                 <tr className="border-b">
                   <td className="p-2">Investor Matching</td>
-                  {plans.map(plan => (
+                  {plans.slice(0, 3).map(plan => (
                     <td key={plan.id} className="text-center p-2">
                       {plan.name === 'Enterprise' ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
