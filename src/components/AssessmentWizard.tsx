@@ -336,20 +336,25 @@ export const AssessmentWizard: React.FC = () => {
 
       console.log('AssessmentWizard - Navigating to results with:', { result, assessmentData });
       
-      // Store result in sessionStorage as backup
-      sessionStorage.setItem('assessmentResult', JSON.stringify({
+      // Store result in sessionStorage as backup - do this first
+      const resultData = {
         result,
         assessmentData,
         assessmentId: assessment.id
-      }));
+      };
+      console.log('AssessmentWizard - Storing in sessionStorage:', resultData);
+      sessionStorage.setItem('assessmentResult', JSON.stringify(resultData));
       
-      navigate('/results', { 
-        state: { 
-          result, 
-          assessmentData,
-          scoreResult: result // Add for compatibility
-        }
-      });
+      // Add a small delay to ensure sessionStorage is written
+      setTimeout(() => {
+        navigate('/results', { 
+          state: { 
+            result, 
+            assessmentData,
+            scoreResult: result // Add for compatibility
+          }
+        });
+      }, 100);
 
     } catch (error) {
       console.error('Error submitting assessment:', error);

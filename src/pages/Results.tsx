@@ -52,11 +52,14 @@ const Results: React.FC<ResultsProps> = () => {
     // Fallback to sessionStorage if location.state is missing or incomplete
     console.log('Results page - Checking sessionStorage for data');
     const storedData = sessionStorage.getItem('assessmentResult');
+    console.log('Results page - Raw sessionStorage data:', storedData);
     
     if (storedData) {
       try {
-        const { result, assessmentData } = JSON.parse(storedData);
-        console.log('Results page - Found data in sessionStorage:', { result, assessmentData });
+        const parsedData = JSON.parse(storedData);
+        console.log('Results page - Parsed sessionStorage data:', parsedData);
+        const { result, assessmentData } = parsedData;
+        console.log('Results page - Extracted data:', { result, assessmentData });
         
         if (result && assessmentData) {
           setScoreResult(result);
