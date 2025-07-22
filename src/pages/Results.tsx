@@ -43,16 +43,36 @@ const Results: React.FC<ResultsProps> = () => {
       if (scoreResult && assessmentData) {
         setScoreResult(scoreResult);
         setAssessmentData(assessmentData);
-      } else {
-        console.log('Results page - Missing data, redirecting to assessment');
-        // If no data is passed, redirect to assessment
-        navigate('/assessment');
+        // Clear sessionStorage since we have the data
+        sessionStorage.removeItem('assessmentResult');
+        return;
       }
-    } else {
-      console.log('Results page - No location state, redirecting to assessment');
-      // If no state at all, redirect to assessment
-      navigate('/assessment');
     }
+    
+    // Fallback to sessionStorage if location.state is missing or incomplete
+    console.log('Results page - Checking sessionStorage for data');
+    const storedData = sessionStorage.getItem('assessmentResult');
+    
+    if (storedData) {
+      try {
+        const { result, assessmentData } = JSON.parse(storedData);
+        console.log('Results page - Found data in sessionStorage:', { result, assessmentData });
+        
+        if (result && assessmentData) {
+          setScoreResult(result);
+          setAssessmentData(assessmentData);
+          // Clear sessionStorage after successful retrieval
+          sessionStorage.removeItem('assessmentResult');
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing stored assessment data:', error);
+        sessionStorage.removeItem('assessmentResult');
+      }
+    }
+    
+    console.log('Results page - No data found, redirecting to assessment');
+    navigate('/assessment');
   }, [location, navigate]);
 
   useEffect(() => {

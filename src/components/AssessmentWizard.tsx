@@ -335,6 +335,14 @@ export const AssessmentWizard: React.FC = () => {
         .eq('user_id', user.id);
 
       console.log('AssessmentWizard - Navigating to results with:', { result, assessmentData });
+      
+      // Store result in sessionStorage as backup
+      sessionStorage.setItem('assessmentResult', JSON.stringify({
+        result,
+        assessmentData,
+        assessmentId: assessment.id
+      }));
+      
       navigate('/results', { 
         state: { 
           result, 
