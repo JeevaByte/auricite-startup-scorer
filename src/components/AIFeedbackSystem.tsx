@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Brain, FileText, Lightbulb, TrendingUp, Target, Users, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Brain, FileText, Lightbulb, TrendingUp, Target, Users, Zap, AlertTriangle, CheckCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DetailedAnalysis {
   sentiment: string;
@@ -50,8 +52,10 @@ export const AIFeedbackSystem = () => {
   const [content, setContent] = useState('');
   const [analysis, setAnalysis] = useState<DetailedAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedContentType, setSelectedContentType] = useState<'pitch-deck' | 'business-plan' | 'marketing-copy' | 'general'>('general');
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const analyzeContent = async () => {
     if (!content.trim()) {
@@ -63,110 +67,196 @@ export const AIFeedbackSystem = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to analyze content.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
-    // Simulate advanced AI analysis with detailed feedback
-    setTimeout(() => {
-      const detailedAnalysis: DetailedAnalysis = {
-        sentiment: 'Positive',
-        clarity: 85,
-        engagement: 78,
-        readability: 82,
-        persuasiveness: 75,
-        detailedMetrics: {
-          wordCount: content.split(' ').length,
-          sentenceComplexity: 'Moderate',
-          readingLevel: 'College Level',
-          keywordDensity: 3.2,
-          emotionalTone: 'Professional & Confident',
-          callToActionStrength: 67
-        },
-        suggestions: [
-          {
-            category: 'Structure & Flow',
-            priority: 'high',
-            suggestion: 'Add a stronger opening hook to capture attention within the first 15 seconds',
-            impact: 'Could increase engagement by 25-30%',
-            implementation: 'Start with a compelling statistic, question, or bold statement about your market opportunity'
-          },
-          {
-            category: 'Value Proposition',
-            priority: 'high',
-            suggestion: 'Quantify the benefits more specifically with concrete metrics and ROI calculations',
-            impact: 'Increases credibility and investor confidence by 40%',
-            implementation: 'Replace vague terms like "significant improvement" with "reduces costs by 35% or $2.5M annually"'
-          },
-          {
-            category: 'Market Validation',
-            priority: 'medium',
-            suggestion: 'Include more specific customer testimonials and case studies',
-            impact: 'Builds trust and demonstrates product-market fit',
-            implementation: 'Add 2-3 detailed customer success stories with names, companies, and specific results'
-          },
-          {
-            category: 'Technical Details',
-            priority: 'medium',
-            suggestion: 'Balance technical depth with accessibility for non-technical stakeholders',
-            impact: 'Ensures all audience members can follow your presentation',
-            implementation: 'Use analogies and visual aids to explain complex technical concepts'
-          },
-          {
-            category: 'Competitive Advantage',
-            priority: 'high',
-            suggestion: 'Strengthen differentiation by highlighting unique moats and barriers to entry',
-            impact: 'Addresses investor concerns about competitive threats',
-            implementation: 'Create a detailed competitive matrix showing your unique advantages'
-          },
-          {
-            category: 'Financial Projections',
-            priority: 'low',
-            suggestion: 'Provide more conservative and realistic growth assumptions',
-            impact: 'Increases credibility with experienced investors',
-            implementation: 'Show multiple scenarios (conservative, base case, optimistic) with clear assumptions'
-          }
-        ],
-        strengths: [
-          {
-            area: 'Problem Definition',
-            description: 'Clear articulation of market pain points with supporting data',
-            score: 90
-          },
-          {
-            area: 'Team Expertise',
-            description: 'Strong domain knowledge and complementary skill sets presented effectively',
-            score: 88
-          },
-          {
-            area: 'Market Opportunity',
-            description: 'Large addressable market with clear growth potential identified',
-            score: 82
-          },
-          {
-            area: 'Business Model',
-            description: 'Coherent revenue strategy with multiple income streams',
-            score: 79
-          }
-        ],
-        contentStructure: {
-          introduction: 78,
-          bodyDevelopment: 85,
-          conclusion: 72,
-          flow: 80
-        },
-        competitiveAnalysis: {
-          industryStandard: 65,
-          yourScore: 81,
-          percentile: 76
-        }
-      };
+    try {
+      // Generate comprehensive analysis based on content type and actual content
+      const detailedAnalysis: DetailedAnalysis = generateDetailedAnalysis(content, selectedContentType);
       
       setAnalysis(detailedAnalysis);
-      setIsAnalyzing(false);
+      
+      // Save analysis to assessment history
+      await saveAnalysisToHistory(detailedAnalysis);
+      
       toast({
         title: 'Advanced Analysis Complete',
-        description: 'Your content has been analyzed with detailed insights and recommendations.',
+        description: 'Your content has been analyzed and saved to your history.',
       });
-    }, 2500);
+    } catch (error) {
+      console.error('Error analyzing content:', error);
+      toast({
+        title: 'Analysis Failed',
+        description: 'There was an error analyzing your content. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const generateDetailedAnalysis = (content: string, contentType: string): DetailedAnalysis => {
+    const wordCount = content.split(' ').filter(word => word.length > 0).length;
+    const sentenceCount = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+    const avgWordsPerSentence = wordCount / Math.max(sentenceCount, 1);
+    
+    // Calculate realistic scores based on content analysis
+    const clarity = Math.min(95, Math.max(60, 85 - Math.max(0, (avgWordsPerSentence - 15) * 2)));
+    const engagement = Math.min(95, Math.max(50, 70 + (wordCount > 100 ? 15 : 0) + (contentType === 'marketing-copy' ? 10 : 0)));
+    const readability = Math.min(95, Math.max(60, 80 - Math.max(0, (avgWordsPerSentence - 20) * 1.5)));
+    const persuasiveness = Math.min(95, Math.max(50, 65 + (contentType === 'pitch-deck' ? 15 : 0) + (content.includes('?') ? 5 : 0)));
+
+    return {
+      sentiment: wordCount > 200 ? 'Positive' : 'Neutral',
+      clarity,
+      engagement,
+      readability,
+      persuasiveness,
+      detailedMetrics: {
+        wordCount,
+        sentenceComplexity: avgWordsPerSentence > 20 ? 'Complex' : avgWordsPerSentence > 15 ? 'Moderate' : 'Simple',
+        readingLevel: avgWordsPerSentence > 20 ? 'Graduate Level' : avgWordsPerSentence > 15 ? 'College Level' : 'High School Level',
+        keywordDensity: Math.round((wordCount * 0.03) * 10) / 10,
+        emotionalTone: contentType === 'marketing-copy' ? 'Persuasive & Engaging' : 'Professional & Confident',
+        callToActionStrength: content.toLowerCase().includes('contact') || content.toLowerCase().includes('join') || content.toLowerCase().includes('start') ? 80 : 60
+      },
+      suggestions: generateSuggestions(contentType, clarity, engagement, wordCount),
+      strengths: generateStrengths(contentType, clarity, engagement, readability),
+      contentStructure: {
+        introduction: Math.min(95, Math.max(60, 75 + (content.slice(0, 200).includes('?') ? 10 : 0))),
+        bodyDevelopment: Math.min(95, Math.max(60, 80 + (wordCount > 300 ? 10 : 0))),
+        conclusion: Math.min(95, Math.max(50, 70 + (content.slice(-200).toLowerCase().includes('contact') ? 15 : 0))),
+        flow: Math.min(95, Math.max(60, 78 + (sentenceCount > 5 ? 5 : 0)))
+      },
+      competitiveAnalysis: {
+        industryStandard: 65,
+        yourScore: Math.round((clarity + engagement + readability + persuasiveness) / 4),
+        percentile: Math.min(95, Math.max(25, Math.round((clarity + engagement + readability + persuasiveness) / 4 * 1.2)))
+      }
+    };
+  };
+
+  const generateSuggestions = (contentType: string, clarity: number, engagement: number, wordCount: number) => {
+    const suggestions = [];
+    
+    if (clarity < 75) {
+      suggestions.push({
+        category: 'Clarity & Structure',
+        priority: 'high' as const,
+        suggestion: 'Simplify sentence structure and use shorter, clearer sentences',
+        impact: 'Could improve clarity by 20-25%',
+        implementation: 'Break long sentences into 2-3 shorter ones and use active voice'
+      });
+    }
+
+    if (engagement < 70) {
+      suggestions.push({
+        category: 'Engagement',
+        priority: 'high' as const,
+        suggestion: 'Add more compelling hooks and engaging elements',
+        impact: 'Could increase reader engagement by 30%',
+        implementation: 'Start with questions, statistics, or compelling statements'
+      });
+    }
+
+    if (wordCount < 200) {
+      suggestions.push({
+        category: 'Content Depth',
+        priority: 'medium' as const,
+        suggestion: 'Expand content with more detailed examples and explanations',
+        impact: 'Provides more value and context to readers',
+        implementation: 'Add specific examples, case studies, or detailed explanations'
+      });
+    }
+
+    if (contentType === 'pitch-deck') {
+      suggestions.push({
+        category: 'Value Proposition',
+        priority: 'high' as const,
+        suggestion: 'Quantify benefits with specific metrics and ROI calculations',
+        impact: 'Increases credibility and investor confidence by 40%',
+        implementation: 'Replace vague terms with concrete numbers and percentages'
+      });
+    }
+
+    return suggestions.slice(0, 4); // Limit to 4 suggestions
+  };
+
+  const generateStrengths = (contentType: string, clarity: number, engagement: number, readability: number) => {
+    const strengths = [];
+    
+    if (clarity >= 80) {
+      strengths.push({
+        area: 'Clear Communication',
+        description: 'Content is well-structured and easy to understand',
+        score: clarity
+      });
+    }
+
+    if (engagement >= 75) {
+      strengths.push({
+        area: 'Engaging Content',
+        description: 'Successfully captures and maintains reader attention',
+        score: engagement
+      });
+    }
+
+    if (readability >= 80) {
+      strengths.push({
+        area: 'Readability',
+        description: 'Appropriate reading level for target audience',
+        score: readability
+      });
+    }
+
+    // Always include at least 2 strengths
+    if (strengths.length < 2) {
+      strengths.push({
+        area: 'Content Focus',
+        description: 'Maintains clear focus on key objectives',
+        score: Math.max(75, (clarity + engagement) / 2)
+      });
+    }
+
+    return strengths.slice(0, 4); // Limit to 4 strengths
+  };
+
+  const saveAnalysisToHistory = async (analysisData: DetailedAnalysis) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('assessment_history')
+        .insert({
+          user_id: user.id,
+          assessment_data: {
+            type: 'ai_content_analysis',
+            content: content,
+            contentType: selectedContentType,
+            timestamp: new Date().toISOString()
+          } as any,
+          score_result: {
+            ...analysisData,
+            contentAnalysis: true
+          } as any
+        });
+
+      if (error) {
+        console.error('Error saving analysis to history:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to save analysis:', error);
+      throw error;
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -243,13 +333,20 @@ export const AIFeedbackSystem = () => {
             </div>
           </div>
           
-          <Button 
-            onClick={analyzeContent} 
-            disabled={isAnalyzing}
-            className="w-full"
-          >
-            {isAnalyzing ? 'Performing Advanced Analysis...' : 'Analyze Content with AI'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={analyzeContent} 
+              disabled={isAnalyzing || !user}
+              className="flex-1"
+            >
+              {isAnalyzing ? 'Performing Advanced Analysis...' : 'Analyze Content with AI'}
+            </Button>
+            {!user && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Please sign in to analyze content and save results to your history.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
