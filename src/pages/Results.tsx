@@ -41,11 +41,18 @@ const Results: React.FC<ResultsProps> = () => {
       console.log('Results page - assessmentData:', assessmentData);
       
       if (scoreResult && assessmentData) {
-        setScoreResult(scoreResult);
-        setAssessmentData(assessmentData);
-        // Clear sessionStorage since we have the data
-        sessionStorage.removeItem('assessmentResult');
-        return;
+        // Validate that we have proper assessment data (not AI content analysis)
+        if (scoreResult.totalScore !== undefined && scoreResult.businessIdea !== undefined) {
+          setScoreResult(scoreResult);
+          setAssessmentData(assessmentData);
+          // Clear sessionStorage since we have the data
+          sessionStorage.removeItem('assessmentResult');
+          return;
+        } else {
+          console.log('Results page - Invalid score data format, redirecting to assessment');
+          navigate('/assessment');
+          return;
+        }
       }
     }
     
@@ -61,12 +68,14 @@ const Results: React.FC<ResultsProps> = () => {
         const { result, assessmentData } = parsedData;
         console.log('Results page - Extracted data:', { result, assessmentData });
         
-        if (result && assessmentData) {
+        if (result && assessmentData && result.totalScore !== undefined && result.businessIdea !== undefined) {
           setScoreResult(result);
           setAssessmentData(assessmentData);
           // Clear sessionStorage after successful retrieval
           sessionStorage.removeItem('assessmentResult');
           return;
+        } else {
+          console.log('Results page - Invalid stored data format');
         }
       } catch (error) {
         console.error('Error parsing stored assessment data:', error);
@@ -74,7 +83,7 @@ const Results: React.FC<ResultsProps> = () => {
       }
     }
     
-    console.log('Results page - No data found, redirecting to assessment');
+    console.log('Results page - No valid data found, redirecting to assessment');
     navigate('/assessment');
   }, [location, navigate]);
 

@@ -110,3 +110,22 @@ export const getUserAssessments = async (): Promise<(DatabaseAssessment & { scor
     return [];
   }
 };
+
+export const getUserAssessmentHistory = async (): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('assessment_history')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching assessment history:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching assessment history:', error);
+    return [];
+  }
+};

@@ -9,7 +9,11 @@ interface ScoreGaugeProps {
 }
 
 export const ScoreGauge = ({ score, maxScore, title, size = 'large' }: ScoreGaugeProps) => {
-  const percentage = (score / maxScore) * 100;
+  // Ensure score is a valid number
+  const validScore = typeof score === 'number' && !isNaN(score) ? score : 0;
+  const validMaxScore = typeof maxScore === 'number' && !isNaN(maxScore) && maxScore > 0 ? maxScore : 100;
+  
+  const percentage = (validScore / validMaxScore) * 100;
   const strokeWidth = size === 'large' ? 8 : 6;
   const radius = size === 'large' ? 80 : 50;
   const normalizedRadius = radius - strokeWidth * 2;
@@ -25,14 +29,14 @@ export const ScoreGauge = ({ score, maxScore, title, size = 'large' }: ScoreGaug
   };
 
   const getGrade = () => {
-    if (maxScore === 999) {
+    if (validMaxScore === 999) {
       // Total score grading
-      if (score >= 800) return 'A+';
-      if (score >= 700) return 'A';
-      if (score >= 600) return 'B+';
-      if (score >= 500) return 'B';
-      if (score >= 400) return 'C+';
-      if (score >= 300) return 'C';
+      if (validScore >= 800) return 'A+';
+      if (validScore >= 700) return 'A';
+      if (validScore >= 600) return 'B+';
+      if (validScore >= 500) return 'B';
+      if (validScore >= 400) return 'C+';
+      if (validScore >= 300) return 'C';
       return 'D';
     } else {
       // Individual category grading
@@ -80,9 +84,9 @@ export const ScoreGauge = ({ score, maxScore, title, size = 'large' }: ScoreGaug
         {/* Score display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className={`font-bold text-gray-900 ${size === 'large' ? 'text-2xl' : 'text-lg'}`}>
-            {score}
+            {validScore}
             <span className={`text-gray-500 ${size === 'large' ? 'text-sm' : 'text-xs'}`}>
-              /{maxScore}
+              /{validMaxScore}
             </span>
           </div>
           <div className={`font-semibold ${size === 'large' ? 'text-sm' : 'text-xs'}`} style={{ color: getColor() }}>
