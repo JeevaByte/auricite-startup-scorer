@@ -41,7 +41,7 @@ export const WaitlistCapture = ({
     setError('');
 
     try {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('waitlist_subscribers')
         .insert({
           email: email.trim().toLowerCase(),

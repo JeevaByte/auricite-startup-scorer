@@ -16,6 +16,8 @@ import { EnhancedShareButtons } from '@/components/EnhancedShareButtons';
 import { DownloadDialog } from '@/components/DownloadDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { ScoreFeedback } from '@/components/ScoreFeedback';
+import { EnhancedClustering } from '@/components/EnhancedClustering';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 interface ResultsProps {
@@ -479,6 +481,23 @@ const Results: React.FC<ResultsProps> = () => {
             name: user?.user_metadata?.full_name,
             email: user?.email,
           }}
+        />
+      </div>
+
+      {/* Enhanced Clustering Analysis */}
+      <div className="mt-8">
+        <EnhancedClustering 
+          userScore={result.totalScore}
+          sector="Technology"
+          fundingStage="Pre-Seed"
+        />
+      </div>
+
+      {/* Score Feedback */}
+      <div className="mt-8">
+        <ScoreFeedback 
+          assessmentId={Date.now().toString()}
+          totalScore={result.totalScore}
         />
       </div>
     </div>

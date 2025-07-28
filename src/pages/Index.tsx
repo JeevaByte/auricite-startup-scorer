@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText, BookOpen } from 'lucide-react';
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { Hero } from '@/components/Hero';
+import { WaitlistCapture } from '@/components/WaitlistCapture';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -339,6 +340,23 @@ export default function Index() {
               Start Learning
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Waitlist Section */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">Want Early Access to New Features?</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Be the first to try our latest AI-powered features and get exclusive insights.
+            </p>
+          </div>
+          <WaitlistCapture 
+            title="Join Our Beta Program"
+            description="Get early access to advanced analytics, AI coaching, and premium investor insights."
+            feature="beta_program"
+          />
         </div>
       </section>
 

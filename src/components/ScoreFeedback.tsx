@@ -35,13 +35,14 @@ export const ScoreFeedback = ({ assessmentId, totalScore, onFeedbackSubmitted }:
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('score_feedback')
         .insert({
           assessment_id: assessmentId,
           accuracy_rating: accuracy,
           comments: comments.trim() || null,
           score_received: totalScore,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
         });
 
       if (error) throw error;

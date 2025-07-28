@@ -672,6 +672,44 @@ export type Database = {
         }
         Relationships: []
       }
+      score_feedback: {
+        Row: {
+          accuracy_rating: string
+          assessment_id: string | null
+          comments: string | null
+          created_at: string
+          id: string
+          score_received: number | null
+          user_id: string | null
+        }
+        Insert: {
+          accuracy_rating: string
+          assessment_id?: string | null
+          comments?: string | null
+          created_at?: string
+          id?: string
+          score_received?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          accuracy_rating?: string
+          assessment_id?: string | null
+          comments?: string | null
+          created_at?: string
+          id?: string
+          score_received?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_feedback_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scores: {
         Row: {
           assessment_id: string
@@ -1048,6 +1086,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      waitlist_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          feature_interest: string | null
+          id: string
+          source: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          feature_interest?: string | null
+          id?: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          feature_interest?: string | null
+          id?: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       webhook_configs: {
         Row: {
