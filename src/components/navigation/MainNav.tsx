@@ -8,7 +8,7 @@ export const MainNav: React.FC = () => {
   
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Assessment', href: '/assessment' },
+    { name: 'Full Assessment', href: '/assessment' },
     { name: 'AI Tools', href: '/ai-feedback' },
     { name: 'Learn', href: '/learn' },
     { name: 'Pricing', href: '/pricing' },

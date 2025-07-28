@@ -720,7 +720,7 @@ const Assessment: React.FC = () => {
             <CardContent className="text-center py-8">
               <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
               <p className="text-muted-foreground mb-6">
-                Please sign in to access the investment readiness assessment.
+                Please sign in to access the comprehensive business assessment.
               </p>
               <Button onClick={() => navigate('/auth')}>
                 Sign In
@@ -737,9 +737,9 @@ const Assessment: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Investment Readiness Assessment</CardTitle>
+            <CardTitle className="text-2xl">Comprehensive Business Assessment</CardTitle>
             <p className="text-muted-foreground">
-              Complete all sections to get a comprehensive analysis of your startup's investment readiness.
+              Complete all sections to get an in-depth analysis of your business readiness for investment.
             </p>
             <Progress value={((currentStep + 1) / steps.length) * 100} className="w-full mt-4" />
             <div className="text-sm text-muted-foreground mt-2">

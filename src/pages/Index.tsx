@@ -80,11 +80,11 @@ export default function Index() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/?assessment=true')}>
               <CardHeader>
                 <Target className="h-10 w-10 text-primary mb-4" />
-                <CardTitle>Investment Assessment</CardTitle>
+                <CardTitle>Quick Investment Score</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Comprehensive evaluation of your startup's readiness for investment across key metrics.
+                  Get your investment readiness score in minutes with our streamlined assessment tool.
                 </p>
               </CardContent>
             </Card>
