@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText, BookOpen } from 'lucide-react';
-import { AssessmentWizard } from '@/components/AssessmentWizard';
+import { UnifiedAssessment } from '@/components/UnifiedAssessment';
 import { Hero } from '@/components/Hero';
 import { WaitlistCapture } from '@/components/WaitlistCapture';
 
@@ -48,11 +48,11 @@ export default function Index() {
     }
   };
 
-  // If user is authenticated and assessment parameter is true, show the assessment
+  // If user is authenticated and assessment parameter is true, show the unified assessment
   if (user && showAssessment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-        <AssessmentWizard />
+        <UnifiedAssessment mode="quick" />
       </div>
     );
   }
