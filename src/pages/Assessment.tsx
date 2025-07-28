@@ -193,15 +193,45 @@ const Assessment: React.FC = () => {
 
       console.log('Assessment saved successfully:', data);
 
+      // Map to proper types for score calculation
+      const mappedData = {
+        prototype: assessmentData.prototype ?? false,
+        externalCapital: assessmentData.externalCapital ?? false,
+        revenue: assessmentData.revenue ?? false,
+        fullTimeTeam: assessmentData.fullTimeTeam ?? false,
+        termSheets: assessmentData.termSheets ?? false,
+        capTable: assessmentData.capTable ?? false,
+        mrr: (assessmentData.mrr || 'none') as 'none' | 'low' | 'medium' | 'high',
+        employees: (assessmentData.employees || '1-2') as '1-2' | '3-10' | '11-50' | '50+',
+        fundingGoal: (assessmentData.fundingGoal || '100k') as '50k' | '100k' | '500k' | '1m' | '5m' | '10m+',
+        investors: (assessmentData.investors || 'none') as 'none' | 'angels' | 'vc' | 'lateStage',
+        milestones: (assessmentData.milestones || 'concept') as 'concept' | 'launch' | 'scale' | 'exit'
+      };
+
+      // Calculate score using the score calculator
+      const { calculateScore } = await import('@/utils/scoreCalculator');
+      const scoreResult = calculateScore(mappedData);
+
+      // Store results in sessionStorage for the results page
+      sessionStorage.setItem('assessmentResult', JSON.stringify({
+        result: scoreResult,
+        assessmentData: assessmentData
+      }));
+
       toast({
         title: 'Assessment Submitted Successfully!',
         description: 'Your assessment has been submitted. Redirecting to results...'
       });
 
-      // Redirect to results page after a short delay
+      // Redirect to results page with the calculated data
       setTimeout(() => {
-        navigate('/results');
-      }, 2000);
+        navigate('/results', {
+          state: {
+            result: scoreResult,
+            assessmentData: assessmentData
+          }
+        });
+      }, 1500);
     } catch (error) {
       console.error('Error submitting assessment:', error);
       toast({
