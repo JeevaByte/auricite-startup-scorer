@@ -1,0 +1,324 @@
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { ScoreResult, AssessmentData } from '@/utils/scoreCalculator';
+import { RecommendationsData } from '@/utils/recommendationsService';
+
+export interface PDFReportData {
+  assessmentData: AssessmentData;
+  scoreResult: ScoreResult;
+  recommendations?: RecommendationsData;
+  userProfile?: {
+    name?: string;
+    email?: string;
+    company?: string;
+  };
+  generatedAt: string;
+}
+
+export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
+  try {
+    // Create a temporary container for the PDF content
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = '210mm'; // A4 width
+    container.style.backgroundColor = 'white';
+    container.style.padding = '20px';
+    container.style.fontFamily = 'Arial, sans-serif';
+    
+    // Generate HTML content for PDF
+    container.innerHTML = generatePDFContent(data);
+    
+    document.body.appendChild(container);
+
+    // Convert HTML to canvas
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 794, // A4 width at 96 DPI
+      height: 1123, // A4 height at 96 DPI
+    });
+
+    // Remove temporary container
+    document.body.removeChild(container);
+
+    // Create PDF
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210; // A4 width in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    const imgData = canvas.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    
+    // If content is longer than one page, add more pages
+    if (imgHeight > 297) { // A4 height in mm
+      let remainingHeight = imgHeight - 297;
+      let pageCount = 1;
+      
+      while (remainingHeight > 0) {
+        pdf.addPage();
+        const yPosition = -(297 * pageCount);
+        pdf.addImage(imgData, 'PNG', 0, yPosition, imgWidth, imgHeight);
+        remainingHeight -= 297;
+        pageCount++;
+      }
+    }
+
+    // Download PDF
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `investment-readiness-report-${timestamp}.pdf`;
+    pdf.save(filename);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error;
+  }
+};
+
+const generatePDFContent = (data: PDFReportData): string => {
+  const { assessmentData, scoreResult, recommendations, userProfile, generatedAt } = data;
+  const date = new Date(generatedAt).toLocaleDateString();
+  
+  return `
+    <div style="max-width: 794px; margin: 0 auto; padding: 40px; line-height: 1.6; color: #333;">
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #2563eb; padding-bottom: 20px;">
+        <h1 style="color: #2563eb; font-size: 28px; margin: 0 0 10px 0; font-weight: bold;">
+          Investment Readiness Assessment Report
+        </h1>
+        <p style="color: #666; font-size: 14px; margin: 0;">Generated on ${date}</p>
+        ${userProfile?.name ? `<p style="color: #666; font-size: 14px; margin: 5px 0 0 0;">Prepared for: ${userProfile.name}</p>` : ''}
+      </div>
+
+      <!-- Executive Summary -->
+      <div style="margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 15px 0;">Executive Summary</h2>
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+          <div style="font-size: 36px; font-weight: bold; color: #2563eb; margin-right: 20px;">
+            ${scoreResult.totalScore}/999
+          </div>
+          <div>
+            <div style="font-size: 18px; font-weight: bold; color: #333;">
+              ${getGrade(scoreResult.totalScore)} Grade
+            </div>
+            <div style="color: #666; font-size: 14px;">
+              ${getReadinessLevel(scoreResult.totalScore)}
+            </div>
+          </div>
+        </div>
+        <p style="margin: 0; color: #555;">
+          ${getExecutiveSummary(scoreResult)}
+        </p>
+      </div>
+
+      <!-- Score Breakdown -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Score Breakdown</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          ${generateScoreCard('Business Idea', scoreResult.businessIdea, 100, '30%')}
+          ${generateScoreCard('Financials', scoreResult.financials, 100, '25%')}
+          ${generateScoreCard('Team', scoreResult.team, 100, '25%')}
+          ${generateScoreCard('Traction', scoreResult.traction, 100, '20%')}
+        </div>
+      </div>
+
+      <!-- Assessment Details -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Assessment Details</h2>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+            <div><strong>Prototype:</strong> ${getLabel(String(assessmentData.prototype), 'prototype')}</div>
+            <div><strong>External Capital:</strong> ${getLabel(String(assessmentData.externalCapital), 'yesno')}</div>
+            <div><strong>Revenue:</strong> ${getLabel(String(assessmentData.revenue), 'yesno')}</div>
+            <div><strong>Full-time Team:</strong> ${getLabel(String(assessmentData.fullTimeTeam), 'yesno')}</div>
+            <div><strong>Term Sheets:</strong> ${getLabel(String(assessmentData.termSheets), 'yesno')}</div>
+            <div><strong>Cap Table:</strong> ${getLabel(String(assessmentData.capTable), 'yesno')}</div>
+            <div><strong>MRR:</strong> ${getLabel(String(assessmentData.mrr), 'mrr')}</div>
+            <div><strong>Employees:</strong> ${getLabel(String(assessmentData.employees), 'employees')}</div>
+            <div><strong>Funding Goal:</strong> ${getLabel(String(assessmentData.fundingGoal), 'funding')}</div>
+            <div><strong>Investors:</strong> ${getLabel(String(assessmentData.investors), 'investors')}</div>
+            <div><strong>Milestones:</strong> ${getLabel(String(assessmentData.milestones), 'milestones')}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      ${recommendations ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations</h2>
+          <div style="space-y: 15px;">
+            ${generateRecommendationsSection(recommendations)}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Footer -->
+      <div style="margin-top: 40px; text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #666; font-size: 12px;">
+        <p style="margin: 0;">This report was generated by the Investment Readiness Assessment Platform</p>
+        <p style="margin: 5px 0 0 0;">For more information, visit our platform to retake the assessment or explore additional resources.</p>
+      </div>
+    </div>
+  `;
+};
+
+const generateScoreCard = (title: string, score: number, maxScore: number, weight: string): string => {
+  const percentage = Math.round((score / maxScore) * 100);
+  const grade = getGradeForScore(score, maxScore);
+  
+  return `
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
+      <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color: #333; font-size: 16px; margin: 0;">${title}</h3>
+        <span style="color: #666; font-size: 12px;">${weight}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 24px; font-weight: bold; color: #2563eb;">
+          ${score}/${maxScore}
+        </div>
+        <div>
+          <div style="font-size: 14px; font-weight: bold; color: ${getGradeColor(grade)};">
+            ${grade} Grade
+          </div>
+          <div style="color: #666; font-size: 12px;">
+            ${percentage}%
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+const generateRecommendationsSection = (recommendations: RecommendationsData): string => {
+  let content = '';
+  
+  Object.entries(recommendations).forEach(([category, recs]) => {
+    if (Array.isArray(recs) && recs.length > 0) {
+      content += `
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+          <h3 style="color: #2563eb; font-size: 16px; margin: 0 0 10px 0; text-transform: capitalize;">
+            ${category.replace(/([A-Z])/g, ' $1').trim()}
+          </h3>
+          <ul style="margin: 0; padding-left: 20px; color: #555;">
+            ${recs.map(rec => `<li style="margin-bottom: 8px;">${rec}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+  });
+  
+  return content;
+};
+
+const getGrade = (score: number): string => {
+  if (score >= 800) return 'A';
+  if (score >= 700) return 'B';
+  if (score >= 600) return 'C';
+  if (score >= 400) return 'D';
+  return 'F';
+};
+
+const getGradeForScore = (score: number, maxScore: number): string => {
+  const percentage = (score / maxScore) * 100;
+  if (percentage >= 80) return 'A';
+  if (percentage >= 70) return 'B';
+  if (percentage >= 60) return 'C';
+  if (percentage >= 40) return 'D';
+  return 'F';
+};
+
+const getGradeColor = (grade: string): string => {
+  switch (grade) {
+    case 'A': return '#16a34a';
+    case 'B': return '#2563eb';
+    case 'C': return '#ea580c';
+    case 'D': return '#dc2626';
+    case 'F': return '#991b1b';
+    default: return '#666';
+  }
+};
+
+const getReadinessLevel = (score: number): string => {
+  if (score >= 800) return 'Investment Ready';
+  if (score >= 700) return 'Nearly Ready';
+  if (score >= 600) return 'Developing';
+  if (score >= 400) return 'Early Stage';
+  return 'Pre-Investment';
+};
+
+const getExecutiveSummary = (scoreResult: ScoreResult): string => {
+  const grade = getGrade(scoreResult.totalScore);
+  const level = getReadinessLevel(scoreResult.totalScore);
+  
+  if (grade === 'A') {
+    return 'Your startup demonstrates strong investment readiness across all key areas. You have built a solid foundation with clear market traction, robust financials, and a capable team. Continue refining your pitch and connecting with suitable investors.';
+  } else if (grade === 'B') {
+    return 'Your startup shows good potential with solid fundamentals in place. Focus on strengthening any weaker areas identified in the detailed breakdown to enhance your investment attractiveness.';
+  } else if (grade === 'C') {
+    return 'Your startup has a foundation to build upon but requires development in several key areas before being investment-ready. Prioritize the recommendations provided to improve your overall score.';
+  } else {
+    return 'Your startup is in the early stages and needs significant development across multiple areas before being investment-ready. Focus on building your minimum viable product, establishing initial traction, and assembling your core team.';
+  }
+};
+
+const getLabel = (value: string, type: string): string => {
+  switch (type) {
+    case 'prototype':
+      switch (value) {
+        case 'idea': return 'Idea Stage';
+        case 'mockup': return 'Mockup/Wireframe';
+        case 'mvp': return 'MVP';
+        case 'beta': return 'Beta Version';
+        case 'launched': return 'Launched Product';
+        default: return value;
+      }
+    case 'yesno':
+      return value === 'yes' ? 'Yes' : 'No';
+    case 'mrr':
+      switch (value) {
+        case 'none': return 'No Revenue';
+        case 'under-1k': return 'Under $1K';
+        case '1k-10k': return '$1K - $10K';
+        case '10k-50k': return '$10K - $50K';
+        case 'over-50k': return 'Over $50K';
+        default: return value;
+      }
+    case 'employees':
+      switch (value) {
+        case 'solo': return 'Solo Founder';
+        case '2-5': return '2-5 Employees';
+        case '6-20': return '6-20 Employees';
+        case 'over-20': return 'Over 20 Employees';
+        default: return value;
+      }
+    case 'funding':
+      switch (value) {
+        case 'under-100k': return 'Under $100K';
+        case '100k-500k': return '$100K - $500K';
+        case '500k-2m': return '$500K - $2M';
+        case 'over-2m': return 'Over $2M';
+        default: return value;
+      }
+    case 'investors':
+      switch (value) {
+        case 'none': return 'No Investors';
+        case 'friends-family': return 'Friends & Family';
+        case 'angel': return 'Angel Investors';
+        case 'vc': return 'Venture Capital';
+        case 'institutional': return 'Institutional';
+        default: return value;
+      }
+    case 'milestones':
+      switch (value) {
+        case 'concept': return 'Concept Validation';
+        case 'prototype': return 'Prototype Complete';
+        case 'first-customers': return 'First Customers';
+        case 'revenue': return 'Revenue Generation';
+        case 'growth': return 'Sustainable Growth';
+        default: return value;
+      }
+    default:
+      return value;
+  }
+};

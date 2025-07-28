@@ -12,6 +12,9 @@ import { generateRecommendations, RecommendationsData } from '@/utils/recommenda
 import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
 import { shareResults } from '@/utils/shareUtils';
 import { generateReportData, downloadAsJSON } from '@/utils/reportGenerator';
+import { EnhancedShareButtons } from '@/components/EnhancedShareButtons';
+import { DownloadDialog } from '@/components/DownloadDialog';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
@@ -23,6 +26,7 @@ const Results: React.FC<ResultsProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [result, setScoreResult] = useState<ScoreResult | null>(null);
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
@@ -453,19 +457,29 @@ const Results: React.FC<ResultsProps> = () => {
       </Tabs>
 
       {/* Action Buttons */}
-      <div className="flex justify-center mt-8">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
         <Button variant="outline" onClick={handleTakeAgain}>
           <RotateCcw className="h-4 w-4 mr-2" />
           Take Again
         </Button>
-        <Button className="ml-4" onClick={handleDownloadReport}>
-          <Download className="h-4 w-4 mr-2" />
-          Download Report
-        </Button>
-        <Button className="ml-4" onClick={handleShare}>
-          <Share2 className="h-4 w-4 mr-2" />
-          Share
-        </Button>
+        <DownloadDialog 
+          scoreResult={result} 
+          assessmentData={assessmentData} 
+          recommendations={recommendations} 
+        />
+      </div>
+
+      {/* Enhanced Share Section */}
+      <div className="mt-8 max-w-md mx-auto">
+        <EnhancedShareButtons 
+          scoreResult={result} 
+          assessmentData={assessmentData} 
+          recommendations={recommendations}
+          userProfile={{
+            name: user?.user_metadata?.full_name,
+            email: user?.email,
+          }}
+        />
       </div>
     </div>
   );

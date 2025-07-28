@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ForgotPasswordDialog } from '@/components/ForgotPasswordDialog';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 
 export default function Auth() {
@@ -312,19 +313,28 @@ export default function Auth() {
                   </Button>
                 </>
               ) : (
-                <>
-                  Don't have an account?{' '}
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      setIsSignUp(true);
-                      setError('');
-                    }}
-                    className="p-0 h-auto"
-                  >
-                    Sign up
-                  </Button>
-                </>
+                <div className="space-y-2">
+                  <div>
+                    Don't have an account?{' '}
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        setIsSignUp(true);
+                        setError('');
+                      }}
+                      className="p-0 h-auto"
+                    >
+                      Sign up
+                    </Button>
+                  </div>
+                  <div>
+                    <ForgotPasswordDialog>
+                      <Button variant="link" className="p-0 h-auto text-xs">
+                        Forgot your password?
+                      </Button>
+                    </ForgotPasswordDialog>
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>
