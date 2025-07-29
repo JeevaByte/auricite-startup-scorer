@@ -35,12 +35,20 @@ export const InternalFeedbackSystem = () => {
     setIsSubmitting(true);
 
     try {
+      // Map priority to rating values expected by the database constraint
+      const ratingMap = {
+        'low': 'helpful',
+        'medium': 'helpful', 
+        'high': 'not_helpful',
+        'critical': 'not_helpful'
+      };
+      
       const { error } = await supabase
         .from('user_feedback')
         .insert({
           section: feedbackType,
-          rating: priority || 'medium',
-          feedback: `Subject: ${subject}\n\nDescription: ${description}\n\nContact: ${email || 'Not provided'}`,
+          rating: ratingMap[priority as keyof typeof ratingMap] || 'helpful',
+          feedback: `Subject: ${subject}\n\nDescription: ${description}\n\nPriority: ${priority || 'Not specified'}\n\nContact: ${email || 'Not provided'}`,
         });
 
       if (error) throw error;
