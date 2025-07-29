@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface PerformanceMetrics {
   fcp: number; // First Contentful Paint
@@ -9,6 +9,14 @@ interface PerformanceMetrics {
 }
 
 export const PerformanceMonitor = () => {
+  const performanceData = useRef<PerformanceMetrics>({
+    fcp: 0,
+    lcp: 0,
+    fid: 0,
+    cls: 0,
+    ttfb: 0
+  });
+
   useEffect(() => {
     // Monitor Core Web Vitals
     const observePerformance = () => {
@@ -75,6 +83,12 @@ export const PerformanceMonitor = () => {
     const reportMetric = (metricName: string, value: number) => {
       console.log(`Performance Metric - ${metricName}:`, value);
       
+      // Update ref data
+      performanceData.current = {
+        ...performanceData.current,
+        [metricName]: Math.round(value)
+      };
+      
       // Send to analytics
       if (typeof window !== 'undefined' && 'gtag' in window) {
         (window as any).gtag('event', 'web_vitals', {
@@ -88,13 +102,28 @@ export const PerformanceMonitor = () => {
       }
 
       // Store in local storage for debugging
-      const performanceData = JSON.parse(localStorage.getItem('performance_metrics') || '{}');
-      performanceData[metricName] = {
+      const storedData = JSON.parse(localStorage.getItem('performance_metrics') || '{}');
+      storedData[metricName] = {
         value: Math.round(value),
         timestamp: Date.now(),
         page: window.location.pathname
       };
-      localStorage.setItem('performance_metrics', JSON.stringify(performanceData));
+      localStorage.setItem('performance_metrics', JSON.stringify(storedData));
+
+      // Send to Supabase for analytics (optional)
+      if (window.location.hostname !== 'localhost') {
+        fetch('/api/performance-metrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            metric: metricName,
+            value: Math.round(value),
+            page: window.location.pathname,
+            userAgent: navigator.userAgent,
+            timestamp: Date.now()
+          })
+        }).catch(err => console.warn('Failed to send performance metric:', err));
+      }
     };
 
     // Initialize performance monitoring
