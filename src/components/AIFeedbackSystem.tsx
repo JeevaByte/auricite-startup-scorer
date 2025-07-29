@@ -108,11 +108,78 @@ export const AIFeedbackSystem = () => {
     const sentenceCount = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
     const avgWordsPerSentence = wordCount / Math.max(sentenceCount, 1);
     
-    // Calculate realistic scores based on content analysis
-    const clarity = Math.min(95, Math.max(60, 85 - Math.max(0, (avgWordsPerSentence - 15) * 2)));
-    const engagement = Math.min(95, Math.max(50, 70 + (wordCount > 100 ? 15 : 0) + (contentType === 'marketing-copy' ? 10 : 0)));
-    const readability = Math.min(95, Math.max(60, 80 - Math.max(0, (avgWordsPerSentence - 20) * 1.5)));
-    const persuasiveness = Math.min(95, Math.max(50, 65 + (contentType === 'pitch-deck' ? 15 : 0) + (content.includes('?') ? 5 : 0)));
+    // Advanced content analysis factors
+    const hasNumbers = /\d/.test(content);
+    const hasQuestions = content.includes('?');
+    const hasCTA = /\b(contact|call|buy|start|join|get|download|subscribe|learn more|sign up)\b/i.test(content);
+    const hasEmotionalWords = /\b(amazing|revolutionary|breakthrough|transform|powerful|innovative|exciting|proven|guaranteed)\b/i.test(content);
+    const hasDataPoints = content.includes('%') || content.includes('$') || /\b\d+[kmb]?\b/i.test(content);
+    const paragraphCount = content.split('\n\n').filter(p => p.trim().length > 0).length;
+    const complexityScore = content.split(/[;,]/).length / Math.max(sentenceCount, 1);
+    
+    // Content-type specific analysis
+    let clarity, engagement, readability, persuasiveness;
+    
+    switch (contentType) {
+      case 'pitch-deck':
+        clarity = Math.min(95, Math.max(45, 
+          75 + (hasDataPoints ? 15 : 0) - (avgWordsPerSentence > 25 ? 15 : 0) + (paragraphCount > 3 ? 10 : 0)
+        ));
+        engagement = Math.min(95, Math.max(50, 
+          65 + (hasNumbers ? 10 : 0) + (hasEmotionalWords ? 15 : 0) + (hasQuestions ? 8 : 0)
+        ));
+        readability = Math.min(95, Math.max(55, 
+          80 - (avgWordsPerSentence > 20 ? 20 : 0) + (wordCount > 500 && wordCount < 2000 ? 10 : 0)
+        ));
+        persuasiveness = Math.min(95, Math.max(60, 
+          70 + (hasDataPoints ? 20 : 0) + (hasCTA ? 10 : 0) + (hasEmotionalWords ? 10 : 0)
+        ));
+        break;
+        
+      case 'business-plan':
+        clarity = Math.min(95, Math.max(50, 
+          70 + (paragraphCount > 5 ? 15 : 0) + (hasDataPoints ? 10 : 0) - (complexityScore > 3 ? 10 : 0)
+        ));
+        engagement = Math.min(95, Math.max(45, 
+          60 + (wordCount > 1000 ? 15 : 0) + (hasNumbers ? 10 : 0) + (hasQuestions ? 5 : 0)
+        ));
+        readability = Math.min(95, Math.max(50, 
+          75 - (avgWordsPerSentence > 25 ? 25 : 0) + (wordCount > 2000 ? 10 : 0)
+        ));
+        persuasiveness = Math.min(95, Math.max(55, 
+          65 + (hasDataPoints ? 15 : 0) + (wordCount > 1500 ? 10 : 0) + (paragraphCount > 8 ? 8 : 0)
+        ));
+        break;
+        
+      case 'marketing-copy':
+        clarity = Math.min(95, Math.max(60, 
+          80 - (avgWordsPerSentence > 18 ? 20 : 0) + (hasCTA ? 10 : 0)
+        ));
+        engagement = Math.min(95, Math.max(55, 
+          75 + (hasEmotionalWords ? 15 : 0) + (hasQuestions ? 10 : 0) + (hasCTA ? 8 : 0)
+        ));
+        readability = Math.min(95, Math.max(65, 
+          85 - (avgWordsPerSentence > 15 ? 15 : 0) + (wordCount < 500 ? 5 : 0)
+        ));
+        persuasiveness = Math.min(95, Math.max(65, 
+          80 + (hasCTA ? 15 : 0) + (hasEmotionalWords ? 10 : 0) + (hasDataPoints ? 5 : 0)
+        ));
+        break;
+        
+      default: // general
+        clarity = Math.min(95, Math.max(55, 
+          75 - (avgWordsPerSentence > 20 ? 10 : 0) + (paragraphCount > 2 ? 8 : 0)
+        ));
+        engagement = Math.min(95, Math.max(50, 
+          65 + (hasQuestions ? 10 : 0) + (hasEmotionalWords ? 8 : 0) + (wordCount > 200 ? 7 : 0)
+        ));
+        readability = Math.min(95, Math.max(60, 
+          78 - (complexityScore > 2 ? 15 : 0) + (avgWordsPerSentence < 18 ? 7 : 0)
+        ));
+        persuasiveness = Math.min(95, Math.max(50, 
+          60 + (hasCTA ? 12 : 0) + (hasDataPoints ? 8 : 0) + (hasEmotionalWords ? 5 : 0)
+        ));
+    }
 
     return {
       sentiment: wordCount > 200 ? 'Positive' : 'Neutral',
