@@ -24,8 +24,8 @@ interface AssessmentQuestion {
   options?: Array<{ value: string; label: string }>;
 }
 
-const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
-  // Step 1: Product & Business Basics
+const SIMPLE_ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
+  // Step 1: Core Questions
   {
     id: 'prototype',
     question: 'Do you have a working prototype or MVP?',
@@ -42,8 +42,16 @@ const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     required: true,
     description: 'Receiving payments from customers for your product/service'
   },
-  
-  // Step 2: Financial Status
+  {
+    id: 'fullTimeTeam',
+    question: 'Do you have a full-time team?',
+    type: 'boolean',
+    step: 1,
+    required: true,
+    description: 'Core team members dedicated full-time to this venture'
+  },
+
+  // Step 2: Funding & Growth
   {
     id: 'externalCapital',
     question: 'Have you raised external capital?',
@@ -53,66 +61,10 @@ const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     description: 'Investment from sources outside your personal network'
   },
   {
-    id: 'mrr',
-    question: 'What is your Monthly Recurring Revenue (MRR)?',
-    type: 'select',
-    step: 2,
-    required: true,
-    options: [
-      { value: 'none', label: 'No recurring revenue' },
-      { value: 'low', label: 'Under $10k/month' },
-      { value: 'medium', label: '$10k - $100k/month' },
-      { value: 'high', label: 'Over $100k/month' }
-    ]
-  },
-  
-  // Step 3: Team & Operations
-  {
-    id: 'fullTimeTeam',
-    question: 'Do you have a full-time team?',
-    type: 'boolean',
-    step: 3,
-    required: true,
-    description: 'Core team members dedicated full-time to this venture'
-  },
-  {
-    id: 'employees',
-    question: 'How many team members do you have?',
-    type: 'select',
-    step: 3,
-    required: true,
-    options: [
-      { value: '1-2', label: '1-2 people' },
-      { value: '3-10', label: '3-10 people' },
-      { value: '11-50', label: '11-50 people' },
-      { value: '50+', label: '50+ people' }
-    ]
-  },
-
-  // Step 4: Investment & Legal
-  {
-    id: 'termSheets',
-    question: 'Have you received any term sheets from investors?',
-    type: 'boolean',
-    step: 4,
-    required: true,
-    description: 'Formal investment offers with terms and conditions'
-  },
-  {
-    id: 'capTable',
-    question: 'Do you have a documented cap table?',
-    type: 'boolean',
-    step: 4,
-    required: true,
-    description: 'Documentation showing company ownership structure'
-  },
-
-  // Step 5: Growth & Goals
-  {
     id: 'fundingGoal',
     question: 'What is your funding goal?',
     type: 'select',
-    step: 5,
+    step: 2,
     required: true,
     options: [
       { value: '50k', label: 'Under $50k' },
@@ -123,26 +75,13 @@ const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       { value: '10m+', label: 'Over $5M' }
     ]
   },
-  {
-    id: 'investors',
-    question: 'What type of investors are you targeting?',
-    type: 'select',
-    step: 5,
-    required: true,
-    options: [
-      { value: 'none', label: 'Not seeking investment currently' },
-      { value: 'angels', label: 'Angel investors' },
-      { value: 'vc', label: 'Venture capital firms' },
-      { value: 'lateStage', label: 'Late-stage/growth equity' }
-    ]
-  },
 
-  // Step 6: Current Stage
+  // Step 3: Current Stage
   {
     id: 'milestones',
     question: 'What best describes your current stage?',
     type: 'select',
-    step: 6,
+    step: 3,
     required: true,
     options: [
       { value: 'concept', label: 'Concept/ideation stage' },
@@ -153,9 +92,9 @@ const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   }
 ];
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 3;
 
-export const UnifiedAssessmentWizard: React.FC = () => {
+export const SimpleAssessmentWizard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -164,80 +103,20 @@ export const UnifiedAssessmentWizard: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   
-  // Initialize assessment data with proper defaults
+  // Initialize assessment data with defaults for simple assessment
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
     prototype: null,
     externalCapital: null,
     revenue: null,
     fullTimeTeam: null,
-    termSheets: null,
-    capTable: null,
-    mrr: null,
-    employees: null,
+    termSheets: false, // Default values for non-asked questions
+    capTable: false,
+    mrr: 'none',
+    employees: '1-2',
     fundingGoal: null,
-    investors: null,
+    investors: 'none',
     milestones: null,
   });
-
-  // Load draft data on component mount
-  useEffect(() => {
-    if (user) {
-      loadDraft();
-    }
-  }, [user]);
-
-  // Auto-save draft when data changes
-  useEffect(() => {
-    if (user && (Object.values(assessmentData).some(value => value !== null))) {
-      saveDraft();
-    }
-  }, [assessmentData, currentStep, user]);
-
-  const loadDraft = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('assessment_drafts')
-        .select('draft_data, step')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error loading draft:', error);
-        return;
-      }
-
-      if (data?.draft_data) {
-        const draftData = data.draft_data as Record<string, any>;
-        setAssessmentData(prevData => ({ ...prevData, ...draftData }));
-        setCurrentStep(data.step || 1);
-        
-        toast({
-          title: "Draft Loaded",
-          description: "Your previous progress has been restored.",
-        });
-      }
-    } catch (error) {
-      console.error('Error loading draft:', error);
-    }
-  };
-
-  const saveDraft = async () => {
-    if (!user) return;
-    
-    try {
-      await supabase
-        .from('assessment_drafts')
-        .upsert({
-          user_id: user.id,
-          draft_data: assessmentData as any,
-          step: currentStep
-        }, { onConflict: 'user_id' });
-    } catch (error) {
-      console.error('Error saving draft:', error);
-    }
-  };
 
   const handleInputChange = (field: keyof AssessmentData, value: any) => {
     setAssessmentData(prev => ({ ...prev, [field]: value }));
@@ -249,7 +128,7 @@ export const UnifiedAssessmentWizard: React.FC = () => {
   };
 
   const validateCurrentStep = (): boolean => {
-    const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
+    const currentStepQuestions = SIMPLE_ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
     const stepErrors: string[] = [];
 
     currentStepQuestions.forEach(question => {
@@ -291,12 +170,12 @@ export const UnifiedAssessmentWizard: React.FC = () => {
         external_capital: assessmentData.externalCapital ?? false,
         revenue: assessmentData.revenue ?? false,
         full_time_team: assessmentData.fullTimeTeam ?? false,
-        term_sheets: assessmentData.termSheets ?? false,
-        cap_table: assessmentData.capTable ?? false,
-        mrr: assessmentData.mrr || 'none',
-        employees: assessmentData.employees || '1-2',
+        term_sheets: false, // Not asked in simple assessment
+        cap_table: false, // Not asked in simple assessment
+        mrr: 'none', // Default for simple assessment
+        employees: '1-2', // Default for simple assessment
         funding_goal: assessmentData.fundingGoal || '100k',
-        investors: assessmentData.investors || 'none',
+        investors: 'none', // Default for simple assessment
         milestones: assessmentData.milestones || 'concept'
       };
 
@@ -309,18 +188,18 @@ export const UnifiedAssessmentWizard: React.FC = () => {
 
       if (assessmentError) throw assessmentError;
 
-      // Calculate score
+      // Calculate score with defaults
       const scoreData = {
         prototype: assessmentData.prototype ?? false,
         externalCapital: assessmentData.externalCapital ?? false,
         revenue: assessmentData.revenue ?? false,
         fullTimeTeam: assessmentData.fullTimeTeam ?? false,
-        termSheets: assessmentData.termSheets ?? false,
-        capTable: assessmentData.capTable ?? false,
-        mrr: (assessmentData.mrr || 'none') as 'none' | 'low' | 'medium' | 'high',
-        employees: (assessmentData.employees || '1-2') as '1-2' | '3-10' | '11-50' | '50+',
+        termSheets: false,
+        capTable: false,
+        mrr: 'none' as const,
+        employees: '1-2' as const,
         fundingGoal: (assessmentData.fundingGoal || '100k') as '50k' | '100k' | '500k' | '1m' | '5m' | '10m+',
-        investors: (assessmentData.investors || 'none') as 'none' | 'angels' | 'vc' | 'lateStage',
+        investors: 'none' as const,
         milestones: (assessmentData.milestones || 'concept') as 'concept' | 'launch' | 'scale' | 'exit'
       };
 
@@ -358,18 +237,12 @@ export const UnifiedAssessmentWizard: React.FC = () => {
         console.error('Error saving to assessment history:', historyError);
       }
 
-      // Clear draft
-      await supabase
-        .from('assessment_drafts')
-        .delete()
-        .eq('user_id', user.id);
-
       // Store result for results page
       const resultData = {
         result: scoreResult,
         assessmentData: assessmentData,
         assessmentId: assessment.id,
-        assessmentType: 'comprehensive'
+        assessmentType: 'simple'
       };
       
       sessionStorage.setItem('assessmentResult', JSON.stringify(resultData));
@@ -461,13 +334,13 @@ export const UnifiedAssessmentWizard: React.FC = () => {
     }
   };
 
-  const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
+  const currentStepQuestions = SIMPLE_ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
   const progress = (currentStep / TOTAL_STEPS) * 100;
   const isLastStep = currentStep === TOTAL_STEPS;
   
   // Calculate validation without triggering state updates
   const canGoNext = React.useMemo(() => {
-    const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
+    const currentStepQuestions = SIMPLE_ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
     return currentStepQuestions.every(question => {
       const value = assessmentData[question.id];
       return !(question.required && (value === null || value === undefined));
@@ -477,9 +350,9 @@ export const UnifiedAssessmentWizard: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Investment Readiness Assessment</h1>
+        <h1 className="text-3xl font-bold text-center mb-2">Quick Investment Assessment</h1>
         <p className="text-muted-foreground text-center mb-6">
-          Complete all questions to receive your personalized investment readiness score
+          Get a quick assessment of your startup's investment readiness in just 3 steps
         </p>
         <Progress value={progress} className="h-2" />
         <div className="text-sm text-muted-foreground text-center mt-2">
@@ -490,12 +363,9 @@ export const UnifiedAssessmentWizard: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            Step {currentStep}: {currentStepQuestions[0]?.step === 1 ? 'Product & Business Basics' :
-                              currentStepQuestions[0]?.step === 2 ? 'Financial Status' :
-                              currentStepQuestions[0]?.step === 3 ? 'Team & Operations' :
-                              currentStepQuestions[0]?.step === 4 ? 'Investment & Legal' :
-                              currentStepQuestions[0]?.step === 5 ? 'Growth & Goals' :
-                              'Current Stage'}
+            Step {currentStep}: {currentStepQuestions[0]?.step === 1 ? 'Core Business Questions' :
+                               currentStepQuestions[0]?.step === 2 ? 'Funding & Growth' :
+                               'Current Stage'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">

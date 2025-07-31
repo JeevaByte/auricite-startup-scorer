@@ -24,6 +24,7 @@ import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Assessment from "./pages/Assessment";
+import UnifiedAssessment from "./pages/UnifiedAssessment";
 import Learn from "./pages/Learn";
 import Donate from "./pages/Donate";
 import NotFound from "./pages/NotFound";
@@ -51,7 +52,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/assessment" element={<Assessment />} />
-                  <Route path="/unified-assessment" element={<Assessment />} />
+                  <Route path="/unified-assessment" element={<UnifiedAssessment />} />
                   <Route path="/results" element={<Results />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<AdminDashboard />} />
