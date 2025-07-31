@@ -3,10 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, MapPin, DollarSign, Users, ExternalLink, Crown } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
-import { LoadingState } from '@/components/ui/loading-state';
+import { Search, MapPin, DollarSign, Users, ExternalLink } from 'lucide-react';
+import { AccessControl } from '@/components/AccessControl';
 
 interface InvestorProfile {
   id: string;
@@ -72,109 +70,21 @@ const mockInvestors: InvestorProfile[] = [
 ];
 
 export default function InvestorDirectory() {
-  const { user, loading: authLoading } = useAuth();
-  const { hasPremiumAccess, loading: subLoading, plans } = useSubscription();
+  return (
+    <AccessControl
+      accessType="investor_directory"
+      title="Investor Directory"
+      description="Connect with investors who are actively looking for startups like yours."
+    >
+      <InvestorDirectoryContent />
+    </AccessControl>
+  );
+}
+
+function InvestorDirectoryContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('All');
   const [selectedStage, setSelectedStage] = useState<string>('All');
-
-  // Show loading state while checking authentication and subscription
-  if (authLoading || subLoading) {
-    return <LoadingState message="Checking access permissions..." />;
-  }
-
-  // Require authentication
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md p-8 text-center">
-          <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
-          <p className="text-gray-600 mb-6">
-            Please sign in to access the investor directory.
-          </p>
-          <Button onClick={() => window.location.href = '/auth'}>
-            Sign In
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
-  // Require premium access
-  if (!hasPremiumAccess) {
-    const premiumPlan = plans.find(p => p.name === 'Premium');
-    
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <div className="text-center mb-8">
-            <Crown className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
-            <h1 className="text-3xl font-bold mb-2">Investor Directory</h1>
-            <Badge className="bg-yellow-100 text-yellow-800">
-              Premium Feature
-            </Badge>
-          </div>
-
-          <Card className="p-8 text-center">
-            <h2 className="text-2xl font-semibold mb-4">Premium Access Required</h2>
-            <p className="text-gray-600 mb-6">
-              Connect with our curated network of investors including angels, VCs, and family offices. 
-              Upgrade to Premium to access detailed investor profiles and contact information.
-            </p>
-            
-            {premiumPlan && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg max-w-sm mx-auto">
-                <p className="font-semibold text-lg">${premiumPlan.price_monthly}/month</p>
-                <p className="text-sm text-gray-600 mt-1">Premium Plan Features:</p>
-                <ul className="text-sm text-gray-600 mt-2 space-y-1">
-                  {premiumPlan.features.map((feature, index) => (
-                    <li key={index}>• {feature}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-center gap-4">
-              <Button size="lg" onClick={() => window.location.href = '/pricing'}>
-                <Crown className="mr-2 h-5 w-5" />
-                Upgrade to Premium
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => window.location.href = '/'}>
-                Learn More
-              </Button>
-            </div>
-          </Card>
-
-          <div className="mt-12 grid md:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h3 className="font-semibold mb-3">What You'll Get</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Access to 500+ verified investor profiles</li>
-                <li>• Direct contact information</li>
-                <li>• Investment preferences and criteria</li>
-                <li>• Portfolio companies and past investments</li>
-                <li>• Advanced filtering and search</li>
-              </ul>
-            </Card>
-            
-            <Card className="p-6">
-              <h3 className="font-semibold mb-3">Investor Types</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Angel Investors</li>
-                <li>• Venture Capital Firms</li>
-                <li>• Corporate VCs</li>
-                <li>• Family Offices</li>
-                <li>• Institutional Investors</li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Premium users can access the full directory
   const filteredInvestors = mockInvestors.filter(investor => {
     const matchesSearch = investor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          investor.sectors.some(sector => sector.toLowerCase().includes(searchTerm.toLowerCase()));

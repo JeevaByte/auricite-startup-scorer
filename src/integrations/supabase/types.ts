@@ -406,6 +406,102 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_contacts: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          crm_contact_id: string | null
+          email: string
+          full_name: string | null
+          id: string
+          last_donation_date: string | null
+          lead_source: string | null
+          lead_status: string | null
+          phone: string | null
+          synced_at: string | null
+          total_donations: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          crm_contact_id?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          last_donation_date?: string | null
+          lead_source?: string | null
+          lead_status?: string | null
+          phone?: string | null
+          synced_at?: string | null
+          total_donations?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          crm_contact_id?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          last_donation_date?: string | null
+          lead_source?: string | null
+          lead_status?: string | null
+          phone?: string | null
+          synced_at?: string | null
+          total_donations?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          donor_name: string | null
+          email: string
+          id: string
+          message: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          donor_name?: string | null
+          email: string
+          id?: string
+          message?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          donor_name?: string | null
+          email?: string
+          id?: string
+          message?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       honeypot_submissions: {
         Row: {
           created_at: string
@@ -638,6 +734,42 @@ export type Database = {
           sent_at?: string | null
           status?: string
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pitch_decks: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          updated_at: string
+          upload_status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          upload_status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          updated_at?: string
+          upload_status?: string | null
           user_id?: string
         }
         Relationships: []
@@ -959,6 +1091,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_access: {
+        Row: {
+          access_type: string
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_feedback: {
         Row: {
           assessment_id: string | null
@@ -1161,6 +1326,10 @@ export type Database = {
       get_user_role: {
         Args: { user_uuid: string }
         Returns: string
+      }
+      has_paid_access: {
+        Args: { user_uuid: string; access_type_param: string }
+        Returns: boolean
       }
       has_premium_access: {
         Args: { user_uuid: string }
