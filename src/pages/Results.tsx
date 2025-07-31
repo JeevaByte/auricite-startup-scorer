@@ -33,6 +33,7 @@ const Results: React.FC<ResultsProps> = () => {
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+  const [assessmentType, setAssessmentType] = useState<'simple' | 'comprehensive' | null>(null);
 
   useEffect(() => {
     // Extract data passed via React Router's location.state
@@ -42,15 +43,18 @@ const Results: React.FC<ResultsProps> = () => {
       // Handle both new format (result) and legacy format (scoreResult)
       const scoreResult = location.state.result || location.state.scoreResult;
       const assessmentData = location.state.assessmentData;
+      const assessmentType = location.state.assessmentType;
       
       console.log('Results page - scoreResult:', scoreResult);
       console.log('Results page - assessmentData:', assessmentData);
+      console.log('Results page - assessmentType:', assessmentType);
       
       if (scoreResult && assessmentData) {
         // Validate that we have proper assessment data (not AI content analysis)
         if (scoreResult.totalScore !== undefined && scoreResult.businessIdea !== undefined) {
           setScoreResult(scoreResult);
           setAssessmentData(assessmentData);
+          setAssessmentType(assessmentType || 'simple');
           // Clear sessionStorage since we have the data
           sessionStorage.removeItem('assessmentResult');
           return;
@@ -71,12 +75,13 @@ const Results: React.FC<ResultsProps> = () => {
       try {
         const parsedData = JSON.parse(storedData);
         console.log('Results page - Parsed sessionStorage data:', parsedData);
-        const { result, assessmentData } = parsedData;
-        console.log('Results page - Extracted data:', { result, assessmentData });
+        const { result, assessmentData, assessmentType } = parsedData;
+        console.log('Results page - Extracted data:', { result, assessmentData, assessmentType });
         
         if (result && assessmentData && result.totalScore !== undefined && result.businessIdea !== undefined) {
           setScoreResult(result);
           setAssessmentData(assessmentData);
+          setAssessmentType(assessmentType || 'simple');
           // Clear sessionStorage after successful retrieval
           sessionStorage.removeItem('assessmentResult');
           return;
@@ -458,31 +463,63 @@ const Results: React.FC<ResultsProps> = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
-        <Button variant="outline" onClick={handleTakeAgain}>
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Take Again
-        </Button>
-        <DownloadDialog 
-          scoreResult={result} 
-          assessmentData={assessmentData} 
-          recommendations={recommendations} 
-        />
-      </div>
+      {/* Action Buttons - Different for Simple vs Comprehensive */}
+      {assessmentType === 'simple' ? (
+        <>
+          {/* Simple Assessment - Show Take Again and Download Report */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+            <Button variant="outline" onClick={handleTakeAgain}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Take Again
+            </Button>
+            <DownloadDialog 
+              scoreResult={result} 
+              assessmentData={assessmentData} 
+              recommendations={recommendations} 
+            />
+          </div>
 
-      {/* Enhanced Share Section */}
-      <div className="mt-8 max-w-md mx-auto">
-        <EnhancedShareButtons 
-          scoreResult={result} 
-          assessmentData={assessmentData} 
-          recommendations={recommendations}
-          userProfile={{
-            name: user?.user_metadata?.full_name,
-            email: user?.email,
-          }}
-        />
-      </div>
+          {/* Enhanced Share Section */}
+          <div className="mt-8">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Share Your Results</h3>
+              <p className="text-gray-600">Let others know about your startup's investment readiness</p>
+            </div>
+            <div className="max-w-md mx-auto">
+              <EnhancedShareButtons 
+                scoreResult={result} 
+                assessmentData={assessmentData} 
+                recommendations={recommendations}
+                userProfile={{
+                  name: user?.user_metadata?.full_name,
+                  email: user?.email,
+                }}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Comprehensive Assessment - Show only Share Section and PDF with enhanced features */}
+          <div className="mt-8">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Share Your Results</h3>
+              <p className="text-gray-600">Let others know about your startup's investment readiness</p>
+            </div>
+            <div className="max-w-md mx-auto">
+              <EnhancedShareButtons 
+                scoreResult={result} 
+                assessmentData={assessmentData} 
+                recommendations={recommendations}
+                userProfile={{
+                  name: user?.user_metadata?.full_name,
+                  email: user?.email,
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Enhanced Clustering Analysis */}
       <div className="mt-8">
