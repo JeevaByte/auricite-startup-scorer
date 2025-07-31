@@ -450,7 +450,15 @@ export const UnifiedAssessmentWizard: React.FC = () => {
   const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
   const progress = (currentStep / TOTAL_STEPS) * 100;
   const isLastStep = currentStep === TOTAL_STEPS;
-  const canGoNext = validateCurrentStep();
+  
+  // Calculate validation without triggering state updates
+  const canGoNext = React.useMemo(() => {
+    const currentStepQuestions = ASSESSMENT_QUESTIONS.filter(q => q.step === currentStep);
+    return currentStepQuestions.every(question => {
+      const value = assessmentData[question.id];
+      return !(question.required && (value === null || value === undefined));
+    });
+  }, [currentStep, assessmentData]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
