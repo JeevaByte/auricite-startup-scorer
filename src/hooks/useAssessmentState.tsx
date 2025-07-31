@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { AssessmentData, ScoreResult } from '@/utils/scoreCalculator';
 import { useAuth } from '@/hooks/useAuth';
-import { saveDraft, loadDraft, clearDraft } from '@/utils/autosave';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const assessmentSteps = [
   { id: 'business', title: 'Business Idea', completed: false },
@@ -38,20 +38,33 @@ export const useAssessmentState = () => {
   const { toast } = useToast();
 
   const loadExistingDraft = async () => {
+    if (!user) return;
+    
     try {
       setIsLoading(true);
-      const draft = await loadDraft();
-      if (draft && draft.draft_data) {
+      const { data, error } = await supabase
+        .from('assessment_drafts')
+        .select('draft_data, step')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading draft:', error);
+        return;
+      }
+
+      if (data?.draft_data) {
+        const draftData = data.draft_data as Record<string, any>;
         const mergedData: AssessmentData = {
           ...defaultAssessmentData,
-          ...draft.draft_data
+          ...draftData
         };
         setAssessmentData(mergedData);
-        setCurrentStep(draft.step);
+        setCurrentStep(data.step || 0);
         
         const updatedSteps = steps.map((step, index) => ({
           ...step,
-          completed: index < draft.step
+          completed: index < (data.step || 0)
         }));
         setSteps(updatedSteps);
         
@@ -116,7 +129,10 @@ export const useAssessmentState = () => {
       setEngagementMessage(generateEngagementMessage(result));
 
       if (user) {
-        await clearDraft();
+        await supabase
+          .from('assessment_drafts')
+          .delete()
+          .eq('user_id', user.id);
       }
       
       toast({
@@ -147,7 +163,10 @@ export const useAssessmentState = () => {
       setSteps(assessmentSteps.map(step => ({ ...step, completed: false })));
       
       if (user) {
-        await clearDraft();
+        await supabase
+          .from('assessment_drafts')
+          .delete()
+          .eq('user_id', user.id);
       }
     } catch (error) {
       console.error('Error restarting:', error);
@@ -172,7 +191,13 @@ export const useAssessmentState = () => {
     
     if (user) {
       try {
-        await saveDraft(data, currentStep);
+        await supabase
+          .from('assessment_drafts')
+          .upsert({
+            user_id: user.id,
+            draft_data: data as any,
+            step: currentStep
+          }, { onConflict: 'user_id' });
       } catch (error) {
         console.error('Auto-save failed:', error);
       }
