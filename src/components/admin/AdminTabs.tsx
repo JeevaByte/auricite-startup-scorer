@@ -12,6 +12,7 @@ import { SearchFilter } from './SearchFilter';
 import { ManualDataCorrection } from './ManualDataCorrection';
 import { WebhookManager } from './WebhookManager';
 import { AbuseDetection } from '@/components/security/AbuseDetection';
+import { DonationsTable } from './DonationsTable';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
 
 interface AdminTabsProps {
@@ -30,9 +31,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-9">
+      <TabsList className="grid w-full grid-cols-10">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
+        <TabsTrigger value="donations">Donations</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="scoring">Scoring</TabsTrigger>
         <TabsTrigger value="rescore">Re-score</TabsTrigger>
@@ -63,6 +65,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="rescore">
         <RescoreManager />
+      </TabsContent>
+
+      <TabsContent value="donations" className="space-y-4">
+        <DonationsTable />
       </TabsContent>
 
       <TabsContent value="edit">

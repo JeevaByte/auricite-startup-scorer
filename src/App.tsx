@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Results from "./pages/Results";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
+import DonationSuccess from "./pages/DonationSuccess";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorDirectory from "./pages/InvestorDirectory";
 import AIFeedback from "./pages/AIFeedback";
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="/results" element={<Results />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/donation-success" element={<DonationSuccess />} />
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
                   <Route path="/investors" element={<InvestorDirectory />} />

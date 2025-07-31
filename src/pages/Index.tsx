@@ -9,6 +9,7 @@ import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DonationButton } from '@/components/DonationButton';
 import { ArrowRight, BarChart3, Target, Users, Crown, CheckCircle, TrendingUp, Shield, Zap, Brain, FileText, BookOpen } from 'lucide-react';
 import { UnifiedAssessment } from '@/components/UnifiedAssessment';
 import { Hero } from '@/components/Hero';
@@ -181,6 +182,11 @@ export default function Index() {
               <Crown className="h-6 w-6" />
               <span>View Pricing</span>
             </Button>
+            
+            <DonationButton 
+              variant="outline"
+              className="h-24 flex-col space-y-2"
+            />
           </div>
         </div>
       </section>
