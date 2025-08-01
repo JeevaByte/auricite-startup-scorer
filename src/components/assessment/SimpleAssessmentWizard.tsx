@@ -257,7 +257,8 @@ export const SimpleAssessmentWizard: React.FC = () => {
         state: { 
           result: scoreResult, 
           assessmentData: assessmentData,
-          scoreResult: scoreResult
+          scoreResult: scoreResult,
+          assessmentType: 'simple'
         }
       });
 

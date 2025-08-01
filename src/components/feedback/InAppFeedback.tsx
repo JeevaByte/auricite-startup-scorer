@@ -47,23 +47,45 @@ export const InAppFeedback = () => {
       return;
     }
 
+    if (formData.rating === 0) {
+      toast({
+        title: "Rating required",
+        description: "Please provide a rating for your experience",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      console.log('Submitting feedback with data:', {
+        user_id: user?.id || null,
+        feedback: formData.message,
+        section: formData.type,
+        rating: formData.rating.toString(),
+      });
+
+      const { data, error } = await supabase
         .from('user_feedback')
         .insert({
           user_id: user?.id || null,
           feedback: formData.message,
           section: formData.type,
           rating: formData.rating.toString(),
-          assessment_id: null // We can add this later if needed
-        });
+          assessment_id: null
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Feedback submitted successfully:', data);
 
       toast({
-        title: "Feedback submitted!",
+        title: "Feedback submitted successfully!",
         description: "Thank you for your feedback. We'll review it and get back to you if needed."
       });
 
@@ -79,8 +101,8 @@ export const InAppFeedback = () => {
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
-        title: "Error submitting feedback",
-        description: "Please try again later",
+        title: "Failed to submit feedback",
+        description: error instanceof Error ? error.message : "Please try again later",
         variant: "destructive"
       });
     } finally {

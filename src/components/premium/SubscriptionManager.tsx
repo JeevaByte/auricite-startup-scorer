@@ -227,7 +227,7 @@ export const SubscriptionManager: React.FC = () => {
                     ) : isCurrentPlan ? (
                       'Current Plan'
                     ) : isFree ? (
-                      'Downgrade'
+                      'Upgrade to Premium'
                     ) : (
                       'Upgrade'
                     )}
@@ -239,35 +239,47 @@ export const SubscriptionManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Feature Comparison */}
+      {/* Feature Comparison - Always Expanded */}
       <Card>
         <CardHeader>
-          <CardTitle>Feature Comparison</CardTitle>
+          <CardTitle>Complete Feature Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2">Feature</th>
+                  <th className="text-left p-3">Feature</th>
                   {plans.slice(0, 3).map(plan => (
-                    <th key={plan.id} className="text-center p-2">{plan.name}</th>
+                    <th key={plan.id} className="text-center p-3 font-semibold">{plan.name}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td className="p-2">Basic Assessment</td>
+                <tr className="border-b bg-gray-50">
+                  <td className="p-3 font-medium">Quick Assessment</td>
                   {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-2">
+                    <td key={plan.id} className="text-center p-3">
                       <Check className="h-4 w-4 text-green-500 mx-auto" />
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b">
-                  <td className="p-2">Detailed Reports</td>
+                  <td className="p-3 font-medium">Comprehensive Assessment</td>
                   {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-2">
+                    <td key={plan.id} className="text-center p-3">
+                      {plan.name !== 'Free' ? (
+                        <Check className="h-4 w-4 text-green-500 mx-auto" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-500 mx-auto" />
+                      )}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b bg-gray-50">
+                  <td className="p-3 font-medium">Detailed PDF Reports</td>
+                  {plans.slice(0, 3).map(plan => (
+                    <td key={plan.id} className="text-center p-3">
                       {plan.name !== 'Free' ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
@@ -277,9 +289,33 @@ export const SubscriptionManager: React.FC = () => {
                   ))}
                 </tr>
                 <tr className="border-b">
-                  <td className="p-2">Investor Matching</td>
+                  <td className="p-3 font-medium">Investor Directory</td>
                   {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-2">
+                    <td key={plan.id} className="text-center p-3">
+                      {plan.name !== 'Free' ? (
+                        <Check className="h-4 w-4 text-green-500 mx-auto" />
+                      ) : (
+                        <span className="text-xs text-amber-600 font-medium">Donation</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b bg-gray-50">
+                  <td className="p-3 font-medium">AI-Powered Recommendations</td>
+                  {plans.slice(0, 3).map(plan => (
+                    <td key={plan.id} className="text-center p-3">
+                      {plan.name !== 'Free' ? (
+                        <Check className="h-4 w-4 text-green-500 mx-auto" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-500 mx-auto" />
+                      )}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 font-medium">Investor Matching</td>
+                  {plans.slice(0, 3).map(plan => (
+                    <td key={plan.id} className="text-center p-3">
                       {plan.name === 'Enterprise' ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
@@ -288,8 +324,30 @@ export const SubscriptionManager: React.FC = () => {
                     </td>
                   ))}
                 </tr>
+                <tr className="border-b bg-gray-50">
+                  <td className="p-3 font-medium">Priority Support</td>
+                  {plans.slice(0, 3).map(plan => (
+                    <td key={plan.id} className="text-center p-3">
+                      {plan.name === 'Enterprise' ? (
+                        <Check className="h-4 w-4 text-green-500 mx-auto" />
+                      ) : plan.name === 'Premium' ? (
+                        <span className="text-xs text-blue-600 font-medium">Standard</span>
+                      ) : (
+                        <X className="h-4 w-4 text-red-500 mx-auto" />
+                      )}
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
+          </div>
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Need a subscription?</strong> 
+              <a href="/pricing" className="ml-1 text-blue-600 hover:text-blue-800 underline">
+                View detailed pricing and upgrade options →
+              </a>
+            </p>
           </div>
         </CardContent>
       </Card>

@@ -74,7 +74,7 @@ export default function InvestorDirectory() {
     <AccessControl
       accessType="investor_directory"
       title="Investor Directory"
-      description="Connect with investors who are actively looking for startups like yours."
+      description="Connect with investors who are actively looking for startups like yours. Access granted through donation or Premium subscription."
     >
       <InvestorDirectoryContent />
     </AccessControl>
