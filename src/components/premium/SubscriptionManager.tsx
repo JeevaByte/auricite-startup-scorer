@@ -316,11 +316,7 @@ export const SubscriptionManager: React.FC = () => {
                   <td className="p-3 font-medium">Investor Matching</td>
                   {plans.slice(0, 3).map(plan => (
                     <td key={plan.id} className="text-center p-3">
-                      {plan.name === 'Enterprise' ? (
-                        <Check className="h-4 w-4 text-green-500 mx-auto" />
-                      ) : (
-                        <X className="h-4 w-4 text-red-500 mx-auto" />
-                      )}
+                      <X className="h-4 w-4 text-red-500 mx-auto" />
                     </td>
                   ))}
                 </tr>
@@ -328,9 +324,7 @@ export const SubscriptionManager: React.FC = () => {
                   <td className="p-3 font-medium">Priority Support</td>
                   {plans.slice(0, 3).map(plan => (
                     <td key={plan.id} className="text-center p-3">
-                      {plan.name === 'Enterprise' ? (
-                        <Check className="h-4 w-4 text-green-500 mx-auto" />
-                      ) : plan.name === 'Premium' ? (
+                      {plan.name === 'Premium' ? (
                         <span className="text-xs text-blue-600 font-medium">Standard</span>
                       ) : (
                         <X className="h-4 w-4 text-red-500 mx-auto" />
