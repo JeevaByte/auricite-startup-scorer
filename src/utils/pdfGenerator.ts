@@ -147,9 +147,17 @@ const generatePDFContent = (data: PDFReportData): string => {
       <!-- Recommendations -->
       ${recommendations ? `
         <div style="margin-bottom: 30px;">
-          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations</h2>
-          <div style="space-y: 15px;">
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations & Detailed Analysis</h2>
+          <div style="margin-bottom: 20px;">
             ${generateRecommendationsSection(recommendations)}
+          </div>
+          
+          <!-- Detailed Analysis Section -->
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <h3 style="color: #2563eb; font-size: 18px; margin: 0 0 15px 0;">Detailed Analysis</h3>
+            <div style="space-y: 15px;">
+              ${generateDetailedAnalysis(scoreResult, assessmentData)}
+            </div>
           </div>
         </div>
       ` : ''}
@@ -260,6 +268,68 @@ const getExecutiveSummary = (scoreResult: ScoreResult): string => {
   } else {
     return 'Your startup is in the early stages and needs significant development across multiple areas before being investment-ready. Focus on building your minimum viable product, establishing initial traction, and assembling your core team.';
   }
+};
+
+const generateDetailedAnalysis = (scoreResult: ScoreResult, assessmentData: AssessmentData): string => {
+  const analyses = [];
+  
+  // Business Idea Analysis
+  if (scoreResult.businessIdea < 70) {
+    analyses.push(`
+      <div style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #ea580c; background: #fff7ed;">
+        <h4 style="color: #ea580c; margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">Business Idea Enhancement</h4>
+        <p style="margin: 0; font-size: 13px; color: #555;">Your business idea shows potential but needs refinement. Consider conducting more market research, validating your value proposition with potential customers, and clearly defining your unique selling points.</p>
+      </div>
+    `);
+  }
+  
+  // Financial Analysis
+  if (scoreResult.financials < 70) {
+    analyses.push(`
+      <div style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #dc2626; background: #fef2f2;">
+        <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">Financial Structure</h4>
+        <p style="margin: 0; font-size: 13px; color: #555;">Your financial foundation requires attention. Focus on developing detailed financial projections, establishing clear revenue streams, and preparing comprehensive financial statements that investors can review.</p>
+      </div>
+    `);
+  }
+  
+  // Team Analysis
+  if (scoreResult.team < 70) {
+    analyses.push(`
+      <div style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #7c3aed; background: #faf5ff;">
+        <h4 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">Team Development</h4>
+        <p style="margin: 0; font-size: 13px; color: #555;">Building a stronger team is crucial for investment readiness. Consider recruiting key personnel with complementary skills, establishing clear roles and responsibilities, and demonstrating your team's commitment through equity arrangements.</p>
+      </div>
+    `);
+  }
+  
+  // Traction Analysis
+  if (scoreResult.traction < 70) {
+    analyses.push(`
+      <div style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #059669; background: #f0fdf4;">
+        <h4 style="color: #059669; margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">Market Traction</h4>
+        <p style="margin: 0; font-size: 13px; color: #555;">Demonstrating market traction is essential for investor confidence. Focus on acquiring early customers, generating initial revenue, and showing consistent growth metrics that validate market demand.</p>
+      </div>
+    `);
+  }
+  
+  // Investment Readiness Score Analysis
+  const readinessAnalysis = `
+    <div style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #2563eb; background: #eff6ff;">
+      <h4 style="color: #2563eb; margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">Investment Readiness Assessment</h4>
+      <p style="margin: 0; font-size: 13px; color: #555;">
+        Based on your overall score of ${scoreResult.totalScore}/999, you are at the "${getReadinessLevel(scoreResult.totalScore)}" stage. 
+        ${scoreResult.totalScore >= 700 ? 
+          'You have strong fundamentals in place and are well-positioned to engage with investors. Focus on perfecting your pitch and identifying the right investor targets.' :
+          scoreResult.totalScore >= 500 ?
+          'You have a solid foundation but need to strengthen key areas before approaching investors. Prioritize the highest-impact improvements identified in your recommendations.' :
+          'You are in the early development phase. Focus on building core capabilities, establishing initial market validation, and assembling your foundational team before seeking investment.'
+        }
+      </p>
+    </div>
+  `;
+  
+  return [readinessAnalysis, ...analyses].join('');
 };
 
 const getLabel = (value: string, type: string): string => {

@@ -162,10 +162,30 @@ export const EnhancedAuth: React.FC<EnhancedAuthProps> = ({
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-        redirectTo: `${window.location.origin}/auth?mode=reset-password`
+        redirectTo: `${window.location.origin}/auth?reset=true`
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Password reset error:', error);
+        throw error;
+      }
+
+      // Also call the edge function to send custom email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-password-reset', {
+          body: {
+            email: formData.email,
+            resetUrl: `${window.location.origin}/auth?reset=true`
+          }
+        });
+        
+        if (emailError) {
+          console.warn('Custom email sending failed:', emailError);
+          // Don't throw error as the main reset still worked
+        }
+      } catch (emailError) {
+        console.warn('Custom email function error:', emailError);
+      }
 
       toast({
         title: 'Reset link sent',
@@ -175,7 +195,7 @@ export const EnhancedAuth: React.FC<EnhancedAuthProps> = ({
     } catch (error: any) {
       toast({
         title: 'Reset failed',
-        description: error.message,
+        description: error.message || 'Unable to send reset email. Please try again.',
         variant: 'destructive'
       });
     } finally {

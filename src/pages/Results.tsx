@@ -466,17 +466,12 @@ const Results: React.FC<ResultsProps> = () => {
       {/* Action Buttons - Different for Simple vs Comprehensive */}
       {assessmentType === 'simple' ? (
         <>
-          {/* Simple Assessment - Show Take Again and Download Report */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+          {/* Simple Assessment - Show only Take Again */}
+          <div className="flex justify-center mt-8">
             <Button variant="outline" onClick={handleTakeAgain}>
               <RotateCcw className="h-4 w-4 mr-2" />
               Take Again
             </Button>
-            <DownloadDialog 
-              scoreResult={result} 
-              assessmentData={assessmentData} 
-              recommendations={recommendations} 
-            />
           </div>
 
           {/* Enhanced Share Section */}
