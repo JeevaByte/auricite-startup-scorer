@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TallyFormIntegration } from '@/components/TallyFormIntegration';
 import { AIFeedbackSystem } from '@/components/AIFeedbackSystem';
+import { InternalFeedbackSystem } from '@/components/InternalFeedbackSystem';
 import { PitchDeckValidator } from '@/components/PitchDeckValidator';
 import { MessageSquare, Brain, FileText } from 'lucide-react';
 
@@ -42,7 +43,13 @@ export default function AIFeedback() {
           </TabsContent>
 
           <TabsContent value="user-feedback">
-            <TallyFormIntegration />
+            <div className="grid gap-6">
+              <InternalFeedbackSystem />
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Alternative Feedback Form</h3>
+                <TallyFormIntegration />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

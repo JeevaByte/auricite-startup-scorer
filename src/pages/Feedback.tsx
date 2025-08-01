@@ -42,7 +42,9 @@ export default function Feedback() {
           </TabsContent>
 
           <TabsContent value="user-feedback">
-            <TallyFormIntegration />
+            <div className="grid gap-6">
+              <TallyFormIntegration />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

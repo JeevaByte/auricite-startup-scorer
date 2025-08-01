@@ -46,9 +46,9 @@ export const InternalFeedbackSystem = () => {
       const { error } = await supabase
         .from('user_feedback')
         .insert({
-          section: feedbackType,
+          section: 'overall', // Use valid constraint value
           rating: ratingMap[priority as keyof typeof ratingMap] || 'helpful',
-          feedback: `Subject: ${subject}\n\nDescription: ${description}\n\nPriority: ${priority || 'Not specified'}\n\nContact: ${email || 'Not provided'}`,
+          feedback: `Type: ${feedbackType}\nSubject: ${subject}\n\nDescription: ${description}\n\nPriority: ${priority || 'Not specified'}\n\nContact: ${email || 'Not provided'}`,
         });
 
       if (error) throw error;
