@@ -10,8 +10,20 @@ import { useToast } from '@/hooks/use-toast';
 import { InvestorProfileData, saveInvestorProfile, saveInvestorClassification, classifyInvestor } from '@/utils/investorDatabase';
 import { Loader2 } from 'lucide-react';
 
+interface InvestorClassification {
+  category: string;
+  risk_tolerance: string;
+  investment_style: string;
+  stage_preference: string[];
+  sector_focus: string[];
+  ticket_size_range: {
+    min: number;
+    max: number;
+  };
+}
+
 interface Props {
-  onComplete: (classification: any) => void;
+  onComplete: (classification: InvestorClassification) => void;
 }
 
 const InvestorAssessmentForm: React.FC<Props> = ({ onComplete }) => {
@@ -51,10 +63,11 @@ const InvestorAssessmentForm: React.FC<Props> = ({ onComplete }) => {
       });
       
       onComplete(classification);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: "Assessment Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
