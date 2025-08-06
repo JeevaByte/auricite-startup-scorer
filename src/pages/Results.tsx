@@ -409,16 +409,20 @@ const Results: React.FC<ResultsProps> = () => {
 
       {/* Action Buttons - Different for Simple vs Comprehensive */}
       {assessmentType === 'simple' ? <>
-          {/* Simple Assessment - Show only Take Again */}
-          <div className="flex justify-center mt-8">
+          {/* Simple Assessment - Show Take Again and PDF Download */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Button variant="outline" onClick={handleTakeAgain}>
               <RotateCcw className="h-4 w-4 mr-2" />
               Take Again
             </Button>
+            <Button onClick={handleDownloadReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF Report
+            </Button>
           </div>
-
-          {/* Enhanced Share Section */}
-          
+          <p className="text-center text-sm text-gray-500 mt-2">
+            PDF includes Score Breakdown, Recommendations, and Detailed Analysis
+          </p>
         </> : <>
           {/* Comprehensive Assessment - Show only Share Section and PDF with enhanced features */}
           <div className="mt-8">
