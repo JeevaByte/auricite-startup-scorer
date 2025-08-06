@@ -149,20 +149,26 @@ const generatePDFContent = (data: PDFReportData): string => {
         </div>
       </div>
 
-      <!-- Recommendations -->
-      ${(recommendations && includeRecommendations) ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations</h2>
-          <div style="margin-bottom: 20px;">
-            ${generateRecommendationsSection(recommendations)}
-          </div>
+      <!-- Personalized Recommendations -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Personalized Recommendations</h2>
+        <div style="margin-bottom: 20px;">
+          ${recommendations && includeRecommendations ? generateRecommendationsSection(recommendations) : generateFallbackRecommendations(scoreResult, assessmentData)}
         </div>
-      ` : ''}
+      </div>
+      
+      <!-- Actionable Steps -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Actionable Steps to Improve Investor Readiness</h2>
+        <div style="margin-bottom: 20px;">
+          ${generateActionableSteps(scoreResult, assessmentData)}
+        </div>
+      </div>
       
       <!-- Detailed Analysis Section -->
       ${includeDetailedAnalysis ? `
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 15px 0;">Detailed Analysis</h2>
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 15px 0;">Detailed Analysis & Investment Readiness Insights</h2>
           <div style="space-y: 15px;">
             ${generateDetailedAnalysis(scoreResult, assessmentData)}
           </div>
@@ -398,4 +404,173 @@ const getLabel = (value: string, type: string): string => {
     default:
       return value;
   }
+};
+
+const generateFallbackRecommendations = (scoreResult: ScoreResult, assessmentData: AssessmentData): string => {
+  const recommendations = [];
+  
+  // Business Idea Recommendations
+  if (scoreResult.businessIdea < 80) {
+    recommendations.push({
+      category: 'Business Idea',
+      items: [
+        'Conduct comprehensive market research to validate your target market size and opportunity',
+        'Develop a clear and compelling value proposition that differentiates you from competitors',
+        'Create detailed user personas and customer journey maps',
+        'Test your assumptions through customer interviews and prototype validation'
+      ]
+    });
+  }
+  
+  // Financial Recommendations
+  if (scoreResult.financials < 80) {
+    recommendations.push({
+      category: 'Financial Planning',
+      items: [
+        'Develop detailed financial projections for 3-5 years including P&L, cash flow, and balance sheet',
+        'Establish clear revenue streams and pricing strategy',
+        'Create a comprehensive cap table and understand equity distribution',
+        'Implement proper financial tracking and accounting systems'
+      ]
+    });
+  }
+  
+  // Team Recommendations
+  if (scoreResult.team < 80) {
+    recommendations.push({
+      category: 'Team Building',
+      items: [
+        'Recruit key team members with complementary skills in areas where you lack expertise',
+        'Establish clear roles, responsibilities, and equity arrangements',
+        'Consider advisory board members who can provide industry expertise and connections',
+        'Demonstrate team commitment through full-time dedication to the venture'
+      ]
+    });
+  }
+  
+  // Traction Recommendations
+  if (scoreResult.traction < 80) {
+    recommendations.push({
+      category: 'Market Traction',
+      items: [
+        'Focus on acquiring and retaining early customers to demonstrate product-market fit',
+        'Develop key performance indicators (KPIs) and track growth metrics consistently',
+        'Build strategic partnerships that can accelerate market entry and growth',
+        'Generate initial revenue and establish recurring revenue streams where possible'
+      ]
+    });
+  }
+  
+  let content = '';
+  recommendations.forEach(rec => {
+    content += `
+      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+        <h3 style="color: #2563eb; font-size: 16px; margin: 0 0 10px 0;">
+          ${rec.category}
+        </h3>
+        <ul style="margin: 0; padding-left: 20px; color: #555;">
+          ${rec.items.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  });
+  
+  return content;
+};
+
+const generateActionableSteps = (scoreResult: ScoreResult, assessmentData: AssessmentData): string => {
+  const steps = [];
+  
+  // Priority 1: Immediate Actions (0-30 days)
+  const immediateActions = [];
+  if (!assessmentData.capTable) {
+    immediateActions.push('Create and document your cap table with current equity distribution');
+  }
+  if (!assessmentData.revenue) {
+    immediateActions.push('Develop a clear revenue generation strategy and pricing model');
+  }
+  if (!assessmentData.fullTimeTeam) {
+    immediateActions.push('Assess team commitment and consider transitioning key members to full-time');
+  }
+  
+  // Priority 2: Short-term Goals (1-3 months)
+  const shortTermActions = [];
+  if (scoreResult.businessIdea < 70) {
+    shortTermActions.push('Conduct 50+ customer interviews to validate your value proposition');
+    shortTermActions.push('Complete competitive analysis and market sizing research');
+  }
+  if (scoreResult.financials < 70) {
+    shortTermActions.push('Develop 3-year financial projections with monthly granularity for Year 1');
+    shortTermActions.push('Implement financial tracking system and establish key metrics');
+  }
+  
+  // Priority 3: Medium-term Goals (3-6 months)
+  const mediumTermActions = [];
+  if (scoreResult.traction < 70) {
+    mediumTermActions.push('Launch pilot program with 10-20 early customers');
+    mediumTermActions.push('Establish partnerships with key industry players');
+  }
+  if (scoreResult.team < 70) {
+    mediumTermActions.push('Recruit critical team members for key functional areas');
+    mediumTermActions.push('Form advisory board with industry experts');
+  }
+  
+  let content = '';
+  
+  if (immediateActions.length > 0) {
+    content += `
+      <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+        <h3 style="color: #92400e; font-size: 16px; margin: 0 0 10px 0;">
+          🚀 Immediate Actions (0-30 days)
+        </h3>
+        <ul style="margin: 0; padding-left: 20px; color: #92400e;">
+          ${immediateActions.map(action => `<li style="margin-bottom: 8px;"><strong>${action}</strong></li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  
+  if (shortTermActions.length > 0) {
+    content += `
+      <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+        <h3 style="color: #1d4ed8; font-size: 16px; margin: 0 0 10px 0;">
+          📈 Short-term Goals (1-3 months)
+        </h3>
+        <ul style="margin: 0; padding-left: 20px; color: #1d4ed8;">
+          ${shortTermActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  
+  if (mediumTermActions.length > 0) {
+    content += `
+      <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+        <h3 style="color: #047857; font-size: 16px; margin: 0 0 10px 0;">
+          🎯 Medium-term Goals (3-6 months)
+        </h3>
+        <ul style="margin: 0; padding-left: 20px; color: #047857;">
+          ${mediumTermActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+  
+  // Investment Readiness Checklist
+  content += `
+    <div style="background: #f3f4f6; border: 1px solid #6b7280; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+      <h3 style="color: #374151; font-size: 16px; margin: 0 0 10px 0;">
+        ✅ Investment Readiness Checklist
+      </h3>
+      <ul style="margin: 0; padding-left: 20px; color: #374151;">
+        <li style="margin-bottom: 8px;">Pitch deck with compelling story and clear ask</li>
+        <li style="margin-bottom: 8px;">Financial model with realistic projections</li>
+        <li style="margin-bottom: 8px;">Legal structure and IP protection in place</li>
+        <li style="margin-bottom: 8px;">Due diligence materials prepared (data room)</li>
+        <li style="margin-bottom: 8px;">Target investor list and warm introductions</li>
+      </ul>
+    </div>
+  `;
+  
+  return content;
 };
