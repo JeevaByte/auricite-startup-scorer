@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getUserAssessments, getUserAssessmentHistory, DatabaseAssessment, DatabaseScore } from '@/utils/database';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, TrendingUp, Brain, FileText } from 'lucide-react';
+import { HistoryEntry } from '@/types/common';
 
 interface AssessmentHistoryProps {
   onBack: () => void;
@@ -15,7 +16,7 @@ interface AssessmentHistoryProps {
 
 export const AssessmentHistory = ({ onBack, onViewScore }: AssessmentHistoryProps) => {
   const [assessments, setAssessments] = useState<(DatabaseAssessment & { scores: DatabaseScore[] })[]>([]);
-  const [historyEntries, setHistoryEntries] = useState<any[]>([]);
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

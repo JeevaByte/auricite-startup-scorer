@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AssessmentData } from '@/utils/scoreCalculator';
 import { calculateConfigBasedScore } from '@/utils/configBasedScoring';
 import { sendReportEmail } from '@/utils/emailService';
+import { FormData } from '@/types/common';
 
 const ASSESSMENT_QUESTIONS = [
   {
@@ -142,7 +143,7 @@ export const AssessmentWizard: React.FC = () => {
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<FormData>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStepValid, setIsStepValid] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -152,16 +153,16 @@ export const AssessmentWizard: React.FC = () => {
     if (user) {
       loadDraft();
     }
-  }, [user]);
+  }, [user, loadDraft]);
 
   // Save draft data
   useEffect(() => {
     if (user && Object.keys(formData).length > 0) {
       saveDraft();
     }
-  }, [formData, currentStep, user]);
+  }, [formData, currentStep, user, saveDraft]);
 
-  const loadDraft = async () => {
+  const loadDraft = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -177,15 +178,15 @@ export const AssessmentWizard: React.FC = () => {
       }
 
       if (data?.draft_data) {
-        setFormData(data.draft_data as Record<string, any>);
+        setFormData(data.draft_data as FormData);
         setCurrentStep(data.step || 1);
       }
     } catch (error) {
       console.error('Error loading draft:', error);
     }
-  };
+  }, [user]);
 
-  const saveDraft = async () => {
+  const saveDraft = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -199,9 +200,9 @@ export const AssessmentWizard: React.FC = () => {
     } catch (error) {
       console.error('Error saving draft:', error);
     }
-  };
+  }, [user, formData, currentStep]);
 
-  const handleInputChange = (questionId: string, value: any) => {
+  const handleInputChange = (questionId: string, value: string | boolean | number) => {
     setFormData(prev => ({
       ...prev,
       [questionId]: value

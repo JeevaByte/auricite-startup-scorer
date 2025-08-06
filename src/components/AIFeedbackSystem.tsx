@@ -8,6 +8,7 @@ import { Brain, FileText, Lightbulb, TrendingUp, Target, Users, Zap, AlertTriang
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Assessment, ScoreResult } from '@/types/common';
 
 interface DetailedAnalysis {
   sentiment: string;
@@ -309,11 +310,11 @@ export const AIFeedbackSystem = () => {
             content: content,
             contentType: selectedContentType,
             timestamp: new Date().toISOString()
-          } as any,
+          } as Partial<Assessment>,
           score_result: {
             ...analysisData,
             contentAnalysis: true
-          } as any
+          } as ScoreResult
         });
 
       if (error) {
