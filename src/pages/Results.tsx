@@ -238,11 +238,25 @@ const Results: React.FC<ResultsProps> = () => {
   const handleDownloadReport = async () => {
     if (!result || !assessmentData) return;
     try {
-      const reportData = generateReportData(assessmentData, result, recommendations);
-      await downloadAsJSON(reportData, `investment-readiness-report-${new Date().toISOString().split('T')[0]}.json`);
+      const { generatePDFReport } = await import('../utils/pdfGenerator');
+      await generatePDFReport({
+        assessmentData,
+        scoreResult: result,
+        recommendations,
+        userProfile: {
+          name: user?.user_metadata?.full_name,
+          email: user?.email,
+          company: user?.user_metadata?.company_name
+        },
+        generatedAt: new Date().toISOString(),
+        includeDetailedAnalysis: true,
+        includeScoreBreakdown: true,
+        includeRecommendations: true
+      });
+      
       toast({
         title: "Report Downloaded",
-        description: "Your investment readiness report has been downloaded successfully."
+        description: "Your comprehensive investment readiness report with detailed analysis has been downloaded successfully."
       });
     } catch (error) {
       console.error('Error downloading report:', error);
@@ -412,11 +426,22 @@ const Results: React.FC<ResultsProps> = () => {
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Share Your Results</h3>
               <p className="text-gray-600">Let others know about your startup's investment readiness</p>
             </div>
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto space-y-4">
               <EnhancedShareButtons scoreResult={result} assessmentData={assessmentData} recommendations={recommendations} userProfile={{
             name: user?.user_metadata?.full_name,
             email: user?.email
           }} />
+              
+              {/* Download PDF Report Button */}
+              <div className="text-center">
+                <Button onClick={handleDownloadReport} className="w-full">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download Comprehensive PDF Report
+                </Button>
+                <p className="text-sm text-gray-500 mt-2">
+                  Includes Score Breakdown, Recommendations, and Detailed Analysis
+                </p>
+              </div>
             </div>
           </div>
         </>}

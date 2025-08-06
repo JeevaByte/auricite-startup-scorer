@@ -43,7 +43,7 @@ export default function Index() {
     if (!user) {
       navigate('/auth?returnTo=/investor-dashboard');
     } else if (!hasPremiumAccess) {
-      navigate('/pricing');
+      window.location.href = '/pricing';
     } else {
       navigate('/investor-dashboard');
     }

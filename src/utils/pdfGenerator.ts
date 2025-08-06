@@ -13,6 +13,9 @@ export interface PDFReportData {
     company?: string;
   };
   generatedAt: string;
+  includeDetailedAnalysis?: boolean;
+  includeScoreBreakdown?: boolean;
+  includeRecommendations?: boolean;
 }
 
 export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
@@ -78,7 +81,7 @@ export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
 };
 
 const generatePDFContent = (data: PDFReportData): string => {
-  const { assessmentData, scoreResult, recommendations, userProfile, generatedAt } = data;
+  const { assessmentData, scoreResult, recommendations, userProfile, generatedAt, includeDetailedAnalysis = true, includeScoreBreakdown = true, includeRecommendations = true } = data;
   const date = new Date(generatedAt).toLocaleDateString();
   
   return `
@@ -114,6 +117,7 @@ const generatePDFContent = (data: PDFReportData): string => {
       </div>
 
       <!-- Score Breakdown -->
+      ${includeScoreBreakdown ? `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Score Breakdown</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -123,6 +127,7 @@ const generatePDFContent = (data: PDFReportData): string => {
           ${generateScoreCard('Traction', scoreResult.traction, 100, '20%')}
         </div>
       </div>
+      ` : ''}
 
       <!-- Assessment Details -->
       <div style="margin-bottom: 30px;">
@@ -145,19 +150,21 @@ const generatePDFContent = (data: PDFReportData): string => {
       </div>
 
       <!-- Recommendations -->
-      ${recommendations ? `
+      ${(recommendations && includeRecommendations) ? `
         <div style="margin-bottom: 30px;">
-          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations & Detailed Analysis</h2>
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Key Recommendations</h2>
           <div style="margin-bottom: 20px;">
             ${generateRecommendationsSection(recommendations)}
           </div>
-          
-          <!-- Detailed Analysis Section -->
-          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;">
-            <h3 style="color: #2563eb; font-size: 18px; margin: 0 0 15px 0;">Detailed Analysis</h3>
-            <div style="space-y: 15px;">
-              ${generateDetailedAnalysis(scoreResult, assessmentData)}
-            </div>
+        </div>
+      ` : ''}
+      
+      <!-- Detailed Analysis Section -->
+      ${includeDetailedAnalysis ? `
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 15px 0;">Detailed Analysis</h2>
+          <div style="space-y: 15px;">
+            ${generateDetailedAnalysis(scoreResult, assessmentData)}
           </div>
         </div>
       ` : ''}

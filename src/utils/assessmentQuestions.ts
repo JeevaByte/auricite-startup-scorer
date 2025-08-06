@@ -25,6 +25,18 @@ export const assessmentSteps: AssessmentStep[] = [
         question: 'Do you have a working prototype or MVP?',
         type: 'boolean',
       },
+      {
+        key: 'productStage',
+        question: 'What stage is your product in?',
+        type: 'select',
+        options: [
+          { value: 'idea', label: 'Idea stage' },
+          { value: 'mockup', label: 'Mockup/Wireframe' },
+          { value: 'mvp', label: 'MVP' },
+          { value: 'beta', label: 'Beta version' },
+          { value: 'launched', label: 'Launched product' }
+        ]
+      },
     ],
   },
   {
@@ -51,6 +63,17 @@ export const assessmentSteps: AssessmentStep[] = [
           { value: 'high', label: 'High MRR ($100K+)' }
         ]
       },
+      {
+        key: 'burnRate',
+        question: 'What is your monthly burn rate?',
+        type: 'select',
+        options: [
+          { value: 'none', label: 'No burn (profitable)' },
+          { value: 'low', label: 'Under $10K/month' },
+          { value: 'medium', label: '$10K-$50K/month' },
+          { value: 'high', label: 'Over $50K/month' }
+        ]
+      },
     ],
   },
   {
@@ -72,6 +95,32 @@ export const assessmentSteps: AssessmentStep[] = [
           { value: '50+', label: '50+ employees' }
         ]
       },
+      {
+        key: 'keyHires',
+        question: 'Have you made key hires in technical/business roles?',
+        type: 'boolean',
+      },
+    ],
+  },
+  {
+    title: 'Market & Competition',
+    questions: [
+      {
+        key: 'marketSize',
+        question: 'What is your estimated addressable market size?',
+        type: 'select',
+        options: [
+          { value: 'small', label: 'Under $100M' },
+          { value: 'medium', label: '$100M - $1B' },
+          { value: 'large', label: '$1B - $10B' },
+          { value: 'huge', label: 'Over $10B' }
+        ]
+      },
+      {
+        key: 'competitiveAdvantage',
+        question: 'Do you have a clear competitive advantage?',
+        type: 'boolean',
+      },
     ],
   },
   {
@@ -90,7 +139,13 @@ export const assessmentSteps: AssessmentStep[] = [
       {
         key: 'fundingGoal',
         question: 'What is your funding goal?',
-        type: 'text',
+        type: 'select',
+        options: [
+          { value: 'under-100k', label: 'Under $100K' },
+          { value: '100k-500k', label: '$100K - $500K' },
+          { value: '500k-2m', label: '$500K - $2M' },
+          { value: 'over-2m', label: 'Over $2M' }
+        ]
       },
       {
         key: 'investors',
@@ -98,9 +153,10 @@ export const assessmentSteps: AssessmentStep[] = [
         type: 'select',
         options: [
           { value: 'none', label: 'Not targeting investors yet' },
-          { value: 'angels', label: 'Angel investors' },
+          { value: 'friends-family', label: 'Friends & family' },
+          { value: 'angel', label: 'Angel investors' },
           { value: 'vc', label: 'Venture capital' },
-          { value: 'lateStage', label: 'Late-stage investors' }
+          { value: 'institutional', label: 'Institutional investors' }
         ]
       },
     ],
@@ -113,10 +169,22 @@ export const assessmentSteps: AssessmentStep[] = [
         question: 'What best describes your current stage?',
         type: 'select',
         options: [
-          { value: 'concept', label: 'Concept stage' },
-          { value: 'launch', label: 'MVP launched' },
-          { value: 'scale', label: 'Scaling business' },
-          { value: 'exit', label: 'Exit preparation' }
+          { value: 'concept', label: 'Concept validation' },
+          { value: 'prototype', label: 'Prototype complete' },
+          { value: 'first-customers', label: 'First customers acquired' },
+          { value: 'revenue', label: 'Revenue generation' },
+          { value: 'growth', label: 'Sustainable growth' }
+        ]
+      },
+      {
+        key: 'customerTraction',
+        question: 'How many paying customers do you have?',
+        type: 'select',
+        options: [
+          { value: 'none', label: 'No paying customers yet' },
+          { value: 'few', label: '1-10 customers' },
+          { value: 'some', label: '11-100 customers' },
+          { value: 'many', label: '100+ customers' }
         ]
       },
     ],
