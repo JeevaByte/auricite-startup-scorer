@@ -1,6 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// Load locked scoring rules (source of truth)
+import rules from '../../../config/scoring_rules.v0.1.0.json' assert { type: 'json' };
 
 interface AssessmentData {
   prototype: boolean;
@@ -54,6 +56,15 @@ serve(async (req) => {
   }
 
   try {
+    // Fail fast if required env vars are missing
+    const missing = ['APP_ENV','DATABASE_URL','AUTH_SECRET','RATE_LIMIT_RPM','LLM_PROVIDER','LLM_API_KEY','SENTRY_DSN'].filter((k) => !Deno.env.get(k));
+    if (missing.length) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required environment variables', missing }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -82,25 +93,28 @@ serve(async (req) => {
       )
     }
 
-    // Get scoring configuration
-    const { data: configData, error: configError } = await supabaseClient
-      .from('scoring_config')
-      .select('config_data')
-      .eq('is_active', true)
-      .single()
-
-    if (configError) {
-      console.error('Error fetching config:', configError)
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch scoring configuration' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+    // Build scoring configuration from locked JSON rules
+    const dims = rules.dimensions as Record<string, number>
+    const rawWeights = {
+      businessIdea: ((dims.market ?? 0) + (dims.moat ?? 0)) / 100,
+      financials: (dims.financials ?? 0) / 100,
+      team: (dims.team ?? 0) / 100,
+      traction: (dims.traction ?? 0) / 100,
     }
-
-    const config: ScoringConfig = configData.config_data as ScoringConfig
+    const sum = Object.values(rawWeights).reduce((a, b) => a + b, 0) || 1
+    const normalized = {
+      businessIdea: rawWeights.businessIdea / sum,
+      financials: rawWeights.financials / sum,
+      team: rawWeights.team / sum,
+      traction: rawWeights.traction / sum,
+    }
+    const config: ScoringConfig = {
+      businessIdea: normalized.businessIdea,
+      financials: normalized.financials,
+      team: normalized.team,
+      traction: normalized.traction,
+      sectors: {}
+    }
 
     // Calculate score using the fetched configuration
     const result = await calculateScore(assessmentData, config)
@@ -110,7 +124,8 @@ serve(async (req) => {
         success: true, 
         result,
         sector: determineSector(assessmentData),
-        configUsed: 'database'
+        configUsed: `json:${rules.version}`,
+        ruleset_version: rules.version
       }),
       { 
         status: 200, 

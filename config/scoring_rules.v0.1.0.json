@@ -1,0 +1,13 @@
+{
+  "version": "v0.1.0",
+  "dimensions": {
+    "team": 20,
+    "market": 20,
+    "traction": 20,
+    "moat": 15,
+    "financials": 15,
+    "risk": 10
+  },
+  "bounds": { "min": 0, "max": 10 },
+  "missing_policy": "block"
+}

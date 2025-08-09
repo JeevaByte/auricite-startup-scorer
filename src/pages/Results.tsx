@@ -19,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ScoreFeedback } from '@/components/ScoreFeedback';
 import { EnhancedClustering } from '@/components/EnhancedClustering';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import scoringRules from '../../config/scoring_rules.v0.1.0.json';
+import type { ScoreBreakdown } from '../../shared/types';
 interface ResultsProps {
   // Define any props you expect to receive here
 }
@@ -132,6 +134,19 @@ const Results: React.FC<ResultsProps> = () => {
       </div>;
   }
   const readiness = getInvestorReadinessLevel(result.totalScore);
+  const scoreBreakdown: ScoreBreakdown = {
+    ruleset_version: (scoringRules as any).version,
+    subscores: {
+      team: result.team,
+      market: 0,
+      traction: result.traction,
+      moat: 0,
+      financials: result.financials,
+      risk: 0
+    },
+    weighted_total: Math.min(100, Math.max(0, Math.round(result.totalScore / 9.99))),
+    recommendations: []
+  };
   const categories = [{
     name: 'Business Idea',
     score: result.businessIdea,
@@ -290,6 +305,7 @@ const Results: React.FC<ResultsProps> = () => {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Investment Readiness Score</h1>
         <p className="text-lg text-gray-600">Here's how your startup scored across key investment criteria</p>
+        <p className="text-sm text-gray-500 mt-1">Ruleset: {(scoringRules as any).version} • Weighted total: {scoreBreakdown.weighted_total}</p>
       </div>
 
       {/* Badge Display - To be implemented */}
