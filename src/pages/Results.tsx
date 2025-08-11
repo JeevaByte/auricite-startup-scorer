@@ -18,9 +18,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ScoreFeedback } from '@/components/ScoreFeedback';
 import { EnhancedClustering } from '@/components/EnhancedClustering';
-import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import scoringRules from '../../supabase/functions/score-assessment/scoring_rules.v0.1.0.json';
 import type { ScoreBreakdown } from '../../shared/types';
+import ScenarioSimulator from '@/components/ScenarioSimulator';
+import BenchmarkComparison from '@/components/BenchmarkComparison';
+import NarrativeInsights from '@/components/NarrativeInsights';
 interface ResultsProps {
   // Define any props you expect to receive here
 }
@@ -402,10 +404,12 @@ const Results: React.FC<ResultsProps> = () => {
         </TabsContent>
 
         <TabsContent value="detailed" className="space-y-6">
-          {categories.map(category => <Card key={category.name} className="p-6">
+          {categories.map(category => (
+            <Card key={category.name} className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{category.name} - Detailed Breakdown</h3>
               <div className="space-y-4">
-                {category.detailBreakdown.map((item, index) => <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {category.detailBreakdown.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       {getStatusIcon(item.status)}
                       <div>
@@ -417,9 +421,18 @@ const Results: React.FC<ResultsProps> = () => {
                       <p className="text-lg font-semibold text-gray-900">{item.points} pts</p>
                       <p className="text-xs text-gray-500">{item.impact} Impact</p>
                     </div>
-                  </div>)}
+                  </div>
+                ))}
               </div>
-            </Card>)}
+            </Card>
+          ))}
+
+          {/* AI Narrative */}
+          <NarrativeInsights assessmentData={assessmentData} scoreResult={result} />
+          {/* What-if Simulator */}
+          <ScenarioSimulator assessmentData={assessmentData} baselineTotal={result.totalScore} />
+          {/* Benchmarking */}
+          <BenchmarkComparison assessmentData={assessmentData} />
         </TabsContent>
       </Tabs>
 

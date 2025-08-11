@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { DataPrivacySettings } from '@/components/profile/DataPrivacySettings';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
 import { ProfileEdit } from '@/components/profile/ProfileEdit';
+import ScoringProfileSection from './profile/ScoringProfileSection';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -88,7 +89,7 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Overview</span>
@@ -104,6 +105,10 @@ export default function Profile() {
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span>Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="scoring" className="flex items-center space-x-2">
+              <Settings className="h-4 w-4" />
+              <span>Scoring Model</span>
             </TabsTrigger>
           </TabsList>
 
@@ -147,6 +152,21 @@ export default function Profile() {
 
           <TabsContent value="edit" className="mt-6">
             <ProfileEdit />
+          </TabsContent>
+
+          <TabsContent value="scoring" className="mt-6">
+            {/* Scoring Profile Manager */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Customize Your Scoring</h3>
+                <p className="text-sm text-muted-foreground mb-4">Adjust category weights to match your investment thesis.</p>
+                <div>
+                  {/* Lazy import to avoid bundle bloat */}
+                  {/* @ts-ignore */}
+                  <ScoringProfileSection />
+                </div>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">

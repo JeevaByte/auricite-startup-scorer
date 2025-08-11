@@ -1175,6 +1175,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_scoring_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          kpis: Json | null
+          name: string
+          role_type: string
+          updated_at: string
+          user_id: string
+          visibility: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          kpis?: Json | null
+          name: string
+          role_type: string
+          updated_at?: string
+          user_id: string
+          visibility?: string
+          weights: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          kpis?: Json | null
+          name?: string
+          role_type?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+          weights?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_scoring_profiles_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_segments: {
         Row: {
           created_at: string
@@ -1323,8 +1370,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      debug_user_access: {
+        Args: { user_email: string }
+        Returns: {
+          access_type: string
+          has_access: boolean
+          granted_by: string
+          granted_at: string
+          expires_at: string
+          subscription_plan: string
+          subscription_status: string
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
+        Returns: string
+      }
+      grant_temporary_access: {
+        Args: { user_email: string; access_types: string[] }
         Returns: string
       }
       has_paid_access: {
