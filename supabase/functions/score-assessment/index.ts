@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Load locked scoring rules (source of truth)
-import rules from '../../../config/scoring_rules.v0.1.0.json' assert { type: 'json' };
+import rules from './scoring_rules.v0.1.0.json' assert { type: 'json' };
 
 interface AssessmentData {
   prototype: boolean;
