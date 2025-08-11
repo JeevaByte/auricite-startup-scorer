@@ -8,6 +8,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const RATE_LIMITS = new Map<string, { count: number; reset: number }>();
+const getClientIp = (req: Request) => {
+  const xf = req.headers.get('x-forwarded-for');
+  return xf?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
+};
+const isRateLimited = (req: Request, keyPrefix: string, max = 60, windowMs = 60_000) => {
+  const ip = getClientIp(req);
+  const key = `${keyPrefix}:${ip}`;
+  const now = Date.now();
+  const rec = RATE_LIMITS.get(key);
+  if (!rec || now > rec.reset) {
+    RATE_LIMITS.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  if (rec.count >= max) return true;
+  rec.count++;
+  return false;
+};
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[WEBHOOK-HANDLER] ${step}${detailsStr}`);
@@ -16,6 +35,14 @@ const logStep = (step: string, details?: any) => {
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Basic IP rate limiting to mitigate abuse
+  if (isRateLimited(req, 'webhook-handler', 120, 60_000)) {
+    return new Response(JSON.stringify({ error: 'Too many requests' }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 429,
+    });
   }
 
   const supabaseClient = createClient(
@@ -27,28 +54,36 @@ serve(async (req) => {
   try {
     logStep("Webhook received");
 
-    // Check if this is a Stripe webhook
-    const contentType = req.headers.get('content-type');
+    const contentType = req.headers.get('content-type') || '';
     const stripeSignature = req.headers.get('stripe-signature');
     
-    if (stripeSignature || contentType?.includes('application/json')) {
+    if (stripeSignature) {
       return await handleStripeWebhook(req, supabaseClient);
-    } else {
-      // Handle custom webhook events
-      const { event_type, data } = await req.json();
-      logStep('Custom webhook triggered', { event_type, data });
+    }
 
-      // Handle different webhook events
-      switch (event_type) {
-        case 'score_created':
-          await handleScoreCreated(supabaseClient, data);
-          break;
-        case 'assessment_completed':
-          await handleAssessmentCompleted(supabaseClient, data);
-          break;
-        default:
-          logStep('Unknown event type', { type: event_type });
-      }
+    // Custom webhooks must include a shared secret token and JSON body
+    const customToken = req.headers.get('x-webhook-token');
+    const expectedToken = Deno.env.get('CUSTOM_WEBHOOK_TOKEN');
+    if (!expectedToken || customToken !== expectedToken || !contentType.includes('application/json')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const { event_type, data } = await req.json();
+    logStep('Custom webhook triggered', { event_type });
+
+    // Handle different webhook events
+    switch (event_type) {
+      case 'score_created':
+        await handleScoreCreated(supabaseClient, data);
+        break;
+      case 'assessment_completed':
+        await handleAssessmentCompleted(supabaseClient, data);
+        break;
+      default:
+        logStep('Unknown event type', { type: event_type });
     }
 
     return new Response(JSON.stringify({ success: true, message: 'Webhook processed' }), {
