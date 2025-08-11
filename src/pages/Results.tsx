@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScoreFeedback } from '@/components/ScoreFeedback';
 import { EnhancedClustering } from '@/components/EnhancedClustering';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import scoringRules from '../../config/scoring_rules.v0.1.0.json';
+import scoringRules from '../../supabase/functions/score-assessment/scoring_rules.v0.1.0.json';
 import type { ScoreBreakdown } from '../../shared/types';
 interface ResultsProps {
   // Define any props you expect to receive here
