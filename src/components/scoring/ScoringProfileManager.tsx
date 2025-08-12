@@ -48,7 +48,9 @@ export default function ScoringProfileManager() {
         setProfileId(data.id);
         setName(data.name);
         // Only map known keys to avoid shape mismatch
-        const w = data.weights || {};
+        const w = (data.weights as unknown as Partial<{
+          businessIdea: number; financials: number; team: number; traction: number;
+        }>) || {};
         setWeights({
           businessIdea: Number(w.businessIdea ?? 0.3),
           financials: Number(w.financials ?? 0.25),

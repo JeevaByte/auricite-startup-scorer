@@ -23,6 +23,7 @@ import type { ScoreBreakdown } from '../../shared/types';
 import ScenarioSimulator from '@/components/ScenarioSimulator';
 import BenchmarkComparison from '@/components/BenchmarkComparison';
 import NarrativeInsights from '@/components/NarrativeInsights';
+import { CheckCircle, XCircle, AlertCircle, ExternalLink, TrendingUp, Target, RotateCcw, Download, FileText } from 'lucide-react';
 interface ResultsProps {
   // Define any props you expect to receive here
 }

@@ -35,7 +35,9 @@ export default function ScenarioSimulator({ assessmentData, baselineTotal }: Pro
       clone.employees = order[idx] as any;
     }
     if (clone.fundingGoal) {
-      clone.fundingGoal = Math.max(0, (clone.fundingGoal as any) + fundingDelta);
+      const asNumber = Number((clone.fundingGoal as any).toString().replace(/[^0-9.-]/g, '')) || 0;
+      const updated = Math.max(0, asNumber + fundingDelta);
+      clone.fundingGoal = String(updated);
     }
 
     const res = calculateDynamicScore(clone);

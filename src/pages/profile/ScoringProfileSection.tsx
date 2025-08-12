@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-const ScoringProfileManager = React.lazy(() => import('./scoring/ScoringProfileManager'));
+const ScoringProfileManager = React.lazy(() => import('@/components/scoring/ScoringProfileManager'));
 
 export default function ScoringProfileSection() {
   return (

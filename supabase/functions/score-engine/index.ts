@@ -22,7 +22,19 @@ interface StartupInput {
 type Dimensions = 'team'|'market'|'traction'|'moat'|'financials'|'risk';
 
 // Load default rules
-import rules from '../score-assessment/scoring_rules.v0.1.0.json' assert { type: 'json' };
+const rules = {
+  version: 'v0.1.0',
+  dimensions: {
+    team: 20,
+    market: 20,
+    traction: 20,
+    moat: 15,
+    financials: 15,
+    risk: 10,
+  },
+  bounds: { min: 0, max: 10 },
+  missing_policy: 'block',
+} as const;
 
 function scoreTeam(t: Team): number {
   let s = 0;
