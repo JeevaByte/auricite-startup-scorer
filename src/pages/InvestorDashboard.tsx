@@ -152,6 +152,9 @@ const InvestorDashboard: React.FC = () => {
                 Learn More
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
+              <Button size="lg" variant="secondary" onClick={() => window.location.href = '/investor-directory'}>
+                Go to Investor Directory
+              </Button>
             </div>
           </CardContent>
         </Card>

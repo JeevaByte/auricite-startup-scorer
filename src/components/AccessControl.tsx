@@ -141,7 +141,7 @@ export const AccessControl: React.FC<AccessControlProps> = ({
               </div>
             </div>
 
-            <div className="text-center">
+            <div className="text-center space-y-3">
               <p className="text-sm text-muted-foreground mb-4">
                 Prefer a subscription? Get unlimited access with premium plans.
               </p>
@@ -152,6 +152,12 @@ export const AccessControl: React.FC<AccessControlProps> = ({
               >
                 <Crown className="h-4 w-4 mr-2" />
                 View Pricing Plans
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/investor-directory'}
+                className="w-full"
+              >
+                Go to Investor Directory
               </Button>
             </div>
           </CardContent>

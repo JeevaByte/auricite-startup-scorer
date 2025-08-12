@@ -6,12 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User, History, Settings, FileText, Eye, Edit } from 'lucide-react';
+import { User, History, Settings, FileText, Eye, Edit, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DataPrivacySettings } from '@/components/profile/DataPrivacySettings';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
 import { ProfileEdit } from '@/components/profile/ProfileEdit';
 import ScoringProfileSection from './profile/ScoringProfileSection';
+import { SubscriptionManager } from '@/components/premium/SubscriptionManager';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -89,7 +90,7 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Overview</span>
@@ -109,6 +110,10 @@ export default function Profile() {
             <TabsTrigger value="scoring" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span>Scoring Model</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center space-x-2">
+              <Crown className="h-4 w-4" />
+              <span>Subscription</span>
             </TabsTrigger>
           </TabsList>
 
@@ -167,6 +172,13 @@ export default function Profile() {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="subscription" className="mt-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Your Subscription</h3>
+              <SubscriptionManager />
+            </Card>
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
