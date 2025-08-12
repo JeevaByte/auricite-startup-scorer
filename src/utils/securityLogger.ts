@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 
 // Security-focused logging utility
 interface SecurityEvent {
@@ -9,19 +10,28 @@ interface SecurityEvent {
   ipAddress?: string;
 }
 
-export const logSecurityEvent = (event: SecurityEvent) => {
-  // In production, this would send to a proper logging service
-  if (process.env.NODE_ENV === 'production') {
-    // Only log security events in production, not console.log
-    // This would typically go to a service like DataDog, Sentry, etc.
-    return;
+export const logSecurityEvent = async (event: SecurityEvent) => {
+  // Persist to centralized security log (write-only for clients)
+  try {
+    await supabase.from('security_events' as any).insert({
+      type: event.type,
+      user_id: event.userId ?? null,
+      details: event.details,
+      user_agent: event.userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : null),
+      ip_address: event.ipAddress ?? null,
+      created_at: event.timestamp.toISOString(),
+    });
+  } catch (_) {
+    // Swallow errors to avoid cascading failures in the UI
   }
-  
-  // In development, we can still log for debugging
-  console.warn('Security Event:', {
-    ...event,
-    timestamp: event.timestamp.toISOString()
-  });
+
+  // In development, also log to console for visibility
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('Security Event:', {
+      ...event,
+      timestamp: event.timestamp.toISOString(),
+    });
+  }
 };
 
 export const sanitizeErrorForUser = (error: any): string => {

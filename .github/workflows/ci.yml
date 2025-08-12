@@ -27,7 +27,14 @@ jobs:
     
     - name: Run tests
       run: npm run test
-    
+
+    - name: Dependency audit (fail on high)
+      run: npm audit --audit-level=high
+
+    - name: Secret scan (basic patterns)
+      run: |
+        git ls-files -z | xargs -0 grep -nE "(BEGIN RSA PRIVATE KEY|AWS_SECRET_ACCESS_KEY|AKIA[0-9A-Z]{16}|ghp_[0-9A-Za-z]{36}|api[_-]?key|secret[_-]?key|PRIVATE KEY-----)" || true
+
     - name: Build application
       run: npm run build
     

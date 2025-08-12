@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { sanitizeText } from '@/utils/inputSanitization';
 
 interface HelpCenterProps {
   isOpen: boolean;
@@ -225,7 +226,7 @@ export const HelpCenter: React.FC<HelpCenterProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div 
                   className="space-y-4"
-                  dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeText(selectedArticle.content) }}
                 />
               </div>
             </div>

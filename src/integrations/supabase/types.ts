@@ -1002,6 +1002,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string
+          details: string
+          id: string
+          ip_address: unknown | null
+          type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details: string
+          id?: string
+          ip_address?: unknown | null
+          type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: string
+          id?: string
+          ip_address?: unknown | null
+          type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       startup_clusters: {
         Row: {
           assessment_id: string | null
@@ -1382,6 +1412,10 @@ export type Database = {
           subscription_status: string
         }[]
       }
+      get_auth_settings: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: string
@@ -1397,6 +1431,16 @@ export type Database = {
       has_premium_access: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      list_unindexed_foreign_keys: {
+        Args: { table_name: string }
+        Returns: {
+          column_name: string
+        }[]
+      }
+      update_auth_settings: {
+        Args: { config: Json }
+        Returns: Json
       }
       validate_scoring_config: {
         Args: { config_data: Json }
