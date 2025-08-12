@@ -62,6 +62,8 @@ export const PitchDeckUpload: React.FC = () => {
     // Validate file type
     const allowedTypes = [
       'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-powerpoint',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation'
     ];
@@ -69,7 +71,7 @@ export const PitchDeckUpload: React.FC = () => {
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Invalid File Type",
-        description: "Please upload a PDF, PPT, or PPTX file.",
+        description: "Please upload a PDF, DOC/DOCX, PPT, or PPTX file.",
         variant: "destructive",
       });
       return;
@@ -196,7 +198,7 @@ export const PitchDeckUpload: React.FC = () => {
             Upload Pitch Deck
           </CardTitle>
           <CardDescription>
-            Upload your pitch deck in PDF, PPT, or PPTX format (max 10MB)
+            Upload your pitch deck or document in PDF, DOC/DOCX, PPT, or PPTX format (max 10MB)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,7 +209,7 @@ export const PitchDeckUpload: React.FC = () => {
                 ref={fileInputRef}
                 id="pitchDeck"
                 type="file"
-                accept=".pdf,.ppt,.pptx"
+                accept=".pdf,.doc,.docx,.ppt,.pptx"
                 onChange={handleFileUpload}
                 disabled={isUploading}
               />
