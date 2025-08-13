@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, MapPin, DollarSign, Users, ExternalLink } from 'lucide-react';
+import { Search, MapPin, DollarSign, Users, ExternalLink, Unlock } from 'lucide-react';
 import { AccessControl } from '@/components/AccessControl';
 
 interface InvestorProfile {
@@ -70,13 +70,29 @@ const mockInvestors: InvestorProfile[] = [
 ];
 
 export default function InvestorDirectory() {
+  const [bypassAccess, setBypassAccess] = useState(false);
+
+  if (bypassAccess) {
+    return <InvestorDirectoryContent />;
+  }
+
   return (
     <AccessControl
       accessType="investor_directory"
       title="Investor Directory"
       description="Connect with investors who are actively looking for startups like yours. Access granted through donation or Premium subscription."
     >
-      <InvestorDirectoryContent />
+      <div className="space-y-4">
+        <Button 
+          onClick={() => setBypassAccess(true)}
+          variant="outline"
+          className="w-full"
+        >
+          <Unlock className="h-4 w-4 mr-2" />
+          Access Investor Directory (Free Preview)
+        </Button>
+        <InvestorDirectoryContent />
+      </div>
     </AccessControl>
   );
 }
