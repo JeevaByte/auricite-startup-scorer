@@ -128,8 +128,19 @@ export const SubscriptionManager: React.FC = () => {
     );
   }
 
+  // Overview Button with Current Plan
+  const overviewButton = currentPlan ? (
+    <div className="mb-4 flex justify-end">
+      <Button variant="outline" className="flex items-center gap-2" disabled>
+        <Crown className="h-4 w-4 text-yellow-500" />
+        {`Current Plan: ${currentPlan.name}`}
+      </Button>
+    </div>
+  ) : null;
+
   return (
     <div className="space-y-6">
+      {overviewButton}
       {/* Current Subscription Status */}
       {currentPlan && (
         <Card className="border-primary bg-primary/5">
@@ -164,10 +175,11 @@ export const SubscriptionManager: React.FC = () => {
       <div>
         <h2 className="text-2xl font-bold mb-6">Available Plans</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {plans.slice(0, 3).map((plan) => {
+          {plans.slice(0, 3).map((plan, idx) => {
             const isCurrentPlan = currentPlan?.id === plan.id;
-            const isFree = plan.price_monthly === 0;
-            
+            const isFree = plan.name.toLowerCase() === 'free';
+            const isAdvanced = plan.name.toLowerCase() === 'advanced';
+            const isPremium = plan.name.toLowerCase() === 'premium';
             return (
               <Card key={plan.id} className={`relative ${isCurrentPlan ? 'border-primary' : ''}`}>
                 {isCurrentPlan && (
@@ -175,11 +187,11 @@ export const SubscriptionManager: React.FC = () => {
                     <Badge className="bg-primary text-primary-foreground">Current Plan</Badge>
                   </div>
                 )}
-                
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{plan.name}</span>
-                    {!isFree && <Crown className="h-5 w-5 text-yellow-500" />}
+                    {isAdvanced && <Crown className="h-5 w-5 text-blue-500" />}
+                    {isPremium && <Crown className="h-5 w-5 text-yellow-500" />}
                   </CardTitle>
                   <div className="text-3xl font-bold">
                     {isFree ? 'Free' : `$${plan.price_monthly}`}
@@ -191,12 +203,38 @@ export const SubscriptionManager: React.FC = () => {
                     </p>
                   )}
                 </CardHeader>
-                
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm font-medium text-gray-900 mb-2">Features:</p>
                     <ul className="space-y-2">
-                      {(Array.isArray(plan.features) ? plan.features : []).map((feature, index) => (
+                      {isFree && [
+                        'Basic Assessment',
+                        'Score Overview',
+                        'Limited History'
+                      ].map((feature, index) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-600">{feature}</span>
+                        </li>
+                      ))}
+                      {isAdvanced && [
+                        'Unlimited Assessments',
+                        'Detailed Reports',
+                        'Assessment History',
+                        'Email Reports'
+                      ].map((feature, index) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-600">{feature}</span>
+                        </li>
+                      ))}
+                      {isPremium && [
+                        'Everything in Advanced',
+                        'Investor Matching',
+                        'Custom Scoring',
+                        'Priority Support',
+                        'API Access'
+                      ].map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-gray-600">{feature}</span>
@@ -204,15 +242,11 @@ export const SubscriptionManager: React.FC = () => {
                       ))}
                     </ul>
                   </div>
-                  
-                  {plan.max_assessments && (
-                    <div className="pt-2 border-t">
-                      <p className="text-sm text-gray-600">
-                        <strong>Assessments:</strong> {plan.max_assessments === -1 ? 'Unlimited' : plan.max_assessments}
-                      </p>
-                    </div>
-                  )}
-                  
+                  <div className="pt-2 border-t">
+                    <p className="text-sm text-gray-600">
+                      <strong>Assessments:</strong> {isFree ? '1' : isAdvanced ? '10' : isPremium ? 'Unlimited' : plan.max_assessments}
+                    </p>
+                  </div>
                   <Button
                     className="w-full"
                     variant={isCurrentPlan ? "outline" : "default"}
@@ -227,7 +261,7 @@ export const SubscriptionManager: React.FC = () => {
                     ) : isCurrentPlan ? (
                       'Current Plan'
                     ) : isFree ? (
-                      'Upgrade to Premium'
+                      'Upgrad'
                     ) : (
                       'Upgrade'
                     )}
@@ -256,82 +290,53 @@ export const SubscriptionManager: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-3 font-medium">Quick Assessment</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      <Check className="h-4 w-4 text-green-500 mx-auto" />
-                    </td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 font-medium">Comprehensive Assessment</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      {plan.name !== 'Free' ? (
+                {/* List all features for premium, key features green for advanced, only quick assessment for free */}
+                {[
+                  { name: 'Quick Assessment', advanced: true, premium: true },
+                  { name: 'Comprehensive Assessment', advanced: true, premium: true },
+                  { name: 'Detailed PDF Reports', advanced: true, premium: true },
+                  { name: 'Assessment History', advanced: true, premium: true },
+                  { name: 'Investor Directory', advanced: false, premium: true },
+                  { name: 'AI-Powered Recommendations', advanced: false, premium: true },
+                  { name: 'Investor Matching', advanced: false, premium: true },
+                  { name: 'Priority Support', advanced: false, premium: true },
+                  { name: 'Advanced AI Content Analysis', advanced: false, premium: true },
+                  { name: 'Downloadable PDF Reports', advanced: true, premium: true },
+                  { name: 'Unlimited Assessments', advanced: true, premium: true },
+                  { name: 'Direct Founder Connections', advanced: false, premium: true },
+                  { name: 'Deal Flow Management', advanced: false, premium: true },
+                  { name: 'Custom Reporting', advanced: false, premium: true },
+                  { name: 'Benchmark Comparisons', advanced: false, premium: true },
+                  { name: '24/7 Support', advanced: false, premium: true }
+                ].map((feature, idx) => (
+                  <tr key={feature.name} className={idx % 2 === 0 ? "border-b bg-gray-50" : "border-b"}>
+                    <td className="p-3 font-medium">{feature.name}</td>
+                    {/* Free plan: only Quick Assessment green */}
+                    <td className="text-center p-3">
+                      {feature.name === 'Quick Assessment' ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
                         <X className="h-4 w-4 text-red-500 mx-auto" />
                       )}
                     </td>
-                  ))}
-                </tr>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-3 font-medium">Detailed PDF Reports</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      {plan.name !== 'Free' ? (
+                    {/* Advanced plan: key features green */}
+                    <td className="text-center p-3">
+                      {feature.advanced ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
                         <X className="h-4 w-4 text-red-500 mx-auto" />
                       )}
                     </td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 font-medium">Investor Directory</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      {plan.name !== 'Free' ? (
-                        <Check className="h-4 w-4 text-green-500 mx-auto" />
-                      ) : (
-                        <span className="text-xs text-amber-600 font-medium">Donation</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-3 font-medium">AI-Powered Recommendations</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      {plan.name !== 'Free' ? (
+                    {/* Premium plan: all green */}
+                    <td className="text-center p-3">
+                      {feature.premium ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
                         <X className="h-4 w-4 text-red-500 mx-auto" />
                       )}
                     </td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 font-medium">Investor Matching</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      <X className="h-4 w-4 text-red-500 mx-auto" />
-                    </td>
-                  ))}
-                </tr>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-3 font-medium">Priority Support</td>
-                  {plans.slice(0, 3).map(plan => (
-                    <td key={plan.id} className="text-center p-3">
-                      {plan.name === 'Premium' ? (
-                        <span className="text-xs text-blue-600 font-medium">Standard</span>
-                      ) : (
-                        <X className="h-4 w-4 text-red-500 mx-auto" />
-                      )}
-                    </td>
-                  ))}
-                </tr>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

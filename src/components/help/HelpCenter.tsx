@@ -84,8 +84,8 @@ const helpArticles: HelpArticle[] = [
     description: 'Discover advanced features available with premium plans',
     category: 'Premium',
     content: `
-      <h3>Premium Features</h3>
-      <p>Upgrade to unlock advanced capabilities that help you connect with investors and track your progress.</p>
+  <h3>Premium Features</h3>
+  <p>Upgrad to unlock advanced capabilities that help you connect with investors and track your progress.</p>
       
       <h4>Investor Matching:</h4>
       <ul>
@@ -163,8 +163,8 @@ const faqItems = [
     answer: "Yes, you can retake the assessment as many times as you like. We recommend waiting at least 30 days between assessments to track meaningful progress."
   },
   {
-    question: "How do I upgrade to premium?",
-    answer: "You can upgrade at any time by visiting the pricing page or clicking the upgrade button in your dashboard. All premium features are available immediately after payment."
+    question: "How do I upgrad?",
+    answer: "You can upgrad at any time by visiting the pricing page or clicking the upgrad button in your dashboard. All premium features are available immediately after payment."
   },
   {
     question: "What if I need help with my results?",

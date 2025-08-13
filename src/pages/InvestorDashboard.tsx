@@ -141,12 +141,12 @@ const InvestorDashboard: React.FC = () => {
               Unlock Your Investor Dashboard
             </h3>
             <p className="text-muted-foreground mb-6">
-              Upgrade to Premium and start connecting with high-quality startups today.
+              Upgrad and start connecting with high-quality startups today.
             </p>
             <div className="flex justify-center gap-4">
               <Button size="lg" onClick={() => window.location.href = '/pricing'}>
                 <Crown className="mr-2 h-5 w-5" />
-                Upgrade to Premium
+                Upgrad
               </Button>
               <Button size="lg" variant="outline" onClick={() => window.location.href = '/'}>
                 Learn More
@@ -188,16 +188,11 @@ const InvestorDashboard: React.FC = () => {
         ) : showAssessment ? (
           <InvestorAssessmentForm onComplete={handleAssessmentComplete} />
         ) : latestClassification ? (
-          <Tabs defaultValue="classification" className="space-y-6">
+          <Tabs defaultValue="history" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="classification">Your Profile</TabsTrigger>
               <TabsTrigger value="matches">Startup Matches</TabsTrigger>
               <TabsTrigger value="history">Assessment History</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="classification">
-              <InvestorClassification classification={latestClassification} />
-            </TabsContent>
 
             <TabsContent value="matches">
               <Card>
@@ -216,9 +211,15 @@ const InvestorDashboard: React.FC = () => {
             <TabsContent value="history">
               <Card>
                 <CardHeader>
-                  <CardTitle>Assessment History</CardTitle>
+                  <CardTitle>Assessment History & Profile</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {/* User Profile Section */}
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-2">Your Profile</h2>
+                    <InvestorClassification classification={latestClassification} />
+                  </div>
+                  {/* Assessment History Section */}
                   {profiles.length > 0 ? (
                     <div className="space-y-4">
                       {profiles.map((profile) => (

@@ -63,7 +63,7 @@ describe('Comprehensive Test Suite - Bug Fixes', () => {
   });
 
   describe('1. Subscription Manager - Upgrade/Downgrade Plan Text', () => {
-    it('should show "Upgrade to Premium" for free plan instead of "Downgrade"', async () => {
+    it('should show "Upgrad" for free plan instead of "Downgrade"', async () => {
       const mockPlans = [
         {
           id: '1',
@@ -96,7 +96,7 @@ describe('Comprehensive Test Suite - Bug Fixes', () => {
         expect(screen.queryByText('Downgrade')).not.toBeInTheDocument();
         
         // Should show proper upgrade text
-        const upgradeButtons = screen.getAllByText(/Upgrade/);
+        const upgradeButtons = screen.getAllByText(/Upgrad/);
         expect(upgradeButtons.length).toBeGreaterThan(0);
       });
     });

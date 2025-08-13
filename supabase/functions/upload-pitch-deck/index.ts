@@ -50,7 +50,7 @@ serve(async (req) => {
 
     if (!hasAccess) {
       return new Response(JSON.stringify({ 
-        error: "Access denied. Please make a donation or upgrade to premium to upload pitch decks." 
+        error: "Access denied. Please make a donation or upgrad to upload pitch decks." 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 403,

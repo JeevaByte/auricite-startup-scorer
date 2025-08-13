@@ -70,7 +70,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
             </div>
           )}
           <Button onClick={() => window.location.href = '/pricing'}>
-            Upgrade to Premium
+            Upgrad
           </Button>
         </CardContent>
       </Card>
