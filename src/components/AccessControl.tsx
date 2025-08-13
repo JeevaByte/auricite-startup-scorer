@@ -153,12 +153,6 @@ export const AccessControl: React.FC<AccessControlProps> = ({
                 <Crown className="h-4 w-4 mr-2" />
                 View Pricing Plans
               </Button>
-              <Button 
-                onClick={() => window.location.href = '/investor-directory'}
-                className="w-full"
-              >
-                Go to Investor Directory
-              </Button>
             </div>
           </CardContent>
         </Card>

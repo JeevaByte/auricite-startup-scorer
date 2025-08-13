@@ -70,9 +70,9 @@ const mockInvestors: InvestorProfile[] = [
 ];
 
 export default function InvestorDirectory() {
-  const [bypassAccess, setBypassAccess] = useState(false);
+  const [showFreeAccess, setShowFreeAccess] = useState(false);
 
-  if (bypassAccess) {
+  if (showFreeAccess) {
     return <InvestorDirectoryContent />;
   }
 
@@ -82,15 +82,18 @@ export default function InvestorDirectory() {
       title="Investor Directory"
       description="Connect with investors who are actively looking for startups like yours. Access granted through donation or Premium subscription."
     >
-      <div className="space-y-4">
-        <Button 
-          onClick={() => setBypassAccess(true)}
-          variant="outline"
-          className="w-full"
-        >
-          <Unlock className="h-4 w-4 mr-2" />
-          Access Investor Directory (Free Preview)
-        </Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto text-center mb-8">
+          <Button 
+            onClick={() => setShowFreeAccess(true)}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
+            <Unlock className="h-4 w-4 mr-2" />
+            Access Investor Directory (Free Preview)
+          </Button>
+        </div>
         <InvestorDirectoryContent />
       </div>
     </AccessControl>
