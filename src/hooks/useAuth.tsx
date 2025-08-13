@@ -3,6 +3,8 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logSecurityEvent } from '@/utils/securityLogger';
+import { authRateLimiter } from '@/utils/rateLimiting';
+import { validatePassword } from '@/utils/passwordValidation';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +12,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error?: any }>;
+  signUpWithPassword: (email: string, password: string, fullName?: string) => Promise<{ error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +22,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   signInWithGoogle: async () => {},
+  signInWithPassword: async () => ({ error: null }),
+  signUpWithPassword: async () => ({ error: null }),
 });
 
 export const useAuth = () => {
@@ -163,6 +169,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    const rateLimitKey = `login_${email}`;
+    
+    // Check rate limit
+    if (authRateLimiter.isRateLimited(rateLimitKey)) {
+      const remainingTime = authRateLimiter.getRemainingTime(rateLimitKey);
+      logSecurityEvent({
+        type: 'AUTH_FAILURE',
+        details: `Login rate limited for ${email}. ${remainingTime}s remaining.`,
+        timestamp: new Date()
+      });
+      return { error: { message: `Too many login attempts. Try again in ${remainingTime} seconds.` } };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        logSecurityEvent({
+          type: 'AUTH_FAILURE',
+          details: `Login failed for ${email}: ${error.message}`,
+          timestamp: new Date()
+        });
+        return { error };
+      }
+
+      logSecurityEvent({
+        type: 'AUTH_SUCCESS',
+        details: `Successful login for ${email}`,
+        timestamp: new Date()
+      });
+
+      return { error: null };
+    } catch (error) {
+      logSecurityEvent({
+        type: 'AUTH_FAILURE',
+        details: `Login error for ${email}`,
+        timestamp: new Date()
+      });
+      return { error };
+    }
+  };
+
+  const signUpWithPassword = async (email: string, password: string, fullName?: string) => {
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return { error: { message: passwordValidation.errors[0] } };
+    }
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: fullName || '',
+          }
+        }
+      });
+
+      if (error) {
+        logSecurityEvent({
+          type: 'AUTH_FAILURE',
+          details: `Sign up failed for ${email}: ${error.message}`,
+          timestamp: new Date()
+        });
+        return { error };
+      }
+
+      logSecurityEvent({
+        type: 'AUTH_SUCCESS',
+        details: `Successful sign up for ${email}`,
+        timestamp: new Date()
+      });
+
+      return { error: null };
+    } catch (error) {
+      logSecurityEvent({
+        type: 'AUTH_FAILURE',
+        details: `Sign up error for ${email}`,
+        timestamp: new Date()
+      });
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -187,7 +284,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, signInWithGoogle }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      signOut, 
+      signInWithGoogle, 
+      signInWithPassword, 
+      signUpWithPassword 
+    }}>
       {children}
     </AuthContext.Provider>
   );

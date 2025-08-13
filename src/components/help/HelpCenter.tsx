@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { sanitizeText } from '@/utils/inputSanitization';
+import DOMPurify from 'dompurify';
 
 interface HelpCenterProps {
   isOpen: boolean;
@@ -226,7 +227,12 @@ export const HelpCenter: React.FC<HelpCenterProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div 
                   className="space-y-4"
-                  dangerouslySetInnerHTML={{ __html: sanitizeText(selectedArticle.content) }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(sanitizeText(selectedArticle.content), {
+                      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'code', 'pre'],
+                      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                    }) 
+                  }}
                 />
               </div>
             </div>
