@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Brain, FileText, Lightbulb, TrendingUp, Target, Users, Zap, AlertTriangle, CheckCircle, Save } from 'lucide-react';
+import { Brain, FileText, Lightbulb, TrendingUp, Target, Users, Zap, AlertTriangle, CheckCircle, Save, Upload, Download, X } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import jsPDF from 'jspdf';
 
 interface DetailedAnalysis {
   sentiment: string;
@@ -53,9 +55,123 @@ export const AIFeedbackSystem = () => {
   const [analysis, setAnalysis] = useState<DetailedAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [selectedContentType, setSelectedContentType] = useState<'pitch-deck' | 'business-plan' | 'marketing-copy' | 'general'>('general');
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const validFiles = acceptedFiles.filter(file => {
+      const validTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      return validTypes.includes(file.type) || file.name.endsWith('.txt') || file.name.endsWith('.md');
+    });
+
+    if (validFiles.length === 0) {
+      toast({
+        title: 'Invalid File Type',
+        description: 'Please upload text files (.txt, .md), Word documents (.doc, .docx), or PDFs only.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadedFiles(validFiles);
+    
+    // Read file content
+    validFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setContent(prevContent => prevContent + (prevContent ? '\n\n' : '') + `--- ${file.name} ---\n${text}`);
+      };
+      reader.readAsText(file);
+    });
+
+    toast({
+      title: 'Files Uploaded',
+      description: `${validFiles.length} file(s) uploaded successfully.`,
+    });
+  }, [toast]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'text/plain': ['.txt'],
+      'text/markdown': ['.md'],
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/msword': ['.doc']
+    },
+    multiple: true
+  });
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const downloadPDF = () => {
+    if (!analysis) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    let yPosition = margin;
+
+    // Helper function to add text with word wrapping
+    const addText = (text: string, fontSize: number = 12, isBold: boolean = false) => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      const lines = doc.splitTextToSize(text, pageWidth - 2 * margin);
+      
+      if (yPosition + (lines.length * fontSize * 0.4) > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      
+      doc.text(lines, margin, yPosition);
+      yPosition += lines.length * fontSize * 0.4 + 5;
+    };
+
+    // Title
+    addText('AI Content Analysis Report', 20, true);
+    addText(`Content Type: ${selectedContentType.charAt(0).toUpperCase() + selectedContentType.slice(1).replace('-', ' ')}`, 12);
+    addText(`Generated: ${new Date().toLocaleDateString()}`, 10);
+    yPosition += 10;
+
+    // Performance Metrics
+    addText('Performance Metrics', 16, true);
+    addText(`Clarity: ${analysis.clarity}%`, 12);
+    addText(`Engagement: ${analysis.engagement}%`, 12);
+    addText(`Readability: ${analysis.readability}%`, 12);
+    addText(`Persuasiveness: ${analysis.persuasiveness}%`, 12);
+    addText(`Overall Score: ${analysis.competitiveAnalysis.yourScore}%`, 12, true);
+    yPosition += 10;
+
+    // Strengths
+    addText('Content Strengths', 16, true);
+    analysis.strengths.forEach(strength => {
+      addText(`• ${strength.area} (${strength.score}%): ${strength.description}`, 11);
+    });
+    yPosition += 10;
+
+    // Recommendations
+    addText('Improvement Recommendations', 16, true);
+    analysis.suggestions.forEach(suggestion => {
+      addText(`${suggestion.category} (${suggestion.priority} priority)`, 12, true);
+      addText(`Recommendation: ${suggestion.suggestion}`, 11);
+      addText(`Impact: ${suggestion.impact}`, 11);
+      addText(`Implementation: ${suggestion.implementation}`, 11);
+      yPosition += 5;
+    });
+
+    doc.save(`content-analysis-${selectedContentType}-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({
+      title: 'PDF Downloaded',
+      description: 'Your analysis report has been downloaded successfully.',
+    });
+  };
 
   const analyzeContent = async () => {
     if (!content.trim()) {
@@ -385,18 +501,69 @@ export const AIFeedbackSystem = () => {
             </div>
           </div>
           
-          <div>
+          <div className="space-y-4">
             <label className="text-sm font-medium mb-2 block">
-              Paste your content for comprehensive AI analysis
+              Upload files or paste your content for comprehensive AI analysis
             </label>
-            <Textarea
-              placeholder="Enter your content here for detailed AI analysis including sentiment, clarity, engagement, and specific improvement recommendations..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[200px]"
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              {content.length} characters • Recommended: 500+ characters for detailed analysis
+            
+            {/* File Upload Section */}
+            <div 
+              {...getRootProps()} 
+              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                isDragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              {isDragActive ? (
+                <p className="text-blue-600">Drop the files here...</p>
+              ) : (
+                <div>
+                  <p className="text-gray-600 mb-1">Drag & drop files here, or click to select</p>
+                  <p className="text-xs text-gray-500">
+                    Supports: .txt, .md, .doc, .docx, .pdf
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Uploaded Files Display */}
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Uploaded Files:</label>
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-700">{file.name}</span>
+                      <Badge variant="outline" className="text-xs">{(file.size / 1024).toFixed(1)} KB</Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative">
+              <label className="text-sm font-medium mb-2 block">
+                Or paste your content directly
+              </label>
+              <Textarea
+                placeholder="Enter your content here for detailed AI analysis including sentiment, clarity, engagement, and specific improvement recommendations..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[200px]"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {content.length} characters • Recommended: 500+ characters for detailed analysis
+              </div>
             </div>
           </div>
           
@@ -422,10 +589,21 @@ export const AIFeedbackSystem = () => {
           {/* Overall Metrics Dashboard */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5" />
-                <span>Content Performance Dashboard</span>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Content Performance Dashboard</span>
+                </CardTitle>
+                <Button 
+                  onClick={downloadPDF}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download PDF Report
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
