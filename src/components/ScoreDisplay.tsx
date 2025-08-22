@@ -12,7 +12,7 @@ import BadgeDisplay from './BadgeDisplay';
 import { ScoreGauge } from './ScoreGauge';
 import { generateRecommendations, RecommendationsData } from '@/utils/recommendationsService';
 import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
-import { exportToPDF, PDFExportData } from '@/utils/pdfExport';
+import { generatePDFReport, PDFReportData } from '@/utils/pdfGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -54,21 +54,26 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
     try {
       setExportingPDF(true);
       
-      const pdfData: PDFExportData = {
+      const pdfData: PDFReportData = {
         assessmentData,
         scoreResult: result,
+        recommendations,
         userProfile: user ? {
           email: user.email || undefined,
-          name: user.user_metadata?.full_name || undefined
+          name: user.user_metadata?.full_name || undefined,
+          company: user.user_metadata?.company_name || undefined
         } : undefined,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        includeDetailedAnalysis: true,
+        includeScoreBreakdown: true,
+        includeRecommendations: true
       };
       
-      await exportToPDF(pdfData);
+      await generatePDFReport(pdfData);
       
       toast({
-        title: 'PDF Export Successful',
-        description: 'Your assessment report has been prepared for download.',
+        title: 'Comprehensive PDF Report Generated!',
+        description: 'Your complete investment readiness report with recommendations and detailed analysis has been downloaded.',
       });
     } catch (error) {
       console.error('PDF export error:', error);
@@ -381,7 +386,7 @@ export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engage
           className="flex items-center space-x-2"
         >
           <FileText className="h-4 w-4" />
-          <span>{exportingPDF ? 'Generating...' : 'Download PDF'}</span>
+          <span>{exportingPDF ? 'Generating...' : 'Download Comprehensive PDF'}</span>
         </Button>
         
         <DownloadDialog 

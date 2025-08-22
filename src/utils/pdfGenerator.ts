@@ -25,54 +25,63 @@ export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
     container.style.position = 'absolute';
     container.style.left = '-9999px';
     container.style.top = '0';
-    container.style.width = '210mm'; // A4 width
+    container.style.width = '794px'; // A4 width in pixels
     container.style.backgroundColor = 'white';
-    container.style.padding = '20px';
+    container.style.padding = '40px';
     container.style.fontFamily = 'Arial, sans-serif';
+    container.style.fontSize = '14px';
+    container.style.lineHeight = '1.6';
+    container.style.color = '#333';
     
     // Generate HTML content for PDF
     container.innerHTML = generatePDFContent(data);
     
     document.body.appendChild(container);
 
-    // Convert HTML to canvas
+    // Wait for fonts and images to load
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Convert HTML to canvas with better settings for multi-page content
     const canvas = await html2canvas(container, {
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: 794, // A4 width at 96 DPI
-      height: 1123, // A4 height at 96 DPI
+      width: 794,
+      height: container.scrollHeight, // Use actual content height
+      scrollX: 0,
+      scrollY: 0,
     });
 
     // Remove temporary container
     document.body.removeChild(container);
 
-    // Create PDF
+    // Create PDF with proper multi-page handling
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    const imgData = canvas.toDataURL('image/png', 1.0);
     
-    // If content is longer than one page, add more pages
-    if (imgHeight > 297) { // A4 height in mm
-      let remainingHeight = imgHeight - 297;
-      let pageCount = 1;
-      
-      while (remainingHeight > 0) {
-        pdf.addPage();
-        const yPosition = -(297 * pageCount);
-        pdf.addImage(imgData, 'PNG', 0, yPosition, imgWidth, imgHeight);
-        remainingHeight -= 297;
-        pageCount++;
-      }
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Add first page
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Add additional pages if content exceeds one page
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
     }
 
-    // Download PDF
+    // Download PDF with timestamp
     const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `investment-readiness-report-${timestamp}.pdf`;
+    const filename = `investment-readiness-comprehensive-report-${timestamp}.pdf`;
     pdf.save(filename);
   } catch (error) {
     console.error('Error generating PDF:', error);
