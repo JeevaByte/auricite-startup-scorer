@@ -138,7 +138,7 @@ const generateEnhancedPDFContent = (
     <div style="max-width: 794px; margin: 0 auto; background: white;">
       <!-- Cover Page -->
       <div style="min-height: 1000px; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 40px;">
-        ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Company Logo" style="max-width: 120px; max-height: 120px; margin-bottom: 40px; border-radius: 12px;">` : ''}
+        <img src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" alt="Investment Analysis Logo" style="max-width: 120px; max-height: 120px; margin-bottom: 40px; border-radius: 12px;">
         <h1 style="font-size: 48px; font-weight: 700; margin: 0 0 20px 0; line-height: 1.2;">
           AI-Powered Content Analysis
         </h1>

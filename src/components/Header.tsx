@@ -16,6 +16,7 @@ export const Header: React.FC = () => {
       <div className="container flex h-14 items-center">
         <div className="mr-4 flex">
           <Link to="/" className="mr-6 flex items-center space-x-2">
+            <img src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" alt="InvestmentReady" className="h-8 w-8" />
             <span className="font-bold text-xl">InvestmentReady</span>
           </Link>
         </div>
