@@ -9,7 +9,8 @@ import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import jsPDF from 'jspdf';
+import { generateEnhancedPDF } from './EnhancedPDFGenerator';
+import { AnalyticsDashboard } from './AnalyticsDashboard';
 
 interface DetailedAnalysis {
   sentiment: string;
@@ -17,7 +18,7 @@ interface DetailedAnalysis {
   engagement: number;
   readability: number;
   persuasiveness: number;
-  overallScore?: number;
+  overallScore: number;
   detailedMetrics: {
     wordCount: number;
     sentenceComplexity: string;
@@ -199,68 +200,26 @@ export const AIFeedbackSystem = () => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     if (!analysis) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const margin = 20;
-    let yPosition = margin;
-
-    // Helper function to add text with word wrapping
-    const addText = (text: string, fontSize: number = 12, isBold: boolean = false) => {
-      doc.setFontSize(fontSize);
-      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-      const lines = doc.splitTextToSize(text, pageWidth - 2 * margin);
+    try {
+      await generateEnhancedPDF(analysis, selectedContentType, {
+        name: user?.user_metadata?.full_name || 'User'
+      });
       
-      if (yPosition + (lines.length * fontSize * 0.4) > pageHeight - margin) {
-        doc.addPage();
-        yPosition = margin;
-      }
-      
-      doc.text(lines, margin, yPosition);
-      yPosition += lines.length * fontSize * 0.4 + 5;
-    };
-
-    // Title
-    addText('AI Content Analysis Report', 20, true);
-    addText(`Content Type: ${selectedContentType.charAt(0).toUpperCase() + selectedContentType.slice(1).replace('-', ' ')}`, 12);
-    addText(`Generated: ${new Date().toLocaleDateString()}`, 10);
-    yPosition += 10;
-
-    // Performance Metrics
-    addText('Performance Metrics', 16, true);
-    addText(`Clarity: ${analysis.clarity}%`, 12);
-    addText(`Engagement: ${analysis.engagement}%`, 12);
-    addText(`Readability: ${analysis.readability}%`, 12);
-    addText(`Persuasiveness: ${analysis.persuasiveness}%`, 12);
-    addText(`Overall Score: ${analysis.overallScore || analysis.competitiveAnalysis.yourScore}%`, 12, true);
-    yPosition += 10;
-
-    // Strengths
-    addText('Content Strengths', 16, true);
-    analysis.strengths.forEach(strength => {
-      addText(`• ${strength.area} (${strength.score}%): ${strength.description}`, 11);
-    });
-    yPosition += 10;
-
-    // Recommendations
-    addText('Improvement Recommendations', 16, true);
-    analysis.suggestions.forEach(suggestion => {
-      addText(`${suggestion.category} (${suggestion.priority} priority)`, 12, true);
-      addText(`Recommendation: ${suggestion.suggestion}`, 11);
-      addText(`Impact: ${suggestion.impact}`, 11);
-      addText(`Implementation: ${suggestion.implementation}`, 11);
-      yPosition += 5;
-    });
-
-    doc.save(`content-analysis-${selectedContentType}-${new Date().toISOString().split('T')[0]}.pdf`);
-    
-    toast({
-      title: 'PDF Downloaded',
-      description: 'Your analysis report has been downloaded successfully.',
-    });
+      toast({
+        title: 'Enhanced PDF Downloaded',
+        description: 'Your comprehensive analysis report has been downloaded successfully.',
+      });
+    } catch (error) {
+      console.error('Error generating enhanced PDF:', error);
+      toast({
+        title: 'Download Failed',
+        description: 'There was an error generating your PDF report. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const analyzeContent = async () => {
@@ -1080,6 +1039,16 @@ export const AIFeedbackSystem = () => {
               </div>
             </CardContent>
           </Card>
+          {/* Enhanced Analytics Dashboard */}
+          <AnalyticsDashboard analysis={analysis} contentType={selectedContentType} />
+          
+          {/* Download Enhanced PDF Button */}
+          <div className="flex justify-center">
+            <Button onClick={downloadPDF} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105">
+              <Download className="h-5 w-5 mr-2" />
+              Download Enterprise Report
+            </Button>
+          </div>
         </div>
       )}
     </div>
