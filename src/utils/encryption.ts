@@ -3,7 +3,6 @@ import CryptoJS from 'crypto-js';
 // Ephemeral, per-session encryption key (frontend-only, NOT for true security)
 // We intentionally avoid any hardcoded keys in the repository.
 const KEY_STORAGE = 'APP_ENC_KEY_V1';
-const LEGACY_KEY = 'your-secret-key-here'; // Legacy fallback decrypt only
 
 const getSessionKey = (): string => {
   if (typeof window === 'undefined') return 'server-side-noop';
@@ -23,19 +22,14 @@ export const encryptSensitiveData = (data: string): string => {
 };
 
 export const decryptSensitiveData = (encryptedData: string): string => {
-  // Try session key first
   try {
     const key = getSessionKey();
     const bytes = CryptoJS.AES.decrypt(encryptedData, key);
     const result = bytes.toString(CryptoJS.enc.Utf8);
-    if (result) return result;
-  } catch {}
-  // Fallback to legacy key for backward compatibility (read-only)
-  try {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, LEGACY_KEY);
-    return bytes.toString(CryptoJS.enc.Utf8);
-  } catch {}
-  return '';
+    return result || '';
+  } catch {
+    return '';
+  }
 };
 
 export const hashData = (data: string): string => {

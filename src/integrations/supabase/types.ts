@@ -1400,6 +1400,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_missing_fk_indexes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       debug_user_access: {
         Args: { user_email: string }
         Returns: {
@@ -1411,6 +1415,14 @@ export type Database = {
           subscription_plan: string
           subscription_status: string
         }[]
+      }
+      exec_sql: {
+        Args: { sql: string }
+        Returns: Json
+      }
+      fix_auth_uid_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_auth_settings: {
         Args: Record<PropertyKey, never>

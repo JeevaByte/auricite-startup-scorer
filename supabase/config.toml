@@ -1,7 +1,7 @@
 project_id = "etadhhphjzztketgxnxl"
 
 [functions.score-engine]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-narrative]
-verify_jwt = false
+verify_jwt = true
