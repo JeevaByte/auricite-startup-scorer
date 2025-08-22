@@ -502,6 +502,33 @@ export type Database = {
         }
         Relationships: []
       }
+      failed_login_attempts: {
+        Row: {
+          attempt_time: string | null
+          email: string
+          id: string
+          ip_address: unknown | null
+          reason: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          attempt_time?: string | null
+          email: string
+          id?: string
+          ip_address?: unknown | null
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          attempt_time?: string | null
+          email?: string
+          id?: string
+          ip_address?: unknown | null
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       honeypot_submissions: {
         Row: {
           created_at: string
@@ -1400,6 +1427,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_security_events: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_missing_fk_indexes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
