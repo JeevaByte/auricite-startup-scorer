@@ -17,6 +17,7 @@ interface DetailedAnalysis {
   engagement: number;
   readability: number;
   persuasiveness: number;
+  overallScore?: number;
   detailedMetrics: {
     wordCount: number;
     sentenceComplexity: string;
@@ -62,14 +63,23 @@ export const AIFeedbackSystem = () => {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const validFiles = acceptedFiles.filter(file => {
-      const validTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
-      return validTypes.includes(file.type) || file.name.endsWith('.txt') || file.name.endsWith('.md');
+      const validTypes = [
+        'text/plain', 
+        'text/markdown',
+        'application/pdf', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+        'application/msword'
+      ];
+      const validExtensions = ['.txt', '.md', '.doc', '.docx', '.pdf'];
+      
+      return validTypes.includes(file.type) || 
+             validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
     });
 
     if (validFiles.length === 0) {
       toast({
         title: 'Invalid File Type',
-        description: 'Please upload text files (.txt, .md), Word documents (.doc, .docx), or PDFs only.',
+        description: 'Please upload files in supported formats: .txt, .md, .doc, .docx, or .pdf',
         variant: 'destructive',
       });
       return;
@@ -79,17 +89,29 @@ export const AIFeedbackSystem = () => {
     
     // Read file content
     validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        setContent(prevContent => prevContent + (prevContent ? '\n\n' : '') + `--- ${file.name} ---\n${text}`);
-      };
-      reader.readAsText(file);
+      if (file.type === 'application/pdf') {
+        // For PDF files, we'll show a placeholder and let the backend handle extraction
+        setContent(prevContent => 
+          prevContent + (prevContent ? '\n\n' : '') + 
+          `--- ${file.name} ---\n[PDF content will be extracted during analysis]\n`
+        );
+      } else {
+        // For text-based files, read directly
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result as string;
+          setContent(prevContent => 
+            prevContent + (prevContent ? '\n\n' : '') + 
+            `--- ${file.name} ---\n${text}`
+          );
+        };
+        reader.readAsText(file);
+      }
     });
 
     toast({
       title: 'Files Uploaded',
-      description: `${validFiles.length} file(s) uploaded successfully.`,
+      description: `${validFiles.length} file(s) uploaded successfully. ${validFiles.some(f => f.type === 'application/pdf') ? 'PDF content will be extracted during analysis.' : ''}`,
     });
   }, [toast]);
 
@@ -145,7 +167,7 @@ export const AIFeedbackSystem = () => {
     addText(`Engagement: ${analysis.engagement}%`, 12);
     addText(`Readability: ${analysis.readability}%`, 12);
     addText(`Persuasiveness: ${analysis.persuasiveness}%`, 12);
-    addText(`Overall Score: ${analysis.competitiveAnalysis.yourScore}%`, 12, true);
+    addText(`Overall Score: ${analysis.overallScore || analysis.competitiveAnalysis.yourScore}%`, 12, true);
     yPosition += 10;
 
     // Strengths
@@ -195,17 +217,32 @@ export const AIFeedbackSystem = () => {
     setIsAnalyzing(true);
     
     try {
-      // Generate comprehensive analysis based on content type and actual content
-      const detailedAnalysis: DetailedAnalysis = generateDetailedAnalysis(content, selectedContentType);
-      
-      setAnalysis(detailedAnalysis);
+      // Call our GPT-powered analysis edge function
+      const { data, error } = await supabase.functions.invoke('analyze-content', {
+        body: {
+          content: content.trim(),
+          contentType: selectedContentType,
+          fileName: uploadedFiles.length > 0 ? uploadedFiles[0].name : undefined
+        }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No analysis data received');
+      }
+
+      setAnalysis(data);
       
       // Save analysis to assessment history
-      await saveAnalysisToHistory(detailedAnalysis);
+      await saveAnalysisToHistory(data);
       
       toast({
-        title: 'Advanced Analysis Complete',
-        description: 'Your content has been analyzed and saved to your history.',
+        title: 'AI Analysis Complete',
+        description: 'Your content has been analyzed by GPT and saved to your history.',
       });
     } catch (error) {
       console.error('Error analyzing content:', error);
@@ -478,11 +515,11 @@ export const AIFeedbackSystem = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Content Type (helps provide more targeted feedback)
-            </label>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Content Type (GPT will provide specialized analysis for each type)
+              </label>
+              <div className="flex flex-wrap gap-2 mb-4">
               {[
                 { id: 'pitch-deck', label: 'Pitch Deck' },
                 { id: 'business-plan', label: 'Business Plan' },
@@ -521,7 +558,8 @@ export const AIFeedbackSystem = () => {
                 <div>
                   <p className="text-gray-600 mb-1">Drag & drop files here, or click to select</p>
                   <p className="text-xs text-gray-500">
-                    Supports: .txt, .md, .doc, .docx, .pdf
+                    <strong>Supported formats:</strong> .txt, .md, .doc, .docx, .pdf<br />
+                    <span className="text-gray-400">PDFs and Word docs will be processed automatically</span>
                   </p>
                 </div>
               )}
@@ -590,10 +628,12 @@ export const AIFeedbackSystem = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Content Performance Dashboard</span>
-                </CardTitle>
+                <div className="text-center">
+                  <CardTitle className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>AI-Powered Performance Dashboard</span>
+                  </CardTitle>
+                </div>
                 <Button 
                   onClick={downloadPDF}
                   variant="outline"
@@ -606,7 +646,7 @@ export const AIFeedbackSystem = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{analysis.clarity}%</div>
                   <div className="text-sm text-gray-600">Clarity</div>
@@ -622,6 +662,10 @@ export const AIFeedbackSystem = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">{analysis.persuasiveness}%</div>
                   <div className="text-sm text-gray-600">Persuasiveness</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">{analysis.overallScore || analysis.competitiveAnalysis.yourScore}%</div>
+                  <div className="text-sm text-gray-600 font-medium">Overall Score</div>
                 </div>
                 <div className="text-center">
                   <Badge variant="outline" className="text-lg py-1">{analysis.sentiment}</Badge>
