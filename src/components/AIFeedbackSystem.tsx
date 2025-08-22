@@ -49,6 +49,74 @@ interface DetailedAnalysis {
     yourScore: number;
     percentile: number;
   };
+  // Enhanced pitch deck specific analysis
+  pitchDeckAnalysis?: {
+    problemStatement: {
+      score: number;
+      feedback: string;
+      keyInsights: string[];
+    };
+    solutionClarity: {
+      score: number;
+      feedback: string;
+      keyInsights: string[];
+    };
+    marketOpportunity: {
+      score: number;
+      feedback: string;
+      marketSize: string;
+      targetAudience: string;
+    };
+    businessModel: {
+      score: number;
+      feedback: string;
+      revenueStreams: string[];
+      scalability: string;
+    };
+    competitiveAdvantage: {
+      score: number;
+      feedback: string;
+      moatStrength: string;
+      differentiators: string[];
+    };
+    traction: {
+      score: number;
+      feedback: string;
+      metrics: string[];
+      momentum: string;
+    };
+    team: {
+      score: number;
+      feedback: string;
+      strengths: string[];
+      gaps: string[];
+    };
+    financials: {
+      score: number;
+      feedback: string;
+      projectionQuality: string;
+      assumptions: string[];
+    };
+    askAndExit: {
+      score: number;
+      feedback: string;
+      clarity: string;
+      alignment: string;
+    };
+    overallNarrative: {
+      score: number;
+      feedback: string;
+      coherence: string;
+      compelling: string;
+    };
+    investorAppeal: {
+      score: number;
+      riskLevel: 'Low' | 'Medium' | 'High';
+      investmentStage: string;
+      fundingRecommendation: string;
+      nextSteps: string[];
+    };
+  };
 }
 
 export const AIFeedbackSystem = () => {
@@ -783,6 +851,205 @@ export const AIFeedbackSystem = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Content Structure Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5" />
+                <span>Content Structure Analysis</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-xl font-bold">{analysis.contentStructure.introduction}%</div>
+                  <div className="text-sm text-gray-600">Introduction</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold">{analysis.contentStructure.bodyDevelopment}%</div>
+                  <div className="text-sm text-gray-600">Body Development</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold">{analysis.contentStructure.conclusion}%</div>
+                  <div className="text-sm text-gray-600">Conclusion</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold">{analysis.contentStructure.flow}%</div>
+                  <div className="text-sm text-gray-600">Overall Flow</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Enhanced Pitch Deck Analysis */}
+          {analysis.pitchDeckAnalysis && selectedContentType === 'pitch-deck' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <span>Comprehensive Pitch Deck Analysis</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Problem Statement */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Problem Statement</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.problemStatement.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.problemStatement.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.problemStatement.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">{analysis.pitchDeckAnalysis.problemStatement.feedback}</p>
+                    <div className="space-y-1">
+                      {analysis.pitchDeckAnalysis.problemStatement.keyInsights.map((insight, idx) => (
+                        <div key={idx} className="flex items-start space-x-2 text-xs">
+                          <div className="w-1 h-1 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <span>{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Solution Clarity */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Solution Clarity</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.solutionClarity.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.solutionClarity.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.solutionClarity.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">{analysis.pitchDeckAnalysis.solutionClarity.feedback}</p>
+                    <div className="space-y-1">
+                      {analysis.pitchDeckAnalysis.solutionClarity.keyInsights.map((insight, idx) => (
+                        <div key={idx} className="flex items-start space-x-2 text-xs">
+                          <div className="w-1 h-1 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <span>{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Market Opportunity */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Market Opportunity</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.marketOpportunity.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.marketOpportunity.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.marketOpportunity.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{analysis.pitchDeckAnalysis.marketOpportunity.feedback}</p>
+                    <div className="space-y-1 text-xs">
+                      <div><strong>Market Size:</strong> {analysis.pitchDeckAnalysis.marketOpportunity.marketSize}</div>
+                      <div><strong>Target Audience:</strong> {analysis.pitchDeckAnalysis.marketOpportunity.targetAudience}</div>
+                    </div>
+                  </div>
+
+                  {/* Business Model */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Business Model</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.businessModel.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.businessModel.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.businessModel.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{analysis.pitchDeckAnalysis.businessModel.feedback}</p>
+                    <div className="space-y-1 text-xs">
+                      <div><strong>Revenue Streams:</strong></div>
+                      {analysis.pitchDeckAnalysis.businessModel.revenueStreams.map((stream, idx) => (
+                        <div key={idx} className="ml-2">• {stream}</div>
+                      ))}
+                      <div><strong>Scalability:</strong> {analysis.pitchDeckAnalysis.businessModel.scalability}</div>
+                    </div>
+                  </div>
+
+                  {/* Team */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Team Strength</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.team.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.team.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.team.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{analysis.pitchDeckAnalysis.team.feedback}</p>
+                    <div className="space-y-1 text-xs">
+                      <div><strong>Strengths:</strong></div>
+                      {analysis.pitchDeckAnalysis.team.strengths.map((strength, idx) => (
+                        <div key={idx} className="ml-2 text-green-700">• {strength}</div>
+                      ))}
+                      <div><strong>Gaps:</strong></div>
+                      {analysis.pitchDeckAnalysis.team.gaps.map((gap, idx) => (
+                        <div key={idx} className="ml-2 text-orange-700">• {gap}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Financials */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">Financial Projections</h4>
+                      <Badge variant={analysis.pitchDeckAnalysis.financials.score >= 80 ? 'default' : analysis.pitchDeckAnalysis.financials.score >= 60 ? 'secondary' : 'destructive'}>
+                        {analysis.pitchDeckAnalysis.financials.score}%
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{analysis.pitchDeckAnalysis.financials.feedback}</p>
+                    <div className="space-y-1 text-xs">
+                      <div><strong>Quality:</strong> {analysis.pitchDeckAnalysis.financials.projectionQuality}</div>
+                      <div><strong>Key Assumptions:</strong></div>
+                      {analysis.pitchDeckAnalysis.financials.assumptions.map((assumption, idx) => (
+                        <div key={idx} className="ml-2">• {assumption}</div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Investor Appeal Summary */}
+                <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Investor Appeal Assessment</span>
+                  </h3>
+                  
+                  <div className="grid md:grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{analysis.pitchDeckAnalysis.investorAppeal.score}%</div>
+                      <div className="text-sm text-gray-600">Investor Appeal</div>
+                    </div>
+                    <div className="text-center">
+                      <Badge variant={analysis.pitchDeckAnalysis.investorAppeal.riskLevel === 'Low' ? 'default' : analysis.pitchDeckAnalysis.investorAppeal.riskLevel === 'Medium' ? 'secondary' : 'destructive'} className="text-lg py-1">
+                        {analysis.pitchDeckAnalysis.investorAppeal.riskLevel} Risk
+                      </Badge>
+                      <div className="text-sm text-gray-600">Risk Level</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-medium">{analysis.pitchDeckAnalysis.investorAppeal.investmentStage}</div>
+                      <div className="text-sm text-gray-600">Investment Stage</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-medium text-gray-700 mb-1">Funding Recommendation:</h4>
+                      <p className="text-sm">{analysis.pitchDeckAnalysis.investorAppeal.fundingRecommendation}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-gray-700 mb-2">Next Steps:</h4>
+                      <div className="grid md:grid-cols-2 gap-2">
+                        {analysis.pitchDeckAnalysis.investorAppeal.nextSteps.map((step, idx) => (
+                          <div key={idx} className="flex items-start space-x-2 text-sm">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Content Structure Analysis */}
           <Card>
