@@ -84,12 +84,15 @@ export const EnhancedShareButtons = ({
         scoreResult,
         recommendations,
         userProfile,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        includeDetailedAnalysis: true,
+        includeScoreBreakdown: true,
+        includeRecommendations: true
       };
       await generatePDFReport(pdfData);
       toast({
         title: 'PDF Generated!',
-        description: 'Your investment readiness report has been downloaded.'
+        description: 'Your comprehensive investment readiness report with recommendations and detailed analysis has been downloaded.'
       });
     } catch (error) {
       console.error('Error generating PDF:', error);

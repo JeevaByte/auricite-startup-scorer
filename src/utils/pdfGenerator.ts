@@ -151,26 +151,47 @@ const generatePDFContent = (data: PDFReportData): string => {
 
       <!-- Personalized Recommendations -->
       <div style="margin-bottom: 30px;">
-        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Personalized Recommendations</h2>
-        <div style="margin-bottom: 20px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">🎯 Personalized Recommendations</h2>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0; font-style: italic;">
+            Based on your assessment results, here are tailored recommendations to enhance your investment readiness:
+          </p>
           ${recommendations && includeRecommendations ? generateRecommendationsSection(recommendations) : generateFallbackRecommendations(scoreResult, assessmentData)}
         </div>
       </div>
       
       <!-- Actionable Steps -->
       <div style="margin-bottom: 30px;">
-        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0;">Actionable Steps to Improve Investor Readiness</h2>
-        <div style="margin-bottom: 20px;">
+        <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">⚡ Actionable Steps to Improve Investor Readiness</h2>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="color: #64748b; font-size: 14px; margin: 0 0 15px 0; font-style: italic;">
+            Prioritized action plan with timelines to accelerate your investment readiness:
+          </p>
           ${generateActionableSteps(scoreResult, assessmentData)}
         </div>
       </div>
       
       <!-- Detailed Analysis Section -->
       ${includeDetailedAnalysis ? `
-        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 15px 0;">Detailed Analysis & Investment Readiness Insights</h2>
+        <div style="background: #f8fafc; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #2563eb; font-size: 20px; margin: 0 0 20px 0; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">📊 Detailed Analysis & Investment Readiness Insights</h2>
+          <p style="color: #64748b; font-size: 14px; margin: 0 0 20px 0; font-style: italic;">
+            Comprehensive analysis of your startup's strengths and areas for improvement across all key dimensions:
+          </p>
           <div style="space-y: 15px;">
             ${generateDetailedAnalysis(scoreResult, assessmentData)}
+          </div>
+          
+          <!-- Investor Readiness Matrix -->
+          <div style="margin-top: 25px; padding: 20px; background: white; border-radius: 6px; border: 1px solid #e5e7eb;">
+            <h3 style="color: #2563eb; font-size: 16px; margin: 0 0 15px 0;">🎯 Investment Readiness Matrix</h3>
+            ${generateReadinessMatrix(scoreResult)}
+          </div>
+          
+          <!-- Next Steps Summary -->
+          <div style="margin-top: 25px; padding: 20px; background: #eff6ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+            <h3 style="color: #2563eb; font-size: 16px; margin: 0 0 15px 0;">🚀 Key Focus Areas</h3>
+            ${generateKeyFocusAreas(scoreResult, assessmentData)}
           </div>
         </div>
       ` : ''}
@@ -573,4 +594,88 @@ const generateActionableSteps = (scoreResult: ScoreResult, assessmentData: Asses
   `;
   
   return content;
+};
+
+const generateReadinessMatrix = (scoreResult: ScoreResult): string => {
+  const categories = [
+    { name: 'Business Idea', score: scoreResult.businessIdea, maxScore: 100 },
+    { name: 'Financials', score: scoreResult.financials, maxScore: 100 },
+    { name: 'Team', score: scoreResult.team, maxScore: 100 },
+    { name: 'Traction', score: scoreResult.traction, maxScore: 100 }
+  ];
+
+  let matrixContent = `
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+  `;
+
+  categories.forEach(category => {
+    const percentage = Math.round((category.score / category.maxScore) * 100);
+    const status = getReadinessStatus(percentage);
+    const statusColor = getStatusColor(status);
+    
+    matrixContent += `
+      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; text-align: center;">
+        <div style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 8px;">${category.name}</div>
+        <div style="font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 4px;">${percentage}%</div>
+        <div style="font-size: 12px; color: ${statusColor}; font-weight: bold;">${status}</div>
+      </div>
+    `;
+  });
+
+  matrixContent += `</div>`;
+  return matrixContent;
+};
+
+const generateKeyFocusAreas = (scoreResult: ScoreResult, assessmentData: AssessmentData): string => {
+  const focusAreas = [];
+  
+  // Identify top 3 priority areas based on scores and assessment data
+  const priorities = [
+    { area: 'Business Idea', score: scoreResult.businessIdea, priority: scoreResult.businessIdea < 70 ? 'High' : 'Medium' },
+    { area: 'Financial Planning', score: scoreResult.financials, priority: scoreResult.financials < 70 ? 'High' : 'Medium' },
+    { area: 'Team Building', score: scoreResult.team, priority: scoreResult.team < 70 ? 'High' : 'Medium' },
+    { area: 'Market Traction', score: scoreResult.traction, priority: scoreResult.traction < 70 ? 'High' : 'Medium' }
+  ].sort((a, b) => a.score - b.score).slice(0, 3);
+
+  let content = `
+    <div style="space-y: 10px;">
+      <p style="margin: 0 0 15px 0; font-size: 13px; color: #555;">
+        Based on your assessment, focus on these key areas to maximize your investment readiness:
+      </p>
+  `;
+
+  priorities.forEach((item, index) => {
+    const priorityColor = item.priority === 'High' ? '#dc2626' : '#ea580c';
+    content += `
+      <div style="display: flex; align-items: center; padding: 8px 12px; background: white; border-radius: 4px; border-left: 3px solid ${priorityColor}; margin-bottom: 8px;">
+        <div style="font-weight: bold; color: ${priorityColor}; margin-right: 8px; font-size: 14px;">${index + 1}.</div>
+        <div style="flex: 1;">
+          <div style="font-weight: bold; color: #333; font-size: 13px;">${item.area}</div>
+          <div style="font-size: 12px; color: #666;">Current Score: ${item.score}/100 • Priority: ${item.priority}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  content += `</div>`;
+  return content;
+};
+
+const getReadinessStatus = (percentage: number): string => {
+  if (percentage >= 80) return 'Excellent';
+  if (percentage >= 70) return 'Good';
+  if (percentage >= 60) return 'Fair';
+  if (percentage >= 40) return 'Needs Work';
+  return 'Critical';
+};
+
+const getStatusColor = (status: string): string => {
+  switch (status) {
+    case 'Excellent': return '#16a34a';
+    case 'Good': return '#2563eb';
+    case 'Fair': return '#ea580c';
+    case 'Needs Work': return '#dc2626';
+    case 'Critical': return '#991b1b';
+    default: return '#666';
+  }
 };
