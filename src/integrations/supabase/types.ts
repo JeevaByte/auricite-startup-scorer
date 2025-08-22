@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1404,10 +1404,10 @@ export type Database = {
         Args: { user_email: string }
         Returns: {
           access_type: string
-          has_access: boolean
-          granted_by: string
-          granted_at: string
           expires_at: string
+          granted_at: string
+          granted_by: string
+          has_access: boolean
           subscription_plan: string
           subscription_status: string
         }[]
@@ -1421,11 +1421,11 @@ export type Database = {
         Returns: string
       }
       grant_temporary_access: {
-        Args: { user_email: string; access_types: string[] }
+        Args: { access_types: string[]; user_email: string }
         Returns: string
       }
       has_paid_access: {
-        Args: { user_uuid: string; access_type_param: string }
+        Args: { access_type_param: string; user_uuid: string }
         Returns: boolean
       }
       has_premium_access: {
@@ -1445,8 +1445,8 @@ export type Database = {
       validate_scoring_config: {
         Args: { config_data: Json }
         Returns: {
-          is_valid: boolean
           errors: string[]
+          is_valid: boolean
         }[]
       }
     }
