@@ -351,10 +351,6 @@ export const SimpleAssessmentWizard: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Quick Investment Assessment</h1>
-        <p className="text-muted-foreground text-center mb-6">
-          Get a quick assessment of your startup's investment readiness in just 3 steps
-        </p>
         <Progress value={progress} className="h-2" />
         <div className="text-sm text-muted-foreground text-center mt-2">
           Step {currentStep} of {TOTAL_STEPS}
