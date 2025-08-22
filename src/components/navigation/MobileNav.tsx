@@ -12,7 +12,6 @@ export const MobileNav: React.FC = () => {
   
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Assessment', href: '/assessment' },
     { name: 'Full Assessment', href: '/unified-assessment' },
     { name: 'Investor Directory', href: '/investor-directory' },
     { name: 'Investor Dashboard', href: '/investor-dashboard' },
