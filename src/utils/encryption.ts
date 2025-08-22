@@ -1,7 +1,7 @@
 import CryptoJS from 'crypto-js';
 
 // Ephemeral, per-session encryption key (frontend-only, NOT for true security)
-// We intentionally avoid any hardcoded keys in the repository.
+// Session-based key generation for client-side data protection only
 const KEY_STORAGE = 'APP_ENC_KEY_V1';
 
 const getSessionKey = (): string => {
