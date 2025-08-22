@@ -367,6 +367,7 @@ export const AIFeedbackSystem = () => {
       engagement,
       readability,
       persuasiveness,
+      overallScore: Math.round((clarity + engagement + readability + persuasiveness) / 4),
       detailedMetrics: {
         wordCount,
         sentenceComplexity: avgWordsPerSentence > 20 ? 'Complex' : avgWordsPerSentence > 15 ? 'Moderate' : 'Simple',
