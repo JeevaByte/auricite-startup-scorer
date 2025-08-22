@@ -160,7 +160,13 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert investor and business analyst specializing in pitch deck evaluation, business strategy, and venture capital. Provide detailed, actionable feedback from an investor perspective.'
+            content: `You are an expert business analyst, marketing strategist, and content specialist with deep expertise in:
+            - Pitch deck evaluation and investor relations
+            - Strategic business planning and market analysis  
+            - Marketing copy optimization and conversion psychology
+            - Content strategy and audience engagement
+            
+            Provide detailed, actionable feedback tailored to each content type with industry-standard analysis and professional recommendations.`
           },
           {
             role: 'user',
@@ -306,27 +312,197 @@ Provide detailed scores, specific feedback, actionable insights, risk assessment
     case 'business-plan':
       return basePrompt + `
 
-For business plan content, focus on:
-- Strategic vision clarity
-- Market analysis depth
-- Financial model viability
-- Operational plan feasibility
-- Risk assessment completeness`;
+For business plan content, provide COMPREHENSIVE business strategy analysis covering these critical areas:
+
+1. EXECUTIVE SUMMARY (Score 0-100):
+   - Vision and mission clarity
+   - Value proposition strength
+   - Key success factors identification
+   - Compelling executive overview
+
+2. MARKET ANALYSIS (Score 0-100):
+   - Industry analysis depth and accuracy
+   - Target market segmentation
+   - Market size and growth potential
+   - Customer behavior insights
+   - Market trends and opportunities
+
+3. COMPETITIVE ANALYSIS (Score 0-100):
+   - Competitor identification and assessment
+   - Competitive advantages and positioning
+   - SWOT analysis completeness
+   - Market differentiation strategy
+
+4. MARKETING & SALES STRATEGY (Score 0-100):
+   - Go-to-market strategy effectiveness
+   - Customer acquisition channels
+   - Pricing strategy rationale
+   - Brand positioning and messaging
+   - Sales process and funnel
+
+5. OPERATIONS PLAN (Score 0-100):
+   - Production/service delivery process
+   - Supply chain management
+   - Quality control measures
+   - Technology and systems requirements
+   - Scalability considerations
+
+6. MANAGEMENT TEAM (Score 0-100):
+   - Leadership experience and qualifications
+   - Organizational structure clarity
+   - Key personnel identification
+   - Advisory board strength
+   - Succession planning
+
+7. FINANCIAL PROJECTIONS (Score 0-100):
+   - Revenue model clarity
+   - Cost structure analysis
+   - Cash flow projections
+   - Break-even analysis
+   - Financial assumptions validity
+   - ROI and profitability metrics
+
+8. FUNDING REQUIREMENTS (Score 0-100):
+   - Capital requirements clarity
+   - Use of funds breakdown
+   - Funding timeline and milestones
+   - Exit strategy definition
+
+9. RISK ASSESSMENT (Score 0-100):
+   - Risk identification comprehensiveness
+   - Mitigation strategies effectiveness
+   - Contingency planning
+   - Market and operational risks
+
+10. IMPLEMENTATION TIMELINE (Score 0-100):
+    - Milestone clarity and realism
+    - Resource allocation planning
+    - Success metrics definition
+    - Timeline feasibility
+
+Provide detailed scores, specific feedback, strategic recommendations, risk assessment, and implementation guidance for each section.`;
 
     case 'marketing-copy':
       return basePrompt + `
 
-For marketing copy, focus on:
-- Call-to-action effectiveness
-- Emotional appeal strength
-- Benefit communication clarity
-- Target audience alignment
-- Conversion potential`;
+For marketing copy content, provide COMPREHENSIVE marketing effectiveness analysis covering these critical areas:
+
+1. HEADLINE & HOOK (Score 0-100):
+   - Attention-grabbing power and relevance
+   - Value proposition clarity in headline
+   - Emotional appeal and curiosity generation
+   - Target audience alignment
+
+2. VALUE PROPOSITION (Score 0-100):
+   - Unique selling proposition clarity
+   - Benefit-focused messaging
+   - Differentiation from competitors
+   - Problem-solution alignment
+
+3. TARGET AUDIENCE ALIGNMENT (Score 0-100):
+   - Demographic targeting accuracy
+   - Pain point addressing
+   - Language and tone appropriateness
+   - Persona matching effectiveness
+
+4. EMOTIONAL APPEAL (Score 0-100):
+   - Emotional triggers utilization
+   - Storytelling effectiveness
+   - Fear/desire/aspiration appeal
+   - Trust and credibility building
+
+5. CALL-TO-ACTION (Score 0-100):
+   - CTA clarity and visibility
+   - Urgency and scarcity creation
+   - Action-oriented language
+   - Conversion pathway effectiveness
+
+6. BENEFIT COMMUNICATION (Score 0-100):
+   - Feature-to-benefit translation
+   - Outcome-focused messaging
+   - ROI and value demonstration
+   - Social proof integration
+
+7. PERSUASION TECHNIQUES (Score 0-100):
+   - Social proof utilization
+   - Authority and expertise demonstration
+   - Reciprocity and commitment principles
+   - Scarcity and urgency tactics
+
+8. CONTENT STRUCTURE (Score 0-100):
+   - Logical flow and organization
+   - Readability and scannability
+   - Information hierarchy
+   - Visual content integration
+
+9. BRAND VOICE & CONSISTENCY (Score 0-100):
+   - Brand personality reflection
+   - Tone consistency throughout
+   - Message alignment with brand values
+   - Professional presentation
+
+10. CONVERSION OPTIMIZATION (Score 0-100):
+    - Friction reduction strategies
+    - Trust signal placement
+    - Risk reversal techniques
+    - Funnel optimization elements
+
+Provide detailed scores, specific feedback, conversion optimization recommendations, A/B testing suggestions, and performance improvement strategies for each section.`;
 
     default:
       return basePrompt + `
 
-Evaluate general content effectiveness and provide improvement recommendations.`;
+For general content analysis, provide COMPREHENSIVE content effectiveness evaluation covering these areas:
+
+1. CONTENT PURPOSE & CLARITY (Score 0-100):
+   - Main objective identification
+   - Message clarity and focus
+   - Purpose alignment with content
+   - Key takeaway effectiveness
+
+2. AUDIENCE ENGAGEMENT (Score 0-100):
+   - Reader interest maintenance
+   - Interactive elements utilization
+   - Engagement technique effectiveness
+   - Attention retention strategies
+
+3. INFORMATION ARCHITECTURE (Score 0-100):
+   - Content organization and structure
+   - Logical flow and transitions
+   - Information hierarchy clarity
+   - Supporting evidence quality
+
+4. WRITING QUALITY (Score 0-100):
+   - Grammar and syntax accuracy
+   - Vocabulary appropriateness
+   - Sentence variety and rhythm
+   - Professional presentation
+
+5. CREDIBILITY & AUTHORITY (Score 0-100):
+   - Source citation and references
+   - Expert opinion integration
+   - Fact verification and accuracy
+   - Author credibility establishment
+
+6. ACTIONABILITY (Score 0-100):
+   - Practical application potential
+   - Clear next steps provision
+   - Implementation guidance
+   - Resource accessibility
+
+7. SEO & DISCOVERABILITY (Score 0-100):
+   - Keyword integration quality
+   - Search intent alignment
+   - Meta information optimization
+   - Content structure for search
+
+8. VISUAL CONTENT INTEGRATION (Score 0-100):
+   - Supporting visual elements
+   - Information graphics utilization
+   - Visual-text balance
+   - Accessibility considerations
+
+Provide detailed scores, specific feedback, content optimization recommendations, and improvement strategies for each section.`;
   }
 }
 
