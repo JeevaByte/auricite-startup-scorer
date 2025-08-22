@@ -11,6 +11,19 @@ export interface AssessmentData {
   fundingGoal: string | null;
   investors: 'none' | 'angels' | 'vc' | 'lateStage' | null;
   milestones: 'concept' | 'launch' | 'scale' | 'exit' | null;
+  // New fields for extended assessment
+  marketSize?: string | null;
+  competitiveAdvantage?: string | null;
+  ipProtection?: string | null;
+  payingCustomers?: string | null;
+  customerRetention?: string | null;
+  tractionBeyondRevenue?: string | null;
+  founderExperience?: string | null;
+  advisors?: string | null;
+  expectedRunway?: string | null;
+  fundingStage?: string | null;
+  exitStrategy?: string | null;
+  scalability?: string | null;
 }
 
 export interface ScoreResult {

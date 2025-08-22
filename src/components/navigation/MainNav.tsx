@@ -12,7 +12,6 @@ export const MainNav: React.FC = () => {
     { name: 'Full Assessment', href: '/unified-assessment' },
     { name: 'Investor Directory', href: '/investor-directory' },
     { name: 'Investor Dashboard', href: '/investor-dashboard' },
-    { name: 'Profile', href: '/profile' },
     { name: 'AI Tools', href: '/ai-feedback' },
     { name: 'Learn', href: '/learn' },
     { name: 'Donate', href: '/donate' },

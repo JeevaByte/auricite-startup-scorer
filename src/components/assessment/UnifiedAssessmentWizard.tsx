@@ -150,10 +150,202 @@ const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       { value: 'scale', label: 'Scaling/growth stage' },
       { value: 'exit', label: 'Exit preparation stage' }
     ]
+  },
+
+  // Step 7: Market & Competition 
+  {
+    id: 'marketSize',
+    question: 'How would you rate your market size (TAM — Total Addressable Market)?',
+    type: 'select',
+    step: 7,
+    required: true,
+    options: [
+      { value: 'under10m', label: 'Less than $10M' },
+      { value: '10m-100m', label: '$10M–$100M' },
+      { value: '100m-500m', label: '$100M–$500M' },
+      { value: '500m-1b', label: '$500M–$1B' },
+      { value: '1b-10b', label: '$1B–$10B' },
+      { value: 'over10b', label: 'Over $10B' }
+    ]
+  },
+  {
+    id: 'competitiveAdvantage',
+    question: 'What best describes your competitive advantage or unique selling proposition (USP)?',
+    type: 'select',
+    step: 7,
+    required: true,
+    options: [
+      { value: 'none', label: 'None / still defining' },
+      { value: 'firstMover', label: 'First-mover advantage' },
+      { value: 'processes', label: 'Proprietary processes (non-patent)' },
+      { value: 'patent', label: 'Patented technology' },
+      { value: 'networkEffects', label: 'Strong network effects' },
+      { value: 'regulatory', label: 'Regulatory barriers to entry' }
+    ]
+  },
+
+  // Step 8: Intellectual Property & Defensibility
+  {
+    id: 'ipProtection',
+    question: 'Do you have any IP protection or defensibility?',
+    type: 'select',
+    step: 8,
+    required: true,
+    options: [
+      { value: 'none', label: 'No IP protection' },
+      { value: 'copyright', label: 'Copyright/trademark only' },
+      { value: 'patentPending', label: 'Patent filed (pending)' },
+      { value: 'patentGranted', label: 'Granted patent(s)' },
+      { value: 'proprietary', label: 'Proprietary algorithms/data sets' },
+      { value: 'exclusive', label: 'Exclusive contracts/licensing' }
+    ]
+  },
+
+  // Step 9: Traction & Customer Validation
+  {
+    id: 'payingCustomers',
+    question: 'How many paying customers/clients do you currently have?',
+    type: 'select',
+    step: 9,
+    required: true,
+    options: [
+      { value: 'none', label: 'None' },
+      { value: '1-10', label: '1–10' },
+      { value: '11-50', label: '11–50' },
+      { value: '51-200', label: '51–200' },
+      { value: '201-1000', label: '201–1,000' },
+      { value: 'over1000', label: 'Over 1,000' }
+    ]
+  },
+  {
+    id: 'customerRetention',
+    question: 'What percentage of your customers are repeat or retained after 6 months?',
+    type: 'select',
+    step: 9,
+    required: true,
+    options: [
+      { value: 'na', label: 'Not yet applicable' },
+      { value: 'under20', label: 'Under 20% retention' },
+      { value: '20-50', label: '20–50%' },
+      { value: '51-75', label: '51–75%' },
+      { value: '76-90', label: '76–90%' },
+      { value: 'over90', label: 'Over 90%' }
+    ]
+  },
+  {
+    id: 'tractionBeyondRevenue',
+    question: 'What best describes your current traction beyond revenue?',
+    type: 'select',
+    step: 9,
+    required: true,
+    options: [
+      { value: 'none', label: 'No measurable traction yet' },
+      { value: 'smallUser', label: 'Small active user base (<1k MAU)' },
+      { value: 'growingUser', label: 'Growing active user base (1k–10k MAU)' },
+      { value: 'consistentGrowth', label: 'Consistent engagement growth month-over-month' },
+      { value: 'partnerships', label: 'Strong industry partnerships or LOIs' },
+      { value: 'marketLeader', label: 'Recognized market leader in niche' }
+    ]
+  },
+
+  // Step 10: Founder & Leadership Track Record
+  {
+    id: 'founderExperience',
+    question: 'What is the founder/CEO\'s prior experience in startups or exits?',
+    type: 'select',
+    step: 10,
+    required: true,
+    options: [
+      { value: 'none', label: 'No prior startup experience' },
+      { value: 'employee', label: 'Prior startup employee (no leadership role)' },
+      { value: 'founderNoExit', label: 'Founded a company but no exit' },
+      { value: 'smallExit', label: 'Founded a company with small exit (<$1M)' },
+      { value: 'significantExit', label: 'Founded a company with significant exit ($1M–$50M)' },
+      { value: 'majorExit', label: 'Founded a company with major exit (>$50M)' }
+    ]
+  },
+  {
+    id: 'advisors',
+    question: 'Do you have advisors or board members with strong industry or investor networks?',
+    type: 'select',
+    step: 10,
+    required: true,
+    options: [
+      { value: 'none', label: 'No advisory board' },
+      { value: 'limited', label: 'Advisory board with limited industry experience' },
+      { value: 'midLevel', label: 'Advisory board with mid-level industry connections' },
+      { value: 'experts', label: 'Industry experts or past founders with small exits' },
+      { value: 'majorExperts', label: 'Industry experts with large exits or C-suite experience at major firms' },
+      { value: 'highProfile', label: 'High-profile names with direct investor influence' }
+    ]
+  },
+
+  // Step 11: Funding Strategy & Investor Fit
+  {
+    id: 'expectedRunway',
+    question: 'What is your expected runway after closing your next funding round?',
+    type: 'select',
+    step: 11,
+    required: true,
+    options: [
+      { value: 'under6', label: 'Less than 6 months' },
+      { value: '6-12', label: '6–12 months' },
+      { value: '12-18', label: '12–18 months' },
+      { value: '18-24', label: '18–24 months' },
+      { value: '24-36', label: '24–36 months' },
+      { value: 'over36', label: 'Over 36 months' }
+    ]
+  },
+  {
+    id: 'fundingStage',
+    question: 'Which funding stage are you preparing for?',
+    type: 'select',
+    step: 11,
+    required: true,
+    options: [
+      { value: 'preSeed', label: 'Pre-seed' },
+      { value: 'seed', label: 'Seed' },
+      { value: 'seriesA', label: 'Series A' },
+      { value: 'seriesB', label: 'Series B' },
+      { value: 'seriesC', label: 'Series C+' },
+      { value: 'preIPO', label: 'Pre-IPO / Strategic acquisition' }
+    ]
+  },
+
+  // Step 12: Exit Readiness & Growth Strategy
+  {
+    id: 'exitStrategy',
+    question: 'Do you have a defined exit strategy?',
+    type: 'select',
+    step: 12,
+    required: true,
+    options: [
+      { value: 'none', label: 'No exit strategy yet' },
+      { value: 'general', label: 'General acquisition goal only' },
+      { value: 'identified', label: 'Identified possible acquirers/strategic partners' },
+      { value: 'discussions', label: 'Early informal discussions with potential acquirers' },
+      { value: 'interest', label: 'Received non-binding acquisition interest' },
+      { value: 'formal', label: 'Formal acquisition or IPO plan aligned with investors' }
+    ]
+  },
+  {
+    id: 'scalability',
+    question: 'What is your scalability potential?',
+    type: 'select',
+    step: 12,
+    required: true,
+    options: [
+      { value: 'local', label: 'Primarily local market, limited scalability' },
+      { value: 'nationalHigh', label: 'National scaling possible, high operational limits' },
+      { value: 'nationalMod', label: 'National scaling likely, moderate operational challenges' },
+      { value: 'intlBuild', label: 'International expansion possible after moderate build' },
+      { value: 'intlReady', label: 'International expansion ready with minimal barriers' },
+      { value: 'global', label: 'Global-ready product/service from day one' }
+    ]
   }
 ];
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 12;
 
 export const UnifiedAssessmentWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -177,6 +369,19 @@ export const UnifiedAssessmentWizard: React.FC = () => {
     fundingGoal: null,
     investors: null,
     milestones: null,
+    // New extended fields
+    marketSize: null,
+    competitiveAdvantage: null,
+    ipProtection: null,
+    payingCustomers: null,
+    customerRetention: null,
+    tractionBeyondRevenue: null,
+    founderExperience: null,
+    advisors: null,
+    expectedRunway: null,
+    fundingStage: null,
+    exitStrategy: null,
+    scalability: null,
   });
 
   // Load draft data on component mount
@@ -495,7 +700,14 @@ export const UnifiedAssessmentWizard: React.FC = () => {
                               currentStepQuestions[0]?.step === 3 ? 'Team & Operations' :
                               currentStepQuestions[0]?.step === 4 ? 'Investment & Legal' :
                               currentStepQuestions[0]?.step === 5 ? 'Growth & Goals' :
-                              'Current Stage'}
+                              currentStepQuestions[0]?.step === 6 ? 'Current Stage' :
+                              currentStepQuestions[0]?.step === 7 ? 'Market & Competition' :
+                              currentStepQuestions[0]?.step === 8 ? 'IP & Defensibility' :
+                              currentStepQuestions[0]?.step === 9 ? 'Traction & Validation' :
+                              currentStepQuestions[0]?.step === 10 ? 'Leadership Track Record' :
+                              currentStepQuestions[0]?.step === 11 ? 'Funding Strategy' :
+                              currentStepQuestions[0]?.step === 12 ? 'Exit & Scalability' :
+                              'Assessment'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
