@@ -20,6 +20,7 @@ import { RadarVisualization } from './RadarVisualization';
 import { VersionComparison } from './VersionComparison';
 import { EnhancedBenchmarkComparison } from './EnhancedBenchmarkComparison';
 import { OpenVCIntegration } from './OpenVCIntegration';
+import { EnhancedScoreDisplay } from './EnhancedScoreDisplay';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -32,10 +33,6 @@ interface ScoreDisplayProps {
 export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
   return <EnhancedScoreDisplay result={result} assessmentData={assessmentData} onRestart={onRestart} badges={badges} engagementMessage={engagementMessage} />;
 };
-  // For backwards compatibility, render the enhanced version
-  const { EnhancedScoreDisplay } = require('./EnhancedScoreDisplay');
-  return <EnhancedScoreDisplay result={result} assessmentData={assessmentData} onRestart={onRestart} badges={badges} engagementMessage={engagementMessage} />;
-}
 
 export const LegacyScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
