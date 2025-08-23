@@ -170,7 +170,7 @@ export const AdvancedAIContentAnalysis = () => {
     multiple: true
   });
 
-  // Optimized analysis function with instant UI feedback
+  // Optimized analysis function with instant UI feedback and validation
   const analyzeContent = async () => {
     if (!content.trim()) {
       toast({
@@ -190,34 +190,71 @@ export const AdvancedAIContentAnalysis = () => {
       return;
     }
 
+    // Validate content length
+    if (content.trim().length < 50) {
+      toast({
+        title: 'Content Too Short',
+        description: 'Please provide at least 50 characters for meaningful analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (content.trim().length > 50000) {
+      toast({
+        title: 'Content Too Long',
+        description: 'Please limit content to 50,000 characters for optimal analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
     // Show immediate visual feedback
     const startTime = Date.now();
     
     try {
-      // Parallel processing for better performance
-      const analysisPromise = supabase.functions.invoke('analyze-content', {
-        body: {
-          content: content.trim(),
-          contentType: selectedType,
-          fileName: uploadedFiles[0]?.name
-        }
-      });
+      // Enhanced payload with validation
+      const payload = {
+        content: content.trim(),
+        contentType: selectedType,
+        fileName: uploadedFiles[0]?.name,
+        userId: user.id,
+        timestamp: new Date().toISOString()
+      };
 
-      // Show progress after 1 second if still processing
+      console.log('Starting analysis for:', selectedType, 'Content length:', content.length);
+
+      // Progress indicators
       const progressTimer = setTimeout(() => {
         toast({
-          title: 'Analysis in Progress',
-          description: 'Our AI is analyzing your content...',
+          title: 'AI Processing...',
+          description: 'Analyzing content structure and patterns...',
         });
-      }, 1000);
+      }, 2000);
+
+      const analysisPromise = supabase.functions.invoke('analyze-content', {
+        body: payload
+      });
 
       const { data, error } = await analysisPromise;
       clearTimeout(progressTimer);
 
-      if (error) throw error;
-      if (!data) throw new Error('No analysis data received');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Analysis service error');
+      }
+      
+      if (!data) {
+        throw new Error('No analysis data received from service');
+      }
+
+      // Validate response structure
+      if (!data.overallScore || typeof data.overallScore !== 'number') {
+        console.warn('Invalid response structure:', data);
+        throw new Error('Invalid analysis response format');
+      }
 
       setAnalysis(data);
       
@@ -227,13 +264,15 @@ export const AdvancedAIContentAnalysis = () => {
       
       toast({
         title: 'Analysis Complete!',
-        description: `Your ${config.title.toLowerCase()} has been analyzed successfully.`,
+        description: `${config.title} analyzed successfully. Score: ${data.overallScore}/100`,
       });
     } catch (error) {
       console.error('Analysis error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
         title: 'Analysis Failed',
-        description: 'Please try again or contact support if the issue persists.',
+        description: `Error: ${errorMessage}. Please try again or contact support.`,
         variant: 'destructive',
       });
     } finally {
@@ -457,11 +496,31 @@ export const AdvancedAIContentAnalysis = () => {
                   
                   {analysis && (
                     <Button
-                      onClick={() => generateEnhancedPDF(analysis, selectedType, { name: user?.user_metadata?.full_name || 'User' })}
+                      onClick={async () => {
+                        try {
+                          toast({
+                            title: 'Generating PDF...',
+                            description: 'Creating your detailed analysis report.',
+                          });
+                          await generateEnhancedPDF(analysis, selectedType, { name: user?.user_metadata?.full_name || 'User' });
+                          toast({
+                            title: 'PDF Generated!',
+                            description: 'Your report has been downloaded successfully.',
+                          });
+                        } catch (error) {
+                          console.error('PDF generation error:', error);
+                          toast({
+                            title: 'PDF Generation Failed',
+                            description: 'Please try again or contact support.',
+                            variant: 'destructive',
+                          });
+                        }
+                      }}
                       variant="outline"
+                      disabled={isAnalyzing}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Export PDF
+                      Export PDF Report
                     </Button>
                   )}
                 </div>

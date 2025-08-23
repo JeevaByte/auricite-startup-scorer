@@ -189,19 +189,19 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           {
             role: 'system',
-            content: `You are an expert business consultant, investment advisor, and content strategist with deep knowledge of industry benchmarks, investor preferences, and content optimization strategies. Provide comprehensive, data-driven analysis with actionable insights. Always respond with valid JSON.`
+            content: `You are an expert business consultant, investment advisor, and content strategist with deep knowledge of industry benchmarks, investor preferences, and content optimization strategies. Provide comprehensive, data-driven analysis with actionable insights. Always respond with valid JSON that strictly follows the requested format.`
           },
           {
             role: 'user',
             content: analysisPrompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 6000
+        max_completion_tokens: 4000,
+        response_format: { type: "json_object" }
       }),
     });
 
@@ -534,13 +534,27 @@ function parseEnhancedGPTAnalysis(gptResponse: string, originalContent: string, 
   let parsedData: any = {};
   
   try {
+    console.log('Parsing GPT response for content type:', contentType);
+    
+    // Clean the response first
+    let cleanResponse = gptResponse.trim();
+    
+    // Remove markdown code blocks if present
+    cleanResponse = cleanResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
     // Try to extract JSON from GPT response
-    const jsonMatch = gptResponse.match(/\{[\s\S]*\}/);
+    const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       parsedData = JSON.parse(jsonMatch[0]);
+      console.log('Successfully parsed GPT JSON response');
+    } else {
+      console.warn('No JSON object found in GPT response, using fallback');
+      return generateEnhancedFallbackAnalysis(originalContent, contentType);
     }
   } catch (error) {
     console.error('Error parsing GPT response:', error);
+    console.log('Raw response sample:', gptResponse.substring(0, 500));
+    return generateEnhancedFallbackAnalysis(originalContent, contentType);
   }
 
   // Enhanced scoring with industry benchmarks
