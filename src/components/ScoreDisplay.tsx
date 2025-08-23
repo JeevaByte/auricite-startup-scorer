@@ -15,7 +15,11 @@ import { getInvestorReadinessLevel } from '@/utils/enhancedScoreCalculator';
 import { generatePDFReport, PDFReportData } from '@/utils/pdfGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { RotateCcw, Target, TrendingUp, Download, Share2, ExternalLink, FileText, AlertCircle, CheckCircle, XCircle, BarChart3, Users } from 'lucide-react';
+import { RadarVisualization } from './RadarVisualization';
+import { VersionComparison } from './VersionComparison';
+import { EnhancedBenchmarkComparison } from './EnhancedBenchmarkComparison';
+import { OpenVCIntegration } from './OpenVCIntegration';
 
 interface ScoreDisplayProps {
   result: ScoreResult;
@@ -26,6 +30,14 @@ interface ScoreDisplayProps {
 }
 
 export const ScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
+  return <EnhancedScoreDisplay result={result} assessmentData={assessmentData} onRestart={onRestart} badges={badges} engagementMessage={engagementMessage} />;
+};
+  // For backwards compatibility, render the enhanced version
+  const { EnhancedScoreDisplay } = require('./EnhancedScoreDisplay');
+  return <EnhancedScoreDisplay result={result} assessmentData={assessmentData} onRestart={onRestart} badges={badges} engagementMessage={engagementMessage} />;
+}
+
+export const LegacyScoreDisplay = ({ result, assessmentData, onRestart, badges, engagementMessage }: ScoreDisplayProps) => {
   const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [exportingPDF, setExportingPDF] = useState(false);
