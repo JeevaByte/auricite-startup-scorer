@@ -221,7 +221,12 @@ export const SubscriptionManager: React.FC = () => {
                         'Unlimited Assessments',
                         'Detailed Reports',
                         'Assessment History',
-                        'Email Reports'
+                        'Email Reports',
+                        'AI-Powered Recommendations',
+                        'Investor Matching',
+                        'Priority Support',
+                        'Advanced AI Content Analysis',
+                        'Downloadable PDF Reports'
                       ].map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -297,10 +302,10 @@ export const SubscriptionManager: React.FC = () => {
                   { name: 'Detailed PDF Reports', advanced: true, premium: true },
                   { name: 'Assessment History', advanced: true, premium: true },
                   { name: 'Investor Directory', advanced: false, premium: true },
-                  { name: 'AI-Powered Recommendations', advanced: false, premium: true },
-                  { name: 'Investor Matching', advanced: false, premium: true },
-                  { name: 'Priority Support', advanced: false, premium: true },
-                  { name: 'Advanced AI Content Analysis', advanced: false, premium: true },
+                  { name: 'AI-Powered Recommendations', advanced: true, premium: true },
+                  { name: 'Investor Matching', advanced: true, premium: true },
+                  { name: 'Priority Support', advanced: true, premium: true },
+                  { name: 'Advanced AI Content Analysis', advanced: true, premium: true },
                   { name: 'Downloadable PDF Reports', advanced: true, premium: true },
                   { name: 'Unlimited Assessments', advanced: true, premium: true },
                   { name: 'Direct Founder Connections', advanced: false, premium: true },
