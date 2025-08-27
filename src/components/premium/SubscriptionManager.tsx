@@ -209,8 +209,13 @@ export const SubscriptionManager: React.FC = () => {
                     <ul className="space-y-2">
                       {isFree && [
                         'Basic Assessment',
-                        'Score Overview',
-                        'Limited History'
+                        'Comprehensive Assessment',
+                        'Detailed PDF Reports',
+                        'Assessment History',
+                        'AI-Powered Recommendations',
+                        'Advanced AI Content Analysis',
+                        'Downloadable PDF Reports',
+                        'Score Overview'
                       ].map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -226,7 +231,8 @@ export const SubscriptionManager: React.FC = () => {
                         'Investor Matching',
                         'Priority Support',
                         'Advanced AI Content Analysis',
-                        'Downloadable PDF Reports'
+                        'Downloadable PDF Reports',
+                        'Investor Directory'
                       ].map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -297,28 +303,28 @@ export const SubscriptionManager: React.FC = () => {
               <tbody>
                 {/* List all features for premium, key features green for advanced, only quick assessment for free */}
                 {[
-                  { name: 'Quick Assessment', advanced: true, premium: true },
-                  { name: 'Comprehensive Assessment', advanced: true, premium: true },
-                  { name: 'Detailed PDF Reports', advanced: true, premium: true },
-                  { name: 'Assessment History', advanced: true, premium: true },
-                  { name: 'Investor Directory', advanced: false, premium: true },
-                  { name: 'AI-Powered Recommendations', advanced: true, premium: true },
-                  { name: 'Investor Matching', advanced: true, premium: true },
-                  { name: 'Priority Support', advanced: true, premium: true },
-                  { name: 'Advanced AI Content Analysis', advanced: true, premium: true },
-                  { name: 'Downloadable PDF Reports', advanced: true, premium: true },
-                  { name: 'Unlimited Assessments', advanced: true, premium: true },
-                  { name: 'Direct Founder Connections', advanced: false, premium: true },
-                  { name: 'Deal Flow Management', advanced: false, premium: true },
-                  { name: 'Custom Reporting', advanced: false, premium: true },
-                  { name: 'Benchmark Comparisons', advanced: false, premium: true },
-                  { name: '24/7 Support', advanced: false, premium: true }
+                  { name: 'Quick Assessment', free: true, advanced: true, premium: true },
+                  { name: 'Comprehensive Assessment', free: true, advanced: true, premium: true },
+                  { name: 'Detailed PDF Reports', free: true, advanced: true, premium: true },
+                  { name: 'Assessment History', free: true, advanced: true, premium: true },
+                  { name: 'Investor Directory', free: false, advanced: true, premium: true },
+                  { name: 'AI-Powered Recommendations', free: true, advanced: true, premium: true },
+                  { name: 'Investor Matching', free: false, advanced: true, premium: true },
+                  { name: 'Priority Support', free: false, advanced: true, premium: true },
+                  { name: 'Advanced AI Content Analysis', free: true, advanced: true, premium: true },
+                  { name: 'Downloadable PDF Reports', free: true, advanced: true, premium: true },
+                  { name: 'Unlimited Assessments', free: false, advanced: true, premium: true },
+                  { name: 'Direct Founder Connections', free: false, advanced: false, premium: true },
+                  { name: 'Deal Flow Management', free: false, advanced: false, premium: true },
+                  { name: 'Custom Reporting', free: false, advanced: false, premium: true },
+                  { name: 'Benchmark Comparisons', free: false, advanced: false, premium: true },
+                  { name: '24/7 Support', free: false, advanced: false, premium: true }
                 ].map((feature, idx) => (
                   <tr key={feature.name} className={idx % 2 === 0 ? "border-b bg-gray-50" : "border-b"}>
                     <td className="p-3 font-medium">{feature.name}</td>
-                    {/* Free plan: only Quick Assessment green */}
+                    {/* Free plan: enabled features green */}
                     <td className="text-center p-3">
-                      {feature.name === 'Quick Assessment' ? (
+                      {feature.free ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
                       ) : (
                         <X className="h-4 w-4 text-red-500 mx-auto" />
