@@ -53,16 +53,35 @@ export default function Auth() {
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: fullName.trim(),
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      let data, error;
+      try {
+        const result = await supabase.auth.signUp({
+          email: email.trim().toLowerCase(),
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: fullName.trim(),
+            }
           }
+        });
+        data = result.data;
+        error = result.error;
+        clearTimeout(timeoutId);
+      } catch (networkError: any) {
+        clearTimeout(timeoutId);
+        console.error('Network error during signup:', networkError);
+        if (networkError.name === 'AbortError') {
+          setError('Request timed out. Please check your internet connection and try again.');
+        } else {
+          setError('Network error. Please check your internet connection and try again.');
         }
-      });
+        return;
+      }
 
       if (error) {
         console.error('Signup error:', error);
