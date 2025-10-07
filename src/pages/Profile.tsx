@@ -13,6 +13,8 @@ import { NotificationSettings } from '@/components/profile/NotificationSettings'
 import { ProfileEdit } from '@/components/profile/ProfileEdit';
 import { SubscriptionManager } from '@/components/premium/SubscriptionManager';
 import { PrivacyControls } from '@/components/profile/PrivacyControls';
+import { TwoFactorAuth } from '@/components/security/TwoFactorAuth';
+import { DataExport } from '@/components/profile/DataExport';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -90,7 +92,7 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Overview</span>
@@ -106,6 +108,10 @@ export default function Profile() {
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span>Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center space-x-2">
+              <Settings className="h-4 w-4" />
+              <span>Security</span>
             </TabsTrigger>
             <TabsTrigger value="subscription" className="flex items-center space-x-2">
               <Crown className="h-4 w-4" />
@@ -242,6 +248,13 @@ export default function Profile() {
               <PrivacyControls />
               <DataPrivacySettings />
               <NotificationSettings />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="security" className="mt-6">
+            <div className="space-y-6">
+              <TwoFactorAuth />
+              <DataExport />
             </div>
           </TabsContent>
         </Tabs>

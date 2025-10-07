@@ -463,6 +463,42 @@ export type Database = {
         }
         Relationships: []
       }
+      data_export_requests: {
+        Row: {
+          completed_at: string | null
+          download_url: string | null
+          error_message: string | null
+          expires_at: string | null
+          export_type: string
+          id: string
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          download_url?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          export_type?: string
+          id?: string
+          requested_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          download_url?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          export_type?: string
+          id?: string
+          requested_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number
@@ -508,6 +544,57 @@ export type Database = {
         }
         Relationships: []
       }
+      error_logs: {
+        Row: {
+          context: Json | null
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          ip_address: unknown | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          stack_trace: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          ip_address?: unknown | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          ip_address?: unknown | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       failed_login_attempts: {
         Row: {
           attempt_time: string | null
@@ -535,6 +622,51 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean
+          flag_key: string
+          flag_name: string
+          id: string
+          metadata: Json | null
+          rollout_percentage: number | null
+          target_roles: string[] | null
+          target_users: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          flag_key: string
+          flag_name: string
+          id?: string
+          metadata?: Json | null
+          rollout_percentage?: number | null
+          target_roles?: string[] | null
+          target_users?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          flag_key?: string
+          flag_name?: string
+          id?: string
+          metadata?: Json | null
+          rollout_percentage?: number | null
+          target_roles?: string[] | null
+          target_users?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       honeypot_submissions: {
         Row: {
           created_at: string
@@ -555,6 +687,42 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           submission_data?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      impersonation_logs: {
+        Row: {
+          actions_taken: Json | null
+          admin_user_id: string
+          ended_at: string | null
+          id: string
+          ip_address: unknown | null
+          reason: string
+          started_at: string
+          target_user_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          admin_user_id: string
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          reason: string
+          started_at?: string
+          target_user_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          admin_user_id?: string
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          reason?: string
+          started_at?: string
+          target_user_id?: string
           user_agent?: string | null
         }
         Relationships: []
@@ -889,6 +1057,39 @@ export type Database = {
           status?: string
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          context: Json | null
+          id: string
+          metric_name: string
+          metric_type: string
+          recorded_at: string
+          unit: string | null
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          context?: Json | null
+          id?: string
+          metric_name: string
+          metric_type: string
+          recorded_at?: string
+          unit?: string | null
+          user_id?: string | null
+          value: number
+        }
+        Update: {
+          context?: Json | null
+          id?: string
+          metric_name?: string
+          metric_type?: string
+          recorded_at?: string
+          unit?: string | null
+          user_id?: string | null
+          value?: number
         }
         Relationships: []
       }
@@ -1349,6 +1550,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_2fa: {
+        Row: {
+          backup_codes: string[]
+          created_at: string
+          enabled: boolean
+          enabled_at: string | null
+          id: string
+          secret: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[]
+          created_at?: string
+          enabled?: boolean
+          enabled_at?: string | null
+          id?: string
+          secret: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[]
+          created_at?: string
+          enabled?: boolean
+          enabled_at?: string | null
+          id?: string
+          secret?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_access: {
         Row: {
           access_type: string
@@ -1676,11 +1910,24 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      is_feature_enabled: {
+        Args: { _flag_key: string; _user_id?: string }
+        Returns: boolean
+      }
       list_unindexed_foreign_keys: {
         Args: { table_name: string }
         Returns: {
           column_name: string
         }[]
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _details?: Json
+          _target_id: string
+          _target_table: string
+        }
+        Returns: undefined
       }
       update_auth_settings: {
         Args: { config: Json }

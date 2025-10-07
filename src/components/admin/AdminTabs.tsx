@@ -17,6 +17,8 @@ import { ZohoSyncManager } from './ZohoSyncManager';
 import { InvestorVerificationConsole } from './InvestorVerificationConsole';
 import { InvestorCSVImporter } from './InvestorCSVImporter';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
+import { FeatureFlagsManager } from './FeatureFlagsManager';
+import { ErrorMonitoring } from './ErrorMonitoring';
 
 interface AdminTabsProps {
   stats: DashboardStatsType;
@@ -34,7 +36,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-11">
+      <TabsList className="grid w-full grid-cols-13">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
@@ -46,6 +48,8 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="crm">CRM Sync</TabsTrigger>
         <TabsTrigger value="security">Security</TabsTrigger>
         <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+        <TabsTrigger value="features">Feature Flags</TabsTrigger>
+        <TabsTrigger value="errors">Error Monitor</TabsTrigger>
       </TabsList>
 
       <TabsContent value="dashboard">
@@ -114,6 +118,14 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="audit">
         <AuditTrail />
+      </TabsContent>
+
+      <TabsContent value="features">
+        <FeatureFlagsManager />
+      </TabsContent>
+
+      <TabsContent value="errors">
+        <ErrorMonitoring />
       </TabsContent>
     </Tabs>
   );
