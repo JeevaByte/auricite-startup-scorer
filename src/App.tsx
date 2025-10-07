@@ -32,6 +32,7 @@ import Assessment from "./pages/Assessment";
 import UnifiedAssessment from "./pages/UnifiedAssessment";
 import Learn from "./pages/Learn";
 import Donate from "./pages/Donate";
+import HowItWorks from "./pages/HowItWorks";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";

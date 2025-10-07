@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target } from 'lucide-react';
+import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2 } from 'lucide-react';
 
 export const MainNav: React.FC = () => {
   const location = useLocation();
@@ -17,18 +17,30 @@ export const MainNav: React.FC = () => {
       badge: 'Popular'
     },
     { 
+      name: 'How It Works', 
+      href: '/how-it-works',
+      icon: HelpCircle,
+      description: 'Scorecard methodology'
+    },
+    { 
+      name: 'Investors', 
+      href: '/investors',
+      icon: Users,
+      description: 'Browse investor profiles',
+      isPremium: true
+    },
+    { 
+      name: 'Fundraisers', 
+      href: '/fundraisers',
+      icon: Building2,
+      description: 'Explore startups'
+    },
+    { 
       name: 'AI Analysis', 
       href: '/ai-feedback',
       icon: Brain,
       description: 'Content analysis & feedback',
       badge: 'AI Powered'
-    },
-    { 
-      name: 'Investors', 
-      href: '/investor-directory',
-      icon: Users,
-      description: 'Connect with VCs',
-      isPremium: true
     },
     { 
       name: 'Learn', 

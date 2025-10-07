@@ -12,12 +12,13 @@ export const MobileNav: React.FC = () => {
   
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Full Assessment', href: '/unified-assessment' },
-    { name: 'Investor Directory', href: '/investor-directory' },
-    { name: 'Investor Dashboard', href: '/investor-dashboard' },
-    { name: 'Profile', href: '/profile' },
-    { name: 'AI Tools', href: '/ai-feedback' },
+    { name: 'Assessment', href: '/unified-assessment' },
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Investors', href: '/investors' },
+    { name: 'Fundraisers', href: '/fundraisers' },
+    { name: 'AI Analysis', href: '/ai-feedback' },
     { name: 'Learn', href: '/learn' },
+    { name: 'Profile', href: '/profile' },
     { name: 'Donate', href: '/donate' },
     { name: 'Pricing', href: '/pricing' },
   ];
