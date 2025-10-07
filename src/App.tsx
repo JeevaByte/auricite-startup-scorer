@@ -19,6 +19,14 @@ import DonationSuccess from "./pages/DonationSuccess";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorDashboardNew from "./pages/InvestorDashboardNew";
 import InvestorDirectory from "./pages/InvestorDirectory";
+import { InvestorLayout } from "./components/investor/InvestorLayout";
+import DealFlow from "./pages/investor/DealFlow";
+import SavedStartups from "./pages/investor/SavedStartups";
+import ComparisonPage from "./pages/investor/ComparisonPage";
+import PortfolioPage from "./pages/investor/PortfolioPage";
+import MatchesPage from "./pages/investor/MatchesPage";
+import AnalyticsPage from "./pages/investor/AnalyticsPage";
+import ProfilePage from "./pages/investor/ProfilePage";
 import InvestorOnboarding from "./pages/InvestorOnboarding";
 import InvestorListing from "./pages/InvestorListing";
 import InvestorProfilePage from "./pages/InvestorProfilePage";
@@ -68,6 +76,15 @@ const App = () => (
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/investor-dashboard-new" element={<InvestorDashboardNew />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
+                  
+                  {/* New Investor Dashboard Routes with Sidebar */}
+                  <Route path="/investor/deal-flow" element={<InvestorLayout><DealFlow /></InvestorLayout>} />
+                  <Route path="/investor/saved" element={<InvestorLayout><SavedStartups /></InvestorLayout>} />
+                  <Route path="/investor/compare" element={<InvestorLayout><ComparisonPage /></InvestorLayout>} />
+                  <Route path="/investor/portfolio" element={<InvestorLayout><PortfolioPage /></InvestorLayout>} />
+                  <Route path="/investor/matches" element={<InvestorLayout><MatchesPage /></InvestorLayout>} />
+                  <Route path="/investor/analytics" element={<InvestorLayout><AnalyticsPage /></InvestorLayout>} />
+                  <Route path="/investor/profile" element={<InvestorLayout><ProfilePage /></InvestorLayout>} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
           <Route path="/investor/:id" element={<InvestorProfilePage />} />

@@ -37,7 +37,7 @@ export default function Auth() {
     if (user && !loading) {
       // Role-based redirect
       if (userRole === 'investor') {
-        navigate('/investor-dashboard-new');
+        navigate('/investor/deal-flow');
       } else {
         const returnTo = searchParams.get('returnTo') || '/';
         navigate(returnTo);
@@ -180,18 +180,7 @@ export default function Auth() {
   };
 
   if (loading) {
-  useEffect(() => {
-    // Handle redirect after login based on role
-    if (user && userRole && location.pathname === '/auth') {
-      if (userRole === 'investor') {
-        navigate('/investor-dashboard-new');
-      } else {
-        navigate('/');
-      }
-    }
-  }, [user, userRole, location.pathname, navigate]);
-
-  return (
+    return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
