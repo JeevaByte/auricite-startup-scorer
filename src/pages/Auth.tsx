@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ForgotPasswordDialog } from '@/components/ForgotPasswordDialog';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { validatePassword } from '@/utils/passwordValidation';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 
 export default function Auth() {
@@ -49,8 +51,10 @@ export default function Auth() {
         return;
       }
 
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters long');
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        setError(passwordValidation.errors[0]);
         return;
       }
 
@@ -332,10 +336,11 @@ export default function Auth() {
                     )}
                   </Button>
                 </div>
-                {isSignUp && (
-                  <p className="text-xs text-muted-foreground">
-                    Password must be at least 6 characters long
-                  </p>
+                {isSignUp && password && (
+                  <PasswordStrengthIndicator 
+                    password={password} 
+                    validation={validatePassword(password)} 
+                  />
                 )}
               </div>
 
