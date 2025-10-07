@@ -30,6 +30,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordValidation, setPasswordValidation] = useState(validatePassword(''));
 
   // Check for redirect back to home if already authenticated
   useEffect(() => {
@@ -317,9 +318,14 @@ export default function Auth() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (isSignUp) {
+                        setPasswordValidation(validatePassword(e.target.value));
+                      }
+                      setError('');
+                    }}
                     required
-                    minLength={6}
                     className="pl-10 pr-10"
                   />
                   <Button
@@ -339,7 +345,7 @@ export default function Auth() {
                 {isSignUp && password && (
                   <PasswordStrengthIndicator 
                     password={password} 
-                    validation={validatePassword(password)} 
+                    validation={passwordValidation} 
                   />
                 )}
               </div>
