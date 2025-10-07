@@ -1,53 +1,55 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Search, Filter, Star } from 'lucide-react';
-import { useInvestorData } from '@/hooks/useInvestorData';
-import { ScorecardInsights } from '@/components/investor/ScorecardInsights';
+import { Search, Filter, Bookmark, TrendingUp, Building2, MapPin, DollarSign, Users, Eye } from 'lucide-react';
+import { mockStartups } from '@/utils/mockInvestorData';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DealFlow() {
-  const { feedStartups, loading, saveStartup, unsaveStartup } = useInvestorData();
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState('all');
   const [stageFilter, setStageFilter] = useState('all');
-  const [regionFilter, setRegionFilter] = useState('all');
-  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [scoreFilter, setScoreFilter] = useState('all');
 
-  const filteredFeed = feedStartups.filter(startup => {
-    const matchesSearch = startup.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSector = sectorFilter === 'all' || startup.sector === sectorFilter;
+  const filteredStartups = mockStartups.filter(startup => {
+    const matchesSearch = startup.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         startup.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSector = sectorFilter === 'all' || startup.sector.some(s => s.includes(sectorFilter));
     const matchesStage = stageFilter === 'all' || startup.stage === stageFilter;
-    const matchesRegion = regionFilter === 'all' || startup.region === regionFilter;
+    const matchesScore = scoreFilter === 'all' || 
+                        (scoreFilter === 'high' && startup.total_score >= 80) ||
+                        (scoreFilter === 'medium' && startup.total_score >= 60 && startup.total_score < 80) ||
+                        (scoreFilter === 'low' && startup.total_score < 60);
     
-    return matchesSearch && matchesSector && matchesStage && matchesRegion;
+    return matchesSearch && matchesSector && matchesStage && matchesScore;
   });
 
-  const handleSave = async (startupUserId: string, assessmentId: string | undefined) => {
-    await saveStartup(startupUserId, assessmentId);
-    setSavedIds([...savedIds, startupUserId]);
+  const handleSave = (startupId: string, companyName: string) => {
+    toast({
+      title: 'Saved',
+      description: `${companyName} added to your saved list`,
+    });
   };
 
-  const handleUnsave = async (startupUserId: string) => {
-    await unsaveStartup(startupUserId);
-    setSavedIds(savedIds.filter(id => id !== startupUserId));
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600 bg-green-50';
+    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
+    return 'text-orange-600 bg-orange-50';
   };
-
-  const isSaved = (startupUserId: string) => savedIds.includes(startupUserId);
-
-  if (loading) {
-    return <div className="text-center py-12">Loading deal flow...</div>;
-  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold mb-2">Deal Flow</h2>
+        <h1 className="text-3xl font-bold mb-2">Deal Flow</h1>
         <p className="text-muted-foreground">
-          Discover and evaluate investment opportunities
+          Browse and filter investment opportunities - {filteredStartups.length} startups available
         </p>
       </div>
 
@@ -66,107 +68,165 @@ export default function DealFlow() {
               <Input 
                 placeholder="Search startups..." 
                 className="pl-10" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select value={sectorFilter} onValueChange={setSectorFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Sector" />
+                <SelectValue placeholder="All Sectors" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Sectors</SelectItem>
-                <SelectItem value="AI/ML">AI/ML</SelectItem>
+                <SelectItem value="SaaS">SaaS</SelectItem>
                 <SelectItem value="FinTech">FinTech</SelectItem>
                 <SelectItem value="HealthTech">HealthTech</SelectItem>
                 <SelectItem value="CleanTech">CleanTech</SelectItem>
+                <SelectItem value="EdTech">EdTech</SelectItem>
               </SelectContent>
             </Select>
             <Select value={stageFilter} onValueChange={setStageFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Stage" />
+                <SelectValue placeholder="All Stages" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="Pre-Seed">Pre-Seed</SelectItem>
+                <SelectItem value="Pre-seed">Pre-seed</SelectItem>
                 <SelectItem value="Seed">Seed</SelectItem>
                 <SelectItem value="Series A">Series A</SelectItem>
+                <SelectItem value="Series B">Series B</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={regionFilter} onValueChange={setRegionFilter}>
+            <Select value={scoreFilter} onValueChange={setScoreFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder="All Scores" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
-                <SelectItem value="US">North America</SelectItem>
-                <SelectItem value="EU">Europe</SelectItem>
-                <SelectItem value="Asia">Asia</SelectItem>
+                <SelectItem value="all">All Scores</SelectItem>
+                <SelectItem value="high">High (80+)</SelectItem>
+                <SelectItem value="medium">Medium (60-79)</SelectItem>
+                <SelectItem value="low">Below 60</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Startups Grid */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Star className="h-5 w-5 text-yellow-500" />
-          Investment Opportunities ({filteredFeed.length})
-        </h3>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFeed.map((startup) => (
+      {/* Startup Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredStartups.length > 0 ? (
+          filteredStartups.map((startup) => (
             <Card key={startup.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-lg">{startup.company_name}</CardTitle>
-                      {startup.verified && (
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          ✓ Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">{startup.name}</div>
+                    <CardTitle className="text-xl mb-2">{startup.company_name}</CardTitle>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {startup.description}
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">{startup.score}</div>
-                    <div className="text-xs text-muted-foreground">Score</div>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleSave(startup.id, startup.company_name)}
+                  >
+                    <Bookmark className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex gap-2 flex-wrap">
-                    {startup.sector && <Badge variant="outline">{startup.sector}</Badge>}
-                    {startup.stage && <Badge variant="outline">{startup.stage}</Badge>}
+              <CardContent className="space-y-4">
+                {/* Sectors & Stage */}
+                <div className="flex flex-wrap gap-2">
+                  {startup.sector.slice(0, 3).map((sector) => (
+                    <Badge key={sector} variant="secondary">{sector}</Badge>
+                  ))}
+                  <Badge variant="outline">{startup.stage}</Badge>
+                </div>
+
+                {/* Score Display */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <span className="text-sm font-medium">Investment Readiness</span>
+                  <Badge className={`text-lg font-bold ${getScoreColor(startup.total_score)}`}>
+                    {startup.total_score}
+                  </Badge>
+                </div>
+
+                {/* Score Breakdown */}
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-primary">{startup.business_idea}</div>
+                    <div className="text-xs text-muted-foreground">Idea</div>
                   </div>
-                  <div className="flex gap-2">
-                    <ScorecardInsights 
-                      startup={startup}
-                      trigger={<Button className="flex-1">View Scorecard</Button>}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => isSaved(startup.user_id) 
-                        ? handleUnsave(startup.user_id) 
-                        : handleSave(startup.user_id, startup.assessment_id)
-                      }
-                    >
-                      <Heart className={`h-4 w-4 ${isSaved(startup.user_id) ? 'fill-red-500 text-red-500' : ''}`} />
-                    </Button>
+                  <div>
+                    <div className="text-lg font-bold text-primary">{startup.team}</div>
+                    <div className="text-xs text-muted-foreground">Team</div>
                   </div>
+                  <div>
+                    <div className="text-lg font-bold text-primary">{startup.traction}</div>
+                    <div className="text-xs text-muted-foreground">Traction</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-primary">{startup.financials}</div>
+                    <div className="text-xs text-muted-foreground">Finance</div>
+                  </div>
+                </div>
+
+                {/* Key Metrics */}
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="flex items-center gap-2 text-sm">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Seeking:</span>
+                    <span className="font-medium">{startup.funding_goal}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">MRR:</span>
+                    <span className="font-medium">{startup.mrr}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Team:</span>
+                    <span className="font-medium">{startup.employees}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Region:</span>
+                    <span className="font-medium">{startup.region}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => {
+                      toast({
+                        title: 'Opening Details',
+                        description: `Viewing ${startup.company_name} details`,
+                      });
+                    }}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate(`/investor/compare?startup=${startup.id}`)}
+                  >
+                    Compare
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-        {filteredFeed.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-12 text-muted-foreground">
-              No startups match your current filters.
+          ))
+        ) : (
+          <Card className="col-span-full">
+            <CardContent className="py-12 text-center">
+              <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Startups Found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your filters to see more results
+              </p>
             </CardContent>
           </Card>
         )}
