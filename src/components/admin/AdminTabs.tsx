@@ -14,6 +14,8 @@ import { WebhookManager } from './WebhookManager';
 import { AbuseDetection } from '@/components/security/AbuseDetection';
 import { DonationsTable } from './DonationsTable';
 import { ZohoSyncManager } from './ZohoSyncManager';
+import { InvestorVerificationConsole } from './InvestorVerificationConsole';
+import { InvestorCSVImporter } from './InvestorCSVImporter';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
 
 interface AdminTabsProps {
@@ -99,7 +101,11 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
       </TabsContent>
 
       <TabsContent value="crm">
-        <ZohoSyncManager />
+        <div className="space-y-6">
+          <ZohoSyncManager />
+          <InvestorVerificationConsole />
+          <InvestorCSVImporter />
+        </div>
       </TabsContent>
 
       <TabsContent value="security">

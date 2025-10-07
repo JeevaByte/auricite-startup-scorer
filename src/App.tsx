@@ -67,9 +67,10 @@ const App = () => (
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
-                  <Route path="/investor/:id" element={<InvestorProfilePage />} />
-                  <Route path="/fundraisers" element={<FundraiserListing />} />
-                  <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
+          <Route path="/investor/:id" element={<InvestorProfilePage />} />
+          <Route path="/fundraisers" element={<FundraiserListing />} />
+          <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
                   <Route path="/ai-feedback" element={<AIFeedback />} />
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/pricing" element={<Pricing />} />
