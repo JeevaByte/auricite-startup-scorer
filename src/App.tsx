@@ -32,6 +32,8 @@ import InvestorListing from "./pages/InvestorListing";
 import InvestorProfilePage from "./pages/InvestorProfilePage";
 import FundraiserProfile from "./pages/FundraiserProfile";
 import FundraiserListing from "./pages/FundraiserListing";
+import FundSeekerDashboard from "./pages/FundSeekerDashboard";
+import MyInvestors from "./pages/MyInvestors";
 import AIFeedback from "./pages/AIFeedback";
 import Feedback from "./pages/Feedback";
 import Pricing from "./pages/Pricing";
@@ -66,13 +68,23 @@ const App = () => (
                   <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Fund Seeker Routes */}
+                  <Route path="/dashboard" element={<FundSeekerDashboard />} />
+                  <Route path="/my-investors" element={<MyInvestors />} />
                   <Route path="/assessment" element={<Assessment />} />
                   <Route path="/unified-assessment" element={<UnifiedAssessment />} />
                   <Route path="/results" element={<Results />} />
                   <Route path="/profile" element={<Profile />} />
+                  
+                  {/* Admin Routes */}
                   <Route path="/admin" element={<AdminDashboard />} />
+                  
+                  {/* Donation Routes */}
                   <Route path="/donation-success" element={<DonationSuccess />} />
                   <Route path="/donate" element={<Donate />} />
+                  
+                  {/* Investor Routes */}
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/investor-dashboard-new" element={<InvestorDashboardNew />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
@@ -87,10 +99,14 @@ const App = () => (
                   <Route path="/investor/profile" element={<InvestorLayout><ProfilePage /></InvestorLayout>} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
-          <Route path="/investor/:id" element={<InvestorProfilePage />} />
-          <Route path="/fundraisers" element={<FundraiserListing />} />
-          <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
+                  <Route path="/investor/:id" element={<InvestorProfilePage />} />
+                  
+                  {/* Fundraiser Routes */}
+                  <Route path="/fundraisers" element={<FundraiserListing />} />
+                  <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
+                  
+                  {/* General Routes */}
                   <Route path="/ai-feedback" element={<AIFeedback />} />
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/pricing" element={<Pricing />} />

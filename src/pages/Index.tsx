@@ -17,7 +17,7 @@ import { WaitlistCapture } from '@/components/WaitlistCapture';
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { hasPremiumAccess } = useSubscription();
   const [searchParams] = useSearchParams();
   const showAssessment = searchParams.get('assessment') === 'true';
@@ -25,11 +25,17 @@ export default function Index() {
   const [showHelpCenter, setShowHelpCenter] = useState(false);
 
   useEffect(() => {
+    // Redirect fund seekers to dashboard if logged in and not on assessment
+    if (user && userRole !== 'investor' && !showAssessment) {
+      navigate('/dashboard');
+      return;
+    }
+
     if (user && !localStorage.getItem('onboarding-completed')) {
       const timer = setTimeout(() => setShowOnboarding(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, userRole, showAssessment, navigate]);
 
   const handleGetStarted = () => {
     if (!user) {
