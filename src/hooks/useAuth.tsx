@@ -10,16 +10,18 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  userRole: 'investor' | 'fund_seeker' | 'free';
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithPassword: (email: string, password: string) => Promise<{ error?: any }>;
-  signUpWithPassword: (email: string, password: string, fullName?: string) => Promise<{ error?: any }>;
+  signUpWithPassword: (email: string, password: string, fullName?: string, role?: string) => Promise<{ error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  userRole: 'free',
   signOut: async () => {},
   signInWithGoogle: async () => {},
   signInWithPassword: async () => ({ error: null }),
@@ -38,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<'investor' | 'fund_seeker' | 'free'>('free');
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -47,6 +50,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Get role from user metadata or database
+        if (session?.user) {
+          const role = session.user.user_metadata?.role;
+          if (role === 'investor' || role === 'fund_seeker') {
+            setUserRole(role);
+          } else {
+            setUserRole('free');
+          }
+        } else {
+          setUserRole('free');
+        }
+        
         setLoading(false);
         
         // Handle different auth events
@@ -215,7 +231,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUpWithPassword = async (email: string, password: string, fullName?: string) => {
+  const signUpWithPassword = async (email: string, password: string, fullName?: string, role?: string) => {
     // Validate password strength
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
@@ -230,6 +246,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName || '',
+            role: role || 'fund_seeker',
           }
         }
       });
@@ -287,7 +304,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{ 
       user, 
       session, 
-      loading, 
+      loading,
+      userRole,
       signOut, 
       signInWithGoogle, 
       signInWithPassword, 

@@ -4,11 +4,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2, TrendingUp, BarChart2 } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
 
 export const MainNav: React.FC = () => {
   const location = useLocation();
-  const { isInvestor, isFundSeeker } = useUserRole();
+  const { userRole } = useAuth();
+  const isInvestor = userRole === 'investor';
   
   // Investor Navigation
   const investorNavigation = [
@@ -16,31 +17,41 @@ export const MainNav: React.FC = () => {
       name: 'Dashboard', 
       href: '/investor-dashboard-new',
       icon: BarChart2,
-      description: 'Your investor command center'
+      description: 'Your investor command center',
+      badge: undefined,
+      isPremium: false
     },
     { 
       name: 'Fundraisers', 
       href: '/fundraisers',
       icon: Building2,
-      description: 'Browse startups'
+      description: 'Browse startups',
+      badge: undefined,
+      isPremium: false
     },
     { 
       name: 'Portfolio', 
       href: '/investor-dashboard-new?tab=portfolio',
       icon: TrendingUp,
-      description: 'Track your investments'
+      description: 'Track your investments',
+      badge: undefined,
+      isPremium: false
     },
     { 
       name: 'How It Works', 
       href: '/how-it-works',
       icon: HelpCircle,
-      description: 'Scorecard methodology'
+      description: 'Scorecard methodology',
+      badge: undefined,
+      isPremium: false
     },
     { 
       name: 'Pricing', 
       href: '/pricing',
       icon: Crown,
-      description: 'Plans & features'
+      description: 'Plans & features',
+      badge: undefined,
+      isPremium: false
     }
   ];
 

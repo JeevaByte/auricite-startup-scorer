@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
 
 export const MobileNav: React.FC = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { isInvestor } = useUserRole();
+  const { userRole } = useAuth();
+  const isInvestor = userRole === 'investor';
   
   const investorNavigation = [
     { name: 'Home', href: '/' },

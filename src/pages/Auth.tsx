@@ -17,7 +17,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading } = useAuth();
+  const { user, loading, signUpWithPassword } = useAuth();
   const { toast } = useToast();
   
   const [isSignUp, setIsSignUp] = useState(false);
@@ -60,18 +60,13 @@ export default function Auth() {
 
       let data, error;
       try {
-        const result = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(),
+        const result = await signUpWithPassword(
+          email.trim().toLowerCase(),
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: fullName.trim(),
-              role: role,
-            }
-          }
-        });
-        data = result.data;
+          fullName.trim(),
+          role
+        );
+        data = { user: result.error ? null : {} };
         error = result.error;
         clearTimeout(timeoutId);
       } catch (networkError: any) {

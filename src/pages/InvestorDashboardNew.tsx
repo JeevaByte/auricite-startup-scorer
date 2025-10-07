@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StartupComparison } from '@/components/investor/StartupComparison';
-import { ScorecardInsights } from '@/components/investor/ScorecardInsights';
-import { PortfolioTracking } from '@/components/investor/PortfolioTracking';
-import { Heart, Search, Filter, TrendingUp, Star, MapPin, Briefcase } from 'lucide-react';
+import { Heart, Search, Filter, TrendingUp, Star, MapPin, Briefcase, Bell } from 'lucide-react';
 
 const InvestorDashboardNew: React.FC = () => {
   const [savedStartups] = useState([
@@ -36,10 +33,9 @@ const InvestorDashboardNew: React.FC = () => {
         </div>
 
         <Tabs defaultValue="feed" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="feed">Deal Flow</TabsTrigger>
             <TabsTrigger value="saved">Saved Startups</TabsTrigger>
-            <TabsTrigger value="compare">Compare</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
           </TabsList>
@@ -192,19 +188,35 @@ const InvestorDashboardNew: React.FC = () => {
             </Card>
           </TabsContent>
 
-          {/* Comparison */}
-          <TabsContent value="compare">
-            <StartupComparison />
-          </TabsContent>
-
-          {/* Insights */}
+          {/* Insights Tab - Placeholder */}
           <TabsContent value="insights">
-            <ScorecardInsights />
+            <Card>
+              <CardHeader>
+                <CardTitle>Score Insights & Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Detailed scorecard insights and AI-powered analysis coming soon. 
+                  Compare startups, view detailed breakdowns, and get investment recommendations.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Portfolio Tracking */}
+          {/* Portfolio Tab - Placeholder */}
           <TabsContent value="portfolio">
-            <PortfolioTracking />
+            <Card>
+              <CardHeader>
+                <CardTitle>Portfolio Tracking</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Track your investments and monitor startup progress over time.
+                  Get alerts when readiness scores improve and receive quarterly updates.
+                </p>
+                <Button>Add Startup to Portfolio</Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
