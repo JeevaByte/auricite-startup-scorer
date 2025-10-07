@@ -5,12 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const MobileNav: React.FC = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { isInvestor } = useUserRole();
   
-  const navigation = [
+  const investorNavigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Dashboard', href: '/investor-dashboard-new' },
+    { name: 'Fundraisers', href: '/fundraisers' },
+    { name: 'Portfolio', href: '/investor-dashboard-new?tab=portfolio' },
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Profile', href: '/profile' },
+    { name: 'Pricing', href: '/pricing' },
+  ];
+
+  const fundSeekerNavigation = [
     { name: 'Home', href: '/' },
     { name: 'Assessment', href: '/unified-assessment' },
     { name: 'How It Works', href: '/how-it-works' },
@@ -22,6 +34,8 @@ export const MobileNav: React.FC = () => {
     { name: 'Donate', href: '/donate' },
     { name: 'Pricing', href: '/pricing' },
   ];
+
+  const navigation = isInvestor ? investorNavigation : fundSeekerNavigation;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

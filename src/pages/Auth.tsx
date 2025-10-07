@@ -24,6 +24,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'fund_seeker' | 'investor'>('fund_seeker');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +67,7 @@ export default function Auth() {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
               full_name: fullName.trim(),
+              role: role,
             }
           }
         });
@@ -232,21 +234,63 @@ export default function Auth() {
 
             <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
               {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="John Doe"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className="pl-10"
-                    />
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name *</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="John Doe"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">I am a *</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setRole('fund_seeker')}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          role === 'fund_seeker'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-2xl mb-2">🚀</div>
+                          <div className="font-medium">Fund Seeker</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Looking for funding
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRole('investor')}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          role === 'investor'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-2xl mb-2">💼</div>
+                          <div className="font-medium">Investor</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Looking to invest
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">

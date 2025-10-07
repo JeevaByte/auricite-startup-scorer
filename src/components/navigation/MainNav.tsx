@@ -3,12 +3,49 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2 } from 'lucide-react';
+import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2, TrendingUp, BarChart2 } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const MainNav: React.FC = () => {
   const location = useLocation();
+  const { isInvestor, isFundSeeker } = useUserRole();
   
-  const navigation = [
+  // Investor Navigation
+  const investorNavigation = [
+    { 
+      name: 'Dashboard', 
+      href: '/investor-dashboard-new',
+      icon: BarChart2,
+      description: 'Your investor command center'
+    },
+    { 
+      name: 'Fundraisers', 
+      href: '/fundraisers',
+      icon: Building2,
+      description: 'Browse startups'
+    },
+    { 
+      name: 'Portfolio', 
+      href: '/investor-dashboard-new?tab=portfolio',
+      icon: TrendingUp,
+      description: 'Track your investments'
+    },
+    { 
+      name: 'How It Works', 
+      href: '/how-it-works',
+      icon: HelpCircle,
+      description: 'Scorecard methodology'
+    },
+    { 
+      name: 'Pricing', 
+      href: '/pricing',
+      icon: Crown,
+      description: 'Plans & features'
+    }
+  ];
+
+  // Fund Seeker Navigation  
+  const fundSeekerNavigation = [
     { 
       name: 'Assessment', 
       href: '/unified-assessment',
@@ -55,6 +92,8 @@ export const MainNav: React.FC = () => {
       description: 'Plans & features'
     }
   ];
+
+  const navigation = isInvestor ? investorNavigation : fundSeekerNavigation;
 
   return (
     <nav className="hidden lg:flex items-center space-x-1">

@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import DonationSuccess from "./pages/DonationSuccess";
 import InvestorDashboard from "./pages/InvestorDashboard";
+import InvestorDashboardNew from "./pages/InvestorDashboardNew";
 import InvestorDirectory from "./pages/InvestorDirectory";
 import InvestorOnboarding from "./pages/InvestorOnboarding";
 import InvestorListing from "./pages/InvestorListing";
@@ -65,6 +66,7 @@ const App = () => (
                   <Route path="/donation-success" element={<DonationSuccess />} />
                   <Route path="/donate" element={<Donate />} />
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+                  <Route path="/investor-dashboard-new" element={<InvestorDashboardNew />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
