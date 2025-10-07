@@ -13,6 +13,7 @@ import { ManualDataCorrection } from './ManualDataCorrection';
 import { WebhookManager } from './WebhookManager';
 import { AbuseDetection } from '@/components/security/AbuseDetection';
 import { DonationsTable } from './DonationsTable';
+import { ZohoSyncManager } from './ZohoSyncManager';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
 
 interface AdminTabsProps {
@@ -31,7 +32,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-10">
+      <TabsList className="grid w-full grid-cols-11">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
@@ -40,6 +41,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="rescore">Re-score</TabsTrigger>
         <TabsTrigger value="edit">Edit Data</TabsTrigger>
         <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+        <TabsTrigger value="crm">CRM Sync</TabsTrigger>
         <TabsTrigger value="security">Security</TabsTrigger>
         <TabsTrigger value="audit">Audit Trail</TabsTrigger>
       </TabsList>
@@ -94,6 +96,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="webhooks">
         <WebhookManager />
+      </TabsContent>
+
+      <TabsContent value="crm">
+        <ZohoSyncManager />
       </TabsContent>
 
       <TabsContent value="security">
