@@ -14,26 +14,42 @@ export const MainNav: React.FC = () => {
   // Investor Navigation
   const investorNavigation = [
     { 
-      name: 'Dashboard', 
-      href: '/investor-dashboard-new',
-      icon: BarChart2,
-      description: 'Your investor command center',
+      name: 'Deal Flow', 
+      href: '/investor/deal-flow',
+      icon: Target,
+      description: 'Browse investment opportunities',
       badge: undefined,
       isPremium: false
     },
     { 
-      name: 'Fundraisers', 
-      href: '/fundraisers',
+      name: 'Saved', 
+      href: '/investor/saved',
       icon: Building2,
-      description: 'Browse startups',
+      description: 'Bookmarked startups',
       badge: undefined,
+      isPremium: false
+    },
+    { 
+      name: 'Matches', 
+      href: '/investor/matches',
+      icon: Brain,
+      description: 'AI-recommended startups',
+      badge: 'AI',
       isPremium: false
     },
     { 
       name: 'Portfolio', 
-      href: '/investor-dashboard-new?tab=portfolio',
+      href: '/investor/portfolio',
       icon: TrendingUp,
       description: 'Track your investments',
+      badge: undefined,
+      isPremium: false
+    },
+    { 
+      name: 'Analytics', 
+      href: '/investor/analytics',
+      icon: BarChart3,
+      description: 'Market insights',
       badge: undefined,
       isPremium: false
     },
@@ -49,7 +65,7 @@ export const MainNav: React.FC = () => {
       name: 'Pricing', 
       href: '/pricing',
       icon: Crown,
-      description: 'Plans & features',
+      description: 'Premium features',
       badge: undefined,
       isPremium: false
     }

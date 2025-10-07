@@ -15,11 +15,13 @@ export const MobileNav: React.FC = () => {
   
   const investorNavigation = [
     { name: 'Home', href: '/' },
-    { name: 'Dashboard', href: '/investor-dashboard-new' },
-    { name: 'Fundraisers', href: '/fundraisers' },
-    { name: 'Portfolio', href: '/investor-dashboard-new?tab=portfolio' },
+    { name: 'Deal Flow', href: '/investor/deal-flow' },
+    { name: 'Saved Startups', href: '/investor/saved' },
+    { name: 'Matches', href: '/investor/matches' },
+    { name: 'Portfolio', href: '/investor/portfolio' },
+    { name: 'Analytics', href: '/investor/analytics' },
     { name: 'How It Works', href: '/how-it-works' },
-    { name: 'Profile', href: '/profile' },
+    { name: 'Profile', href: '/investor/profile' },
     { name: 'Pricing', href: '/pricing' },
   ];
 
