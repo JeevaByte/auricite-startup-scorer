@@ -62,7 +62,7 @@ export const RadarVisualization: React.FC<RadarVisualizationProps> = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            📊 Performance Radar
+            Performance Radar
             <Badge className={performance.color}>
               {performance.level}
             </Badge>

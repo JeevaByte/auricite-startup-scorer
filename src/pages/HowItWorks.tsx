@@ -148,19 +148,19 @@ export default function HowItWorks() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <h4 className="font-semibold">✅ Identify Gaps</h4>
+              <h4 className="font-semibold">Identify Gaps</h4>
               <p className="text-sm text-muted-foreground">
                 See which areas need improvement before approaching investors
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold">📊 Track Progress</h4>
+              <h4 className="font-semibold">Track Progress</h4>
               <p className="text-sm text-muted-foreground">
                 Monitor your readiness over time as you build and iterate
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold">🎯 Stand Out</h4>
+              <h4 className="font-semibold">Stand Out</h4>
               <p className="text-sm text-muted-foreground">
                 Demonstrate preparedness with a comprehensive, verified assessment
               </p>
@@ -174,7 +174,7 @@ export default function HowItWorks() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <h4 className="font-semibold">⚡ Quick Screening</h4>
+              <h4 className="font-semibold">Quick Screening</h4>
               <p className="text-sm text-muted-foreground">
                 Filter and prioritize deal flow with standardized assessments
               </p>

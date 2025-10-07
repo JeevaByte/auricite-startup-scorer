@@ -180,10 +180,10 @@ export const DonationButton: React.FC<DonationButtonProps> = ({
           <div className="bg-muted p-4 rounded-lg">
             <h4 className="font-medium mb-2">What you get:</h4>
             <ul className="text-sm space-y-1">
-              <li>✅ Access to Investor Directory</li>
-              <li>✅ Premium Learning Resources</li>
-              <li>✅ Pitch Deck Upload & Management</li>
-              <li>✅ Priority Support</li>
+              <li>Access to Investor Directory</li>
+              <li>Premium Learning Resources</li>
+              <li>Pitch Deck Upload & Management</li>
+              <li>Priority Support</li>
             </ul>
           </div>
 

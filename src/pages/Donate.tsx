@@ -95,7 +95,7 @@ export default function Donate() {
 
             <div className="text-center text-sm text-muted-foreground">
               <p>
-                🔒 Secure payments powered by Stripe • Tax receipts available • Cancel anytime
+                Secure payments powered by Stripe • Tax receipts available • Cancel anytime
               </p>
             </div>
           </CardContent>
@@ -103,7 +103,7 @@ export default function Donate() {
 
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
-            Thank you for supporting entrepreneurship and innovation! 🚀
+            Thank you for supporting entrepreneurship and innovation!
           </p>
         </div>
       </div>

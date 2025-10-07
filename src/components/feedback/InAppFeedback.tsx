@@ -216,7 +216,7 @@ export const InAppFeedback = () => {
                 onClick={() => setFormData(prev => ({ 
                   ...prev, 
                   type: 'general',
-                  message: prev.message + (prev.message ? '\n\n' : '') + '👍 I love this feature!' 
+                  message: prev.message + (prev.message ? '\n\n' : '') + 'I love this feature!' 
                 }))}
               >
                 <ThumbsUp className="w-3 h-3 mr-1" />

@@ -50,7 +50,7 @@ export default function DonationSuccess() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl text-green-800">
-                Donation Successful! 🎉
+                Donation Successful!
               </CardTitle>
               <CardDescription className="text-green-600">
                 Thank you for supporting our mission to help startups succeed
@@ -92,7 +92,7 @@ export default function DonationSuccess() {
           {/* Premium Features Unlocked */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Premium Features Unlocked 🚀</CardTitle>
+              <CardTitle>Premium Features Unlocked</CardTitle>
               <CardDescription>
                 You now have access to all these premium features
               </CardDescription>

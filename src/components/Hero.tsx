@@ -15,7 +15,7 @@ export const Hero = ({ onStartAssessment }: HeroProps) => {
       <div className="text-center py-16 md:py-24 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-3xl mb-16">
         <div className="mb-6">
           <Badge variant="secondary" className="mb-4 px-4 py-2 text-sm font-medium">
-            🚀 Powered by OpenVC Data & AI Analysis
+            Powered by OpenVC Data & AI Analysis
           </Badge>
         </div>
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
@@ -63,7 +63,7 @@ export const Hero = ({ onStartAssessment }: HeroProps) => {
             <div className="bg-blue-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <BarChart3 className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-4">📝 Smart Assessment</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Smart Assessment</h3>
             <p className="text-gray-600 leading-relaxed">Complete a guided readiness assessment with AI-powered insights and personalized recommendations tailored to your startup stage.</p>
           </Card>
           
@@ -71,7 +71,7 @@ export const Hero = ({ onStartAssessment }: HeroProps) => {
             <div className="bg-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Target className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-4">📊 Actionable Insights</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Actionable Insights</h3>
             <p className="text-gray-600 leading-relaxed">Get detailed scoring across business idea, financials, team, and traction with specific improvement recommendations.</p>
           </Card>
           

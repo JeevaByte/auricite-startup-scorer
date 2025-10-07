@@ -16,7 +16,7 @@ interface EnhancedShareDialogProps {
 
 export const EnhancedShareDialog = ({ scoreResult }: EnhancedShareDialogProps) => {
   const [shareUrl, setShareUrl] = useState('');
-  const [customMessage, setCustomMessage] = useState(`🚀 Just completed my startup investment readiness assessment and scored ${scoreResult.totalScore}/999!
+  const [customMessage, setCustomMessage] = useState(`Just completed my startup investment readiness assessment and scored ${scoreResult.totalScore}/999!
 
 Key highlights:
 • Business Idea: ${scoreResult.businessIdea}/100
@@ -24,7 +24,7 @@ Key highlights:
 • Team: ${scoreResult.team}/100
 • Traction: ${scoreResult.traction}/100
 
-Ready to accelerate my funding journey! 💪`);
+Ready to accelerate my funding journey!`);
   const [showQRCode, setShowQRCode] = useState(false);
   const { toast } = useToast();
 

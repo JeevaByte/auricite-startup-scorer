@@ -269,7 +269,7 @@ export default function Auth() {
                         }`}
                       >
                         <div className="text-center">
-                          <div className="text-2xl mb-2">🚀</div>
+                          <div className="text-2xl mb-2">FS</div>
                           <div className="font-medium">Fund Seeker</div>
                           <div className="text-xs text-muted-foreground mt-1">
                             Looking for funding

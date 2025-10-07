@@ -3,14 +3,14 @@ import React, { memo } from 'react';
 import { useTranslation, Language } from '@/utils/i18n';
 
 const languages = [
-  { code: 'en' as Language, name: 'English', flag: '🇺🇸' },
-  { code: 'es' as Language, name: 'Español', flag: '🇪🇸' },
-  { code: 'fr' as Language, name: 'Français', flag: '🇫🇷' },
-  { code: 'de' as Language, name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it' as Language, name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt' as Language, name: 'Português', flag: '🇵🇹' },
-  { code: 'zh' as Language, name: '中文', flag: '🇨🇳' },
-  { code: 'ja' as Language, name: '日本語', flag: '🇯🇵' }
+  { code: 'en' as Language, name: 'English', flag: 'EN' },
+  { code: 'es' as Language, name: 'Español', flag: 'ES' },
+  { code: 'fr' as Language, name: 'Français', flag: 'FR' },
+  { code: 'de' as Language, name: 'Deutsch', flag: 'DE' },
+  { code: 'it' as Language, name: 'Italiano', flag: 'IT' },
+  { code: 'pt' as Language, name: 'Português', flag: 'PT' },
+  { code: 'zh' as Language, name: '中文', flag: 'ZH' },
+  { code: 'ja' as Language, name: '日本語', flag: 'JA' }
 ];
 
 export const LanguageSelector: React.FC = memo(() => {

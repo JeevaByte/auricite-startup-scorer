@@ -27,9 +27,9 @@ export const EnhancedShareButtons = ({
     toast
   } = useToast();
   const shareUrl = window.location.href;
-  const shareText = `I scored ${scoreResult.totalScore}/999 on my startup investment readiness assessment! 🚀\n\n• Business Idea: ${scoreResult.businessIdea}/100\n• Financials: ${scoreResult.financials}/100\n• Team: ${scoreResult.team}/100\n• Traction: ${scoreResult.traction}/100`;
+  const shareText = `I scored ${scoreResult.totalScore}/999 on my startup investment readiness assessment!\n\n• Business Idea: ${scoreResult.businessIdea}/100\n• Financials: ${scoreResult.financials}/100\n• Team: ${scoreResult.team}/100\n• Traction: ${scoreResult.traction}/100`;
   const handleTwitterShare = () => {
-    const text = `🚀 Just completed my startup investment readiness assessment!\n\nMy Score: ${scoreResult.totalScore}/999\n\n✅ Business Idea: ${scoreResult.businessIdea}/100\n💰 Financials: ${scoreResult.financials}/100\n👥 Team: ${scoreResult.team}/100\n📈 Traction: ${scoreResult.traction}/100\n\nTake yours:`;
+    const text = `Just completed my startup investment readiness assessment!\n\nMy Score: ${scoreResult.totalScore}/999\n\nBusiness Idea: ${scoreResult.businessIdea}/100\nFinancials: ${scoreResult.financials}/100\nTeam: ${scoreResult.team}/100\nTraction: ${scoreResult.traction}/100\n\nTake yours:`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}&hashtags=startup,investment,assessment`;
     window.open(url, '_blank');
   };
@@ -42,7 +42,7 @@ export const EnhancedShareButtons = ({
     window.open(url, '_blank');
   };
   const handleWhatsAppShare = () => {
-    const text = `🚀 *My Startup Investment Readiness Results*\n\nOverall Score: *${scoreResult.totalScore}/999*\n\n📊 Breakdown:\n• Business Idea: ${scoreResult.businessIdea}/100\n• Financials: ${scoreResult.financials}/100\n• Team: ${scoreResult.team}/100\n• Traction: ${scoreResult.traction}/100\n\nTake your assessment: ${shareUrl}`;
+    const text = `*My Startup Investment Readiness Results*\n\nOverall Score: *${scoreResult.totalScore}/999*\n\nBreakdown:\n• Business Idea: ${scoreResult.businessIdea}/100\n• Financials: ${scoreResult.financials}/100\n• Team: ${scoreResult.team}/100\n• Traction: ${scoreResult.traction}/100\n\nTake your assessment: ${shareUrl}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };

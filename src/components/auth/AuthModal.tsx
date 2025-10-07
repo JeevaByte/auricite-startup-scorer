@@ -254,11 +254,11 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           
           <TabsContent value="signin" className="space-y-4">
             <div className="space-y-2">
-              <SocialButton provider="google" icon="🔍" label="Google" />
-              <SocialButton provider="github" icon="⚡" label="GitHub" />
-              <SocialButton provider="linkedin_oidc" icon="💼" label="LinkedIn" />
-              <SocialButton provider="twitter" icon="🐦" label="Twitter" />
-              <SocialButton provider="facebook" icon="📘" label="Facebook" />
+              <SocialButton provider="google" icon="G" label="Google" />
+              <SocialButton provider="github" icon="GH" label="GitHub" />
+              <SocialButton provider="linkedin_oidc" icon="in" label="LinkedIn" />
+              <SocialButton provider="twitter" icon="X" label="Twitter" />
+              <SocialButton provider="facebook" icon="f" label="Facebook" />
             </div>
             
             <div className="relative">
@@ -310,11 +310,11 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           
           <TabsContent value="signup" className="space-y-4">
             <div className="space-y-2">
-              <SocialButton provider="google" icon="🔍" label="Google" />
-              <SocialButton provider="github" icon="⚡" label="GitHub" />
-              <SocialButton provider="linkedin_oidc" icon="💼" label="LinkedIn" />
-              <SocialButton provider="twitter" icon="🐦" label="Twitter" />
-              <SocialButton provider="facebook" icon="📘" label="Facebook" />
+              <SocialButton provider="google" icon="G" label="Google" />
+              <SocialButton provider="github" icon="GH" label="GitHub" />
+              <SocialButton provider="linkedin_oidc" icon="in" label="LinkedIn" />
+              <SocialButton provider="twitter" icon="X" label="Twitter" />
+              <SocialButton provider="facebook" icon="f" label="Facebook" />
             </div>
             
             <div className="relative">

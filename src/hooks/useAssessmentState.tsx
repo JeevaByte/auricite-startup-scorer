@@ -107,13 +107,13 @@ export const useAssessmentState = () => {
 
   const generateEngagementMessage = (result: ScoreResult) => {
     if (result.totalScore >= 800) {
-      return "🚀 Outstanding! Your startup shows exceptional investment readiness. Consider reaching out to our investor network.";
+      return "Outstanding! Your startup shows exceptional investment readiness. Consider reaching out to our investor network.";
     } else if (result.totalScore >= 600) {
-      return "💪 Great progress! With a few improvements, you'll be ready to attract serious investors.";
+      return "Great progress! With a few improvements, you'll be ready to attract serious investors.";
     } else if (result.totalScore >= 400) {
-      return "📈 Good foundation! Focus on the recommended areas to strengthen your investment appeal.";
+      return "Good foundation! Focus on the recommended areas to strengthen your investment appeal.";
     } else {
-      return "🌱 Early stage detected. Use our recommendations to build a stronger foundation for future funding.";
+      return "Early stage detected. Use our recommendations to build a stronger foundation for future funding.";
     }
   };
 

@@ -107,7 +107,7 @@ export const RecommendationsDisplay = ({ recommendations, scores }: Recommendati
       </div>
 
       <Card className="p-6 bg-blue-50">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">💡 Quick Tips</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Quick Tips</h3>
         <div className="space-y-2 text-sm text-gray-700">
           <p>• Focus on areas marked as "Priority" first - these will have the biggest impact on investor interest</p>
           <p>• Start with quick wins that can be completed in 1-2 weeks</p>

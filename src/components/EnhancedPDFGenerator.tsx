@@ -162,7 +162,7 @@ const generateEnhancedPDFContent = (
       <!-- Executive Summary -->
       <div style="padding: 40px; background: #f8fafc; border-radius: 16px; margin-bottom: 40px; border-left: 8px solid #3b82f6;">
         <h2 style="color: #1e40af; font-size: 32px; margin: 0 0 24px 0; font-weight: 700;">
-          📊 Executive Summary
+          Executive Summary
         </h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
           <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -212,7 +212,7 @@ const generateEnhancedPDFContent = (
       <!-- Visual Metrics Dashboard -->
       <div style="padding: 40px; background: white; border-radius: 16px; margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         <h2 style="color: #1e40af; font-size: 32px; margin: 0 0 32px 0; font-weight: 700;">
-          📈 Visual Performance Dashboard
+          Visual Performance Dashboard
         </h2>
         
         <!-- Radar Chart Simulation -->
@@ -243,7 +243,7 @@ const generateEnhancedPDFContent = (
       <!-- Content Strengths -->
       <div style="padding: 40px; background: #ecfdf5; border-radius: 16px; margin-bottom: 40px; border-left: 8px solid #10b981;">
         <h2 style="color: #059669; font-size: 32px; margin: 0 0 32px 0; font-weight: 700;">
-          ✨ Content Strengths
+          Content Strengths
         </h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
           ${analysis.strengths.map(strength => `
@@ -263,7 +263,7 @@ const generateEnhancedPDFContent = (
       <!-- Improvement Recommendations -->
       <div style="padding: 40px; background: #fef3c7; border-radius: 16px; margin-bottom: 40px; border-left: 8px solid #f59e0b;">
         <h2 style="color: #d97706; font-size: 32px; margin: 0 0 32px 0; font-weight: 700;">
-          🎯 Priority Recommendations
+          Priority Recommendations
         </h2>
         <div style="space-y: 24px;">
           ${analysis.suggestions
@@ -291,23 +291,23 @@ const generateEnhancedPDFContent = (
       ${analysis.actionPlan ? `
         <div style="padding: 40px; background: #eff6ff; border-radius: 16px; margin-bottom: 40px; border-left: 8px solid #3b82f6;">
           <h2 style="color: #1e40af; font-size: 32px; margin: 0 0 32px 0; font-weight: 700;">
-            🚀 Strategic Action Plan
+            Strategic Action Plan
           </h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
             <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-              <h3 style="color: #dc2626; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">🔥 Immediate Actions</h3>
+              <h3 style="color: #dc2626; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Immediate Actions</h3>
               <ul style="color: #4b5563; margin: 0; padding-left: 20px; line-height: 1.7;">
                 ${analysis.actionPlan.immediateActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
               </ul>
             </div>
             <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-              <h3 style="color: #f59e0b; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">📈 Short-term Goals</h3>
+              <h3 style="color: #f59e0b; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Short-term Goals</h3>
               <ul style="color: #4b5563; margin: 0; padding-left: 20px; line-height: 1.7;">
                 ${analysis.actionPlan.shortTermGoals.map(goal => `<li style="margin-bottom: 8px;">${goal}</li>`).join('')}
               </ul>
             </div>
             <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-              <h3 style="color: #059669; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">🎯 Long-term Strategy</h3>
+              <h3 style="color: #059669; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Long-term Strategy</h3>
               <ul style="color: #4b5563; margin: 0; padding-left: 20px; line-height: 1.7;">
                 ${analysis.actionPlan.longTermStrategy.map(strategy => `<li style="margin-bottom: 8px;">${strategy}</li>`).join('')}
               </ul>
