@@ -648,6 +648,50 @@ export type Database = {
           },
         ]
       }
+      investor_portfolio: {
+        Row: {
+          added_at: string
+          assessment_id: string | null
+          id: string
+          investment_amount: number | null
+          investment_date: string | null
+          investor_user_id: string
+          notes: string | null
+          startup_user_id: string
+          status: string
+        }
+        Insert: {
+          added_at?: string
+          assessment_id?: string | null
+          id?: string
+          investment_amount?: number | null
+          investment_date?: string | null
+          investor_user_id: string
+          notes?: string | null
+          startup_user_id: string
+          status?: string
+        }
+        Update: {
+          added_at?: string
+          assessment_id?: string | null
+          id?: string
+          investment_amount?: number | null
+          investment_date?: string | null
+          investor_user_id?: string
+          notes?: string | null
+          startup_user_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_portfolio_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_profiles: {
         Row: {
           bio: string | null
@@ -674,7 +718,10 @@ export type Database = {
           ticket_min: number | null
           updated_at: string
           user_id: string
+          verification_notes: string | null
           verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           bio?: string | null
@@ -701,7 +748,10 @@ export type Database = {
           ticket_min?: number | null
           updated_at?: string
           user_id: string
+          verification_notes?: string | null
           verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           bio?: string | null
@@ -728,9 +778,47 @@ export type Database = {
           ticket_min?: number | null
           updated_at?: string
           user_id?: string
+          verification_notes?: string | null
           verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
+      }
+      investor_saved_startups: {
+        Row: {
+          assessment_id: string | null
+          id: string
+          investor_user_id: string
+          notes: string | null
+          saved_at: string
+          startup_user_id: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          id?: string
+          investor_user_id: string
+          notes?: string | null
+          saved_at?: string
+          startup_user_id: string
+        }
+        Update: {
+          assessment_id?: string | null
+          id?: string
+          investor_user_id?: string
+          notes?: string | null
+          saved_at?: string
+          startup_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_saved_startups_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_preferences: {
         Row: {
@@ -907,6 +995,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "score_feedback_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_history: {
+        Row: {
+          assessment_id: string
+          business_idea: number
+          financials: number
+          id: string
+          recorded_at: string
+          team: number
+          total_score: number
+          traction: number
+          user_id: string
+        }
+        Insert: {
+          assessment_id: string
+          business_idea: number
+          financials: number
+          id?: string
+          recorded_at?: string
+          team: number
+          total_score: number
+          traction: number
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string
+          business_idea?: number
+          financials?: number
+          id?: string
+          recorded_at?: string
+          team?: number
+          total_score?: number
+          traction?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_history_assessment_id_fkey"
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "assessments"

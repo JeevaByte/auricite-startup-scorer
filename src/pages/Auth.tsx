@@ -19,7 +19,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading, signUpWithPassword } = useAuth();
+  const { user, loading, signUpWithPassword, userRole } = useAuth();
   const { toast } = useToast();
   
   const [isSignUp, setIsSignUp] = useState(false);
@@ -35,10 +35,15 @@ export default function Auth() {
   // Check for redirect back to home if already authenticated
   useEffect(() => {
     if (user && !loading) {
-      const returnTo = searchParams.get('returnTo') || '/';
-      navigate(returnTo);
+      // Role-based redirect
+      if (userRole === 'investor') {
+        navigate('/investor-dashboard-new');
+      } else {
+        const returnTo = searchParams.get('returnTo') || '/';
+        navigate(returnTo);
+      }
     }
-  }, [user, loading, navigate, searchParams]);
+  }, [user, loading, userRole, navigate, searchParams]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +180,18 @@ export default function Auth() {
   };
 
   if (loading) {
-    return (
+  useEffect(() => {
+    // Handle redirect after login based on role
+    if (user && userRole && location.pathname === '/auth') {
+      if (userRole === 'investor') {
+        navigate('/investor-dashboard-new');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, userRole, location.pathname, navigate]);
+
+  return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
