@@ -246,9 +246,11 @@ export type Database = {
           funding_goal: string
           id: string
           investors: string
+          is_public: boolean | null
           milestones: string
           mrr: string
           prototype: boolean
+          public_fields: Json | null
           revenue: boolean
           term_sheets: boolean
           updated_at: string
@@ -263,9 +265,11 @@ export type Database = {
           funding_goal: string
           id?: string
           investors: string
+          is_public?: boolean | null
           milestones: string
           mrr: string
           prototype: boolean
+          public_fields?: Json | null
           revenue: boolean
           term_sheets: boolean
           updated_at?: string
@@ -280,9 +284,11 @@ export type Database = {
           funding_goal?: string
           id?: string
           investors?: string
+          is_public?: boolean | null
           milestones?: string
           mrr?: string
           prototype?: boolean
+          public_fields?: Json | null
           revenue?: boolean
           term_sheets?: boolean
           updated_at?: string
@@ -644,52 +650,85 @@ export type Database = {
       }
       investor_profiles: {
         Row: {
+          bio: string | null
           check_size: string
           created_at: string
           deal_source: string
+          display_name: string | null
           due_diligence: boolean
           esg_metrics: boolean
           frequency: string
           id: string
+          is_public: boolean | null
+          is_qualified: boolean | null
           objective: string
+          org_name: string | null
           personal_capital: boolean
+          public_fields: Json | null
+          region: string | null
           registered_entity: boolean
+          sectors: string[] | null
           stage: string
           structured_fund: boolean
+          ticket_max: number | null
+          ticket_min: number | null
           updated_at: string
           user_id: string
+          verification_status: string | null
         }
         Insert: {
+          bio?: string | null
           check_size: string
           created_at?: string
           deal_source: string
+          display_name?: string | null
           due_diligence: boolean
           esg_metrics: boolean
           frequency: string
           id?: string
+          is_public?: boolean | null
+          is_qualified?: boolean | null
           objective: string
+          org_name?: string | null
           personal_capital: boolean
+          public_fields?: Json | null
+          region?: string | null
           registered_entity: boolean
+          sectors?: string[] | null
           stage: string
           structured_fund: boolean
+          ticket_max?: number | null
+          ticket_min?: number | null
           updated_at?: string
           user_id: string
+          verification_status?: string | null
         }
         Update: {
+          bio?: string | null
           check_size?: string
           created_at?: string
           deal_source?: string
+          display_name?: string | null
           due_diligence?: boolean
           esg_metrics?: boolean
           frequency?: string
           id?: string
+          is_public?: boolean | null
+          is_qualified?: boolean | null
           objective?: string
+          org_name?: string | null
           personal_capital?: boolean
+          public_fields?: Json | null
+          region?: string | null
           registered_entity?: boolean
+          sectors?: string[] | null
           stage?: string
           structured_fund?: boolean
+          ticket_max?: number | null
+          ticket_min?: number | null
           updated_at?: string
           user_id?: string
+          verification_status?: string | null
         }
         Relationships: []
       }
@@ -808,7 +847,9 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_public: boolean | null
           notification_preferences: Json | null
+          public_fields: Json | null
           updated_at: string
         }
         Insert: {
@@ -817,7 +858,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          is_public?: boolean | null
           notification_preferences?: Json | null
+          public_fields?: Json | null
           updated_at?: string
         }
         Update: {
@@ -826,7 +869,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_public?: boolean | null
           notification_preferences?: Json | null
+          public_fields?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -868,6 +913,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      score_weights: {
+        Row: {
+          created_at: string | null
+          id: string
+          stage: string
+          updated_at: string | null
+          weights: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          stage: string
+          updated_at?: string | null
+          weights?: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          stage?: string
+          updated_at?: string | null
+          weights?: Json
+        }
+        Relationships: []
       }
       scores: {
         Row: {
@@ -1494,7 +1563,7 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "free" | "premium" | "admin"
+      user_role: "free" | "premium" | "admin" | "investor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1622,7 +1691,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["free", "premium", "admin"],
+      user_role: ["free", "premium", "admin", "investor"],
     },
   },
 } as const

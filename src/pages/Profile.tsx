@@ -12,6 +12,7 @@ import { DataPrivacySettings } from '@/components/profile/DataPrivacySettings';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
 import { ProfileEdit } from '@/components/profile/ProfileEdit';
 import { SubscriptionManager } from '@/components/premium/SubscriptionManager';
+import { PrivacyControls } from '@/components/profile/PrivacyControls';
 
 interface AssessmentHistoryItem {
   id: string;
@@ -238,6 +239,7 @@ export default function Profile() {
 
           <TabsContent value="settings" className="mt-6">
             <div className="space-y-6">
+              <PrivacyControls />
               <DataPrivacySettings />
               <NotificationSettings />
             </div>

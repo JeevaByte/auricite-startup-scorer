@@ -18,6 +18,11 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DonationSuccess from "./pages/DonationSuccess";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorDirectory from "./pages/InvestorDirectory";
+import InvestorOnboarding from "./pages/InvestorOnboarding";
+import InvestorListing from "./pages/InvestorListing";
+import InvestorProfilePage from "./pages/InvestorProfilePage";
+import FundraiserProfile from "./pages/FundraiserProfile";
+import FundraiserListing from "./pages/FundraiserListing";
 import AIFeedback from "./pages/AIFeedback";
 import Feedback from "./pages/Feedback";
 import Pricing from "./pages/Pricing";
@@ -60,7 +65,11 @@ const App = () => (
                   <Route path="/donate" element={<Donate />} />
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
-                  <Route path="/investors" element={<InvestorDirectory />} />
+                  <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
+                  <Route path="/investors" element={<InvestorListing />} />
+                  <Route path="/investor/:id" element={<InvestorProfilePage />} />
+                  <Route path="/fundraisers" element={<FundraiserListing />} />
+                  <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
                   <Route path="/ai-feedback" element={<AIFeedback />} />
                   <Route path="/feedback" element={<Feedback />} />
                   <Route path="/pricing" element={<Pricing />} />
