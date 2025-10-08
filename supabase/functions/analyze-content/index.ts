@@ -182,14 +182,16 @@ serve(async (req) => {
     // Create enhanced content-type specific prompt
     const analysisPrompt = createEnhancedAnalysisPrompt(content, contentType);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://your-app.com',
+        'X-Title': 'Investment Readiness Platform',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'qwen/qwen-2.5-72b-instruct',
         messages: [
           {
             role: 'system',

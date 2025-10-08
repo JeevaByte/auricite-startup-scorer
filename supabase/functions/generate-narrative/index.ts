@@ -33,11 +33,16 @@ Assessment: ${JSON.stringify(assessmentData)}
 Score: ${JSON.stringify(scoreResult)}
 Return strict JSON with keys: overview (string), strengths (string[]), risks (string[]), opportunities (string[]), action_items (string[]). Keep it concise and actionable.`;
 
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 
+        'Authorization': `Bearer ${OPENAI_KEY}`, 
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://your-app.com',
+        'X-Title': 'Investment Readiness Platform',
+      },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'qwen/qwen-2.5-72b-instruct',
         messages: [
           { role: 'system', content: 'You are a precise investment analyst.' },
           { role: 'user', content: prompt }
