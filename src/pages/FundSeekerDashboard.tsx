@@ -1,381 +1,266 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LoadingState } from '@/components/ui/loading-state';
-import { ScoreGauge } from '@/components/ScoreGauge';
-import { RoadmapVisualization } from '@/components/progress/RoadmapVisualization';
-import { MilestoneTracker } from '@/components/progress/MilestoneTracker';
-import { ActionItems } from '@/components/progress/ActionItems';
-import { 
-  TrendingUp, 
-  Target, 
-  Users, 
-  FileText, 
-  ArrowRight, 
-  BarChart3, 
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Brain
-} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Mail, CheckCircle, XCircle, User, Building } from 'lucide-react';
 
-export default function FundSeekerDashboard() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+interface IncomingRequest {
+  id: string;
+  status: 'pending' | 'accepted' | 'declined';
+  message: string | null;
+  created_at: string;
+  investor_user_id: string;
+  profiles?: {
+    full_name: string;
+    email: string;
+  };
+  investor_profiles?: Array<{
+    display_name: string;
+    org_name: string;
+    verification_status: string;
+    bio: string;
+  }>;
+}
+
+const FundSeekerDashboard: React.FC = () => {
+  const [requests, setRequests] = useState<IncomingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [latestScore, setLatestScore] = useState<any>(null);
-  const [assessmentCount, setAssessmentCount] = useState(0);
-  const [investorMatches, setInvestorMatches] = useState(0);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
-
-  const fetchDashboardData = async () => {
+  const fetchRequests = async () => {
     try {
-      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      // Fetch latest assessment
-      const { data: assessments } = await supabase
-        .from('assessment_history')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .select(`
+          *,
+          profiles!contact_requests_investor_user_id_fkey (
+            full_name,
+            email
+          ),
+          investor_profiles!investor_profiles_user_id_fkey (
+            display_name,
+            org_name,
+            verification_status,
+            bio
+          )
+        `)
+        .eq('startup_user_id', user.id)
+        .order('created_at', { ascending: false });
 
-      if (assessments && assessments.length > 0) {
-        setLatestScore(assessments[0].score_result);
-      }
-
-      // Count total assessments
-      const { count } = await supabase
-        .from('assessment_history')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
-
-      setAssessmentCount(count || 0);
-
-      // Count investor matches
-      const { count: matchCount } = await supabase
-        .from('investor_matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('startup_user_id', user?.id);
-
-      setInvestorMatches(matchCount || 0);
-
-      // Fetch recent activity
-      const { data: badges } = await supabase
-        .from('badges')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      const activity = [
-        ...(assessments || []).map(a => ({
-          type: 'assessment',
-          title: 'Completed Assessment',
-          date: new Date(a.created_at),
-          icon: BarChart3
-        })),
-        ...(badges || []).map(b => ({
-          type: 'badge',
-          title: `Earned: ${b.badge_name}`,
-          date: new Date(b.created_at),
-          icon: CheckCircle
-        }))
-      ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
-
-      setRecentActivity(activity);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      if (error) throw error;
+      setRequests((data || []) as any);
+    } catch (error: any) {
+      toast({
+        title: 'Error loading requests',
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleRequest = async (requestId: string, status: 'accepted' | 'declined') => {
+    try {
+      const { error } = await supabase
+        .from('contact_requests')
+        .update({ status })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: `Request ${status}`,
+        description: `You have ${status} the investor's interest.`,
+      });
+
+      await fetchRequests();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const pendingCount = requests.filter(r => r.status === 'pending').length;
 
   if (loading) {
-    return <LoadingState message="Loading your dashboard..." />;
+    return (
+      <AuthGuard requireAuth>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading dashboard...</div>
+        </div>
+      </AuthGuard>
+    );
   }
 
-  const hasCompletedAssessment = latestScore !== null;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
+    <AuthGuard requireAuth>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Welcome Back! 👋</h1>
-          <p className="text-muted-foreground text-lg">
-            Track your fundraising progress and take action to improve your readiness.
+          <h1 className="text-3xl font-bold mb-2">Fundraiser Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage investor interest and connection requests
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow">
+        {/* Summary Card */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Current Score
+                Pending Requests
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {hasCompletedAssessment ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{latestScore.totalScore || 0}</span>
-                  <Target className="h-8 w-8 text-primary" />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Not assessed</span>
-                  <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
+              <div className="text-3xl font-bold">{pendingCount}</div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Assessments
+                Total Interest
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-3xl font-bold">{assessmentCount}</span>
-                <BarChart3 className="h-8 w-8 text-primary" />
-              </div>
+              <div className="text-3xl font-bold">{requests.length}</div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Investor Matches
+                Accepted
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-3xl font-bold">{investorMatches}</span>
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Improvement Areas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-3xl font-bold">
-                  {hasCompletedAssessment ? '2-3' : '-'}
-                </span>
-                <TrendingUp className="h-8 w-8 text-primary" />
+              <div className="text-3xl font-bold">
+                {requests.filter(r => r.status === 'accepted').length}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Left Column: Call to Action & Score */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* CTA Card */}
-            {!hasCompletedAssessment ? (
-              <Card className="bg-gradient-to-r from-primary to-blue-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Get Your Investment Readiness Score</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="opacity-90">
-                    Start your journey to fundraising success with our comprehensive assessment tool.
-                    Get detailed insights in just 10 minutes.
-                  </p>
-                  <Button 
-                    variant="secondary" 
-                    size="lg"
-                    onClick={() => navigate('/?assessment=true')}
-                    className="w-full sm:w-auto"
-                  >
-                    <Target className="mr-2 h-5 w-5" />
-                    Start Assessment Now
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </CardContent>
-              </Card>
+        {/* Requests List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Investor Interest Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {requests.length === 0 ? (
+              <div className="text-center py-12">
+                <Mail className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  No investor interest yet. Complete your assessment to attract investors!
+                </p>
+              </div>
             ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    Your Investment Readiness Score
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate('/?assessment=true')}
-                    >
-                      Retake Assessment
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center mb-6">
-                    <ScoreGauge 
-                      score={latestScore.totalScore} 
-                      maxScore={100} 
-                      title="Overall Score" 
-                      size="large" 
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {latestScore.businessIdea || 0}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Business Idea</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {latestScore.team || 0}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Team</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {latestScore.traction || 0}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Traction</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {latestScore.financials || 0}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Financials</div>
-                    </div>
-                  </div>
-                  <div className="mt-6 flex gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => navigate('/results')}
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      View Full Report
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => navigate('/ai-feedback')}
-                    >
-                      <Brain className="mr-2 h-4 w-4" />
-                      AI Analysis
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-4">
+                {requests.map((request) => {
+                  const investorProfile = request.investor_profiles?.[0];
+                  return (
+                    <Card key={request.id} className="border">
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <User className="h-5 w-5 text-muted-foreground" />
+                              <h3 className="font-semibold text-lg">
+                                {investorProfile?.display_name || request.profiles?.full_name || 'Unknown Investor'}
+                              </h3>
+                              {investorProfile?.verification_status === 'verified' && (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                                  ✓ Verified
+                                </Badge>
+                              )}
+                            </div>
+                            {investorProfile?.org_name && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                                <Building className="h-4 w-4" />
+                                {investorProfile.org_name}
+                              </div>
+                            )}
+                            <p className="text-sm text-muted-foreground">
+                              {request.profiles?.email}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Received {new Date(request.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <Badge variant={
+                            request.status === 'pending' ? 'outline' :
+                            request.status === 'accepted' ? 'default' : 'destructive'
+                          }>
+                            {request.status}
+                          </Badge>
+                        </div>
+
+                        {investorProfile?.bio && (
+                          <div className="mb-4 p-3 bg-muted rounded-md">
+                            <p className="text-sm font-medium mb-1">Investor Bio:</p>
+                            <p className="text-sm text-muted-foreground">{investorProfile.bio}</p>
+                          </div>
+                        )}
+
+                        {request.message && (
+                          <div className="mb-4 p-3 bg-muted rounded-md">
+                            <p className="text-sm font-medium mb-1">Message:</p>
+                            <p className="text-sm text-muted-foreground">{request.message}</p>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          {request.status === 'pending' && (
+                            <>
+                              <Button
+                                onClick={() => handleRequest(request.id, 'accepted')}
+                                className="flex-1"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Accept
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => handleRequest(request.id, 'declined')}
+                                className="flex-1"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Decline
+                              </Button>
+                            </>
+                          )}
+                          {request.status === 'accepted' && (
+                            <Button
+                              onClick={() => window.open(`mailto:${request.profiles?.email}`, '_blank')}
+                              className="w-full"
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              Contact Investor
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             )}
-
-            {/* Roadmap */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Fundraising Journey</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RoadmapVisualization currentScore={latestScore?.totalScore || 0} />
-              </CardContent>
-            </Card>
-
-            {/* Action Items */}
-            <ActionItems score={latestScore} />
-          </div>
-
-          {/* Right Column: Activity & Milestones */}
-          <div className="space-y-6">
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {recentActivity.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-start gap-3 pb-3 border-b last:border-0">
-                        <div className="p-2 rounded-full bg-primary/10">
-                          <activity.icon className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{activity.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {activity.date.toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">
-                    No recent activity
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Milestones */}
-            <MilestoneTracker />
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => navigate('/investor-directory')}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Browse Investors
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => navigate('/learn')}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Learning Resources
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => navigate('/profile')}
-                >
-                  <Target className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AuthGuard>
   );
-}
+};
+
+export default FundSeekerDashboard;

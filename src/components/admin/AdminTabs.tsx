@@ -148,6 +148,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <ScheduledReportsManager />
       </TabsContent>
 
+      <TabsContent value="investors">
+        <InvestorVerificationConsole />
+      </TabsContent>
+
       <TabsContent value="health">
         <SystemHealthMonitor />
       </TabsContent>

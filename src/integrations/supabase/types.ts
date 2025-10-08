@@ -510,6 +510,47 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_requests: {
+        Row: {
+          assessment_id: string | null
+          created_at: string
+          id: string
+          investor_user_id: string
+          message: string | null
+          startup_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string
+          id?: string
+          investor_user_id: string
+          message?: string | null
+          startup_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string
+          id?: string
+          investor_user_id?: string
+          message?: string | null
+          startup_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_requests_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_contacts: {
         Row: {
           company_name: string | null

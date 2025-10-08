@@ -1,76 +1,64 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, XCircle, Clock, Loader2, Mail, Building2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 
 interface InvestorProfile {
   id: string;
   user_id: string;
-  display_name: string | null;
-  org_name: string | null;
-  bio: string | null;
-  sectors: string[] | null;
-  ticket_min: number | null;
-  ticket_max: number | null;
-  region: string | null;
-  verification_status: string;
-  is_qualified: boolean;
+  display_name: string;
+  org_name: string;
+  verification_status: 'pending' | 'verified' | 'rejected';
+  verification_notes: string | null;
+  personal_capital: boolean;
+  structured_fund: boolean;
+  registered_entity: boolean;
+  check_size: string;
+  stage: string;
   created_at: string;
-  profiles: {
+  profiles?: {
     email: string;
     full_name: string;
   };
 }
 
-export const InvestorVerificationConsole = () => {
+export const InvestorVerificationConsole: React.FC = () => {
   const [profiles, setProfiles] = useState<InvestorProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<InvestorProfile | null>(null);
+  const [notes, setNotes] = useState('');
   const { toast } = useToast();
 
-  const loadProfiles = async () => {
+  const fetchProfiles = async () => {
     try {
       const { data, error } = await supabase
         .from('investor_profiles')
-        .select('*')
+        .select(`
+          *,
+          profiles!investor_profiles_user_id_fkey (
+            email,
+            full_name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      // Fetch user emails separately
-      const profilesWithEmails = await Promise.all(
-        (data || []).map(async (profile) => {
-          const { data: userData } = await supabase
-            .from('profiles')
-            .select('email, full_name')
-            .eq('id', profile.user_id)
-            .single();
-          
-          return {
-            ...profile,
-            profiles: userData || { email: '', full_name: '' },
-          };
-        })
-      );
-
-      setProfiles(profilesWithEmails as InvestorProfile[]);
+      setProfiles((data || []) as any);
     } catch (error: any) {
-      console.error('Error loading profiles:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load investor profiles',
+        title: 'Error loading profiles',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {
@@ -79,273 +67,207 @@ export const InvestorVerificationConsole = () => {
   };
 
   useEffect(() => {
-    loadProfiles();
+    fetchProfiles();
   }, []);
 
-  const handleVerificationUpdate = async (
+  const handleVerification = async (
     profileId: string,
-    newStatus: 'verified' | 'rejected',
-    isQualified: boolean
+    status: 'verified' | 'rejected',
+    verificationNotes: string
   ) => {
-    setProcessing(profileId);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { error } = await supabase
         .from('investor_profiles')
         .update({
-          verification_status: newStatus,
-          is_qualified: isQualified,
+          verification_status: status,
+          verification_notes: verificationNotes,
+          verified_by: user.id,
+          verified_at: new Date().toISOString(),
         })
         .eq('id', profileId);
 
       if (error) throw error;
 
       toast({
-        title: 'Status Updated',
-        description: `Investor profile ${newStatus === 'verified' ? 'verified' : 'rejected'} successfully`,
+        title: `Investor ${status}`,
+        description: `The investor profile has been ${status}.`,
       });
 
-      await loadProfiles();
       setSelectedProfile(null);
+      setNotes('');
+      await fetchProfiles();
     } catch (error: any) {
-      console.error('Error updating verification:', error);
       toast({
-        title: 'Update Failed',
-        description: error.message || 'Failed to update verification status',
+        title: 'Error updating verification',
+        description: error.message,
         variant: 'destructive',
       });
-    } finally {
-      setProcessing(null);
     }
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return (
-          <Badge className="bg-green-500">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Verified
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge variant="destructive">
-            <XCircle className="h-3 w-3 mr-1" />
-            Rejected
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="secondary">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        );
-    }
+    const variants: Record<string, { icon: React.ReactNode; variant: any; label: string }> = {
+      pending: {
+        icon: <Clock className="h-4 w-4 mr-1" />,
+        variant: 'outline',
+        label: 'Pending',
+      },
+      verified: {
+        icon: <CheckCircle className="h-4 w-4 mr-1" />,
+        variant: 'default',
+        label: 'Verified',
+      },
+      rejected: {
+        icon: <XCircle className="h-4 w-4 mr-1" />,
+        variant: 'destructive',
+        label: 'Rejected',
+      },
+    };
+
+    const config = variants[status] || variants.pending;
+
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        {config.icon}
+        {config.label}
+      </Badge>
+    );
   };
 
-  const pendingCount = profiles.filter((p) => p.verification_status === 'pending').length;
-  const verifiedCount = profiles.filter((p) => p.verification_status === 'verified').length;
-
   if (loading) {
-    return (
-      <Card>
-        <CardContent className="pt-6 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <div>Loading investor verification queue...</div>;
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Investor Verification Console</CardTitle>
-          <CardDescription>
-            Review and approve investor profiles for verified badge eligibility
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            Investor Verification Console
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <Alert>
-              <Clock className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold text-lg">{pendingCount}</div>
-                <div className="text-sm">Pending Review</div>
-              </AlertDescription>
-            </Alert>
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold text-lg">{verifiedCount}</div>
-                <div className="text-sm">Verified</div>
-              </AlertDescription>
-            </Alert>
-            <Alert>
-              <Building2 className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold text-lg">{profiles.length}</div>
-                <div className="text-sm">Total Profiles</div>
-              </AlertDescription>
-            </Alert>
-          </div>
-
-          <div className="space-y-3">
-            {profiles.map((profile) => (
-              <div
-                key={profile.id}
-                className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">
-                        {profile.display_name || profile.profiles?.full_name || 'Unnamed Investor'}
-                      </h3>
-                      {getStatusBadge(profile.verification_status)}
-                      {profile.is_qualified && (
-                        <Badge variant="outline" className="border-primary text-primary">
-                          Qualified
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      {profile.org_name && (
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-3 w-3" />
-                          {profile.org_name}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3" />
-                        {profile.profiles?.email}
+        <CardContent>
+          <div className="space-y-4">
+            {profiles.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                No investor profiles to review.
+              </p>
+            ) : (
+              profiles.map((profile) => (
+                <Card key={profile.id} className="border">
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">
+                          {profile.display_name || profile.profiles?.full_name || 'Unknown'}
+                        </h3>
+                        {profile.org_name && (
+                          <p className="text-sm text-muted-foreground">{profile.org_name}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground">{profile.profiles?.email}</p>
                       </div>
-                      {profile.sectors && profile.sectors.length > 0 && (
-                        <div className="flex gap-1 flex-wrap mt-2">
-                          {profile.sectors.map((sector) => (
-                            <Badge key={sector} variant="secondary" className="text-xs">
-                              {sector}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      {(profile.ticket_min || profile.ticket_max) && (
-                        <p className="mt-1">
-                          Ticket: ${(profile.ticket_min || 0).toLocaleString()} - $
-                          {(profile.ticket_max || 0).toLocaleString()}
-                        </p>
-                      )}
+                      {getStatusBadge(profile.verification_status)}
                     </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedProfile(profile)}
-                    >
-                      Review
-                    </Button>
-                    {profile.verification_status === 'pending' && (
-                      <>
-                        <Button
-                          size="sm"
-                          onClick={() => handleVerificationUpdate(profile.id, 'verified', true)}
-                          disabled={processing === profile.id}
-                        >
-                          {processing === profile.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            'Approve'
-                          )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleVerificationUpdate(profile.id, 'rejected', false)}
-                          disabled={processing === profile.id}
-                        >
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {profiles.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No investor profiles found
-            </div>
-          )}
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm font-medium">Investment Details:</p>
+                        <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                          <li>• Personal Capital: {profile.personal_capital ? 'Yes' : 'No'}</li>
+                          <li>• Structured Fund: {profile.structured_fund ? 'Yes' : 'No'}</li>
+                          <li>• Registered Entity: {profile.registered_entity ? 'Yes' : 'No'}</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Preferences:</p>
+                        <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                          <li>• Check Size: {profile.check_size}</li>
+                          <li>• Stage: {profile.stage}</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {profile.verification_notes && (
+                      <div className="mb-4 p-3 bg-muted rounded-md">
+                        <p className="text-sm font-medium mb-1">Admin Notes:</p>
+                        <p className="text-sm text-muted-foreground">{profile.verification_notes}</p>
+                      </div>
+                    )}
+
+                    {profile.verification_status === 'pending' && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            onClick={() => {
+                              setSelectedProfile(profile);
+                              setNotes(profile.verification_notes || '');
+                            }}
+                          >
+                            Review Profile
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Verify Investor Profile</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <p className="font-medium mb-2">
+                                {profile.display_name || profile.profiles?.full_name}
+                              </p>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                {profile.profiles?.email}
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">
+                                Verification Notes
+                              </label>
+                              <Textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Add any notes about this verification..."
+                                rows={4}
+                              />
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button
+                                className="flex-1"
+                                onClick={() =>
+                                  handleVerification(profile.id, 'verified', notes)
+                                }
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                className="flex-1"
+                                onClick={() =>
+                                  handleVerification(profile.id, 'rejected', notes)
+                                }
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
-
-      <Dialog open={!!selectedProfile} onOpenChange={() => setSelectedProfile(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Investor Profile Details</DialogTitle>
-            <DialogDescription>Review complete profile information</DialogDescription>
-          </DialogHeader>
-          {selectedProfile && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Display Name</label>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedProfile.display_name || 'Not provided'}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Organization</label>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedProfile.org_name || 'Not provided'}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <p className="text-sm text-muted-foreground">{selectedProfile.profiles?.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Region</label>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedProfile.region || 'Not provided'}
-                  </p>
-                </div>
-              </div>
-              {selectedProfile.bio && (
-                <div>
-                  <label className="text-sm font-medium">Bio</label>
-                  <p className="text-sm text-muted-foreground">{selectedProfile.bio}</p>
-                </div>
-              )}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  onClick={() =>
-                    handleVerificationUpdate(selectedProfile.id, 'verified', true)
-                  }
-                  disabled={processing === selectedProfile.id}
-                  className="flex-1"
-                >
-                  Verify & Qualify
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    handleVerificationUpdate(selectedProfile.id, 'rejected', false)
-                  }
-                  disabled={processing === selectedProfile.id}
-                  className="flex-1"
-                >
-                  Reject
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 };

@@ -19,6 +19,7 @@ import DonationSuccess from "./pages/DonationSuccess";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorDashboardNew from "./pages/InvestorDashboardNew";
 import InvestorDirectory from "./pages/InvestorDirectory";
+import InterestRequests from "./pages/investor/InterestRequests";
 import { InvestorLayout } from "./components/investor/InvestorLayout";
 import DealFlow from "./pages/investor/DealFlow";
 import SavedStartups from "./pages/investor/SavedStartups";
@@ -92,6 +93,7 @@ const App = () => (
                   {/* New Investor Dashboard Routes with Sidebar */}
                   <Route path="/investor/deal-flow" element={<InvestorLayout><DealFlow /></InvestorLayout>} />
                   <Route path="/investor/saved" element={<InvestorLayout><SavedStartups /></InvestorLayout>} />
+                  <Route path="/investor/interest" element={<InvestorLayout><InterestRequests /></InvestorLayout>} />
                   <Route path="/investor/compare" element={<InvestorLayout><ComparisonPage /></InvestorLayout>} />
                   <Route path="/investor/portfolio" element={<InvestorLayout><PortfolioPage /></InvestorLayout>} />
                   <Route path="/investor/matches" element={<InvestorLayout><MatchesPage /></InvestorLayout>} />

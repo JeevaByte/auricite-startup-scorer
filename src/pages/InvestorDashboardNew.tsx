@@ -11,6 +11,7 @@ import { useInvestorData } from '@/hooks/useInvestorData';
 import { StartupComparison } from '@/components/investor/StartupComparison';
 import { ScorecardInsights } from '@/components/investor/ScorecardInsights';
 import { PortfolioTracking } from '@/components/investor/PortfolioTracking';
+import { InterestButton } from '@/components/investor/InterestButton';
 
 const InvestorDashboardNew: React.FC = () => {
   const { 
@@ -143,7 +144,7 @@ const InvestorDashboardNew: React.FC = () => {
                             <CardTitle className="text-lg">{startup.company_name}</CardTitle>
                             {startup.verified && (
                               <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                                ✓ Verified
+                                ✓ Verified Startup
                               </Badge>
                             )}
                           </div>
@@ -164,7 +165,12 @@ const InvestorDashboardNew: React.FC = () => {
                         <div className="flex gap-2">
                           <ScorecardInsights 
                             startup={startup}
-                            trigger={<Button className="flex-1">View Scorecard</Button>}
+                            trigger={<Button variant="outline" className="flex-1">View Scorecard</Button>}
+                          />
+                          <InterestButton 
+                            startupUserId={startup.user_id}
+                            assessmentId={startup.assessment_id}
+                            companyName={startup.company_name}
                           />
                           <Button 
                             variant="outline" 
