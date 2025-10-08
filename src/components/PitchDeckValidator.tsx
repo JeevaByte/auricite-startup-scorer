@@ -7,6 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertCircle, Upload, FileText, Lightbulb, TrendingUp, Target, Users, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// PDF & PPTX text extraction for real AI analysis
+import * as pdfjsLib from 'pdfjs-dist';
+// Use worker from cdn/bundled asset via Vite ?url import
+// @ts-ignore - pdfjs worker is a JS asset
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
+import JSZip from 'jszip';
+
+// Configure pdf.js worker
+// @ts-ignore
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
 interface DetailedValidationResult {
   section: string;
   status: 'complete' | 'incomplete' | 'missing';
@@ -67,245 +78,265 @@ export const PitchDeckValidator = () => {
     }
 
     setIsValidating(true);
-    
+
     try {
-      // Read file content
-      const reader = new FileReader();
-      
-      reader.onload = async (e) => {
-        try {
-          const content = e.target?.result as string;
-          
-          // Call the analyze-content edge function with real AI
-          const { supabase } = await import('@/integrations/supabase/client');
-          
-          const { data, error } = await supabase.functions.invoke('analyze-content', {
-            body: {
-              content: content || 'Pitch deck content for analysis',
-              contentType: 'pitch-deck',
-              fileName: selectedFile.name
-            }
-          });
+      // Extract readable text to ensure unique, content-based AI results
+      const arrayBuffer = await selectedFile.arrayBuffer();
 
-          if (error) {
-            console.error('Analysis error:', error);
-            
-            // Check if it's a quota error
-            if (error.message?.includes('quota') || error.message?.includes('429')) {
-              toast({
-                title: 'OpenAI Quota Exceeded',
-                description: 'Your OpenAI API key has exceeded its quota. Please check your OpenAI billing settings.',
-                variant: 'destructive'
-              });
-            } else {
-              toast({
-                title: 'Analysis Error',
-                description: 'Failed to analyze pitch deck. Using fallback analysis.',
-                variant: 'destructive'
-              });
-            }
-            
-            // The edge function will return fallback analysis on error
-            if (!data) {
-              setIsValidating(false);
-              return;
-            }
-          }
+      toast({
+        title: 'Extracting content',
+        description: 'Parsing your file for AI analysis...'
+      });
 
-          // Map AI analysis to validation results
-          const detailedResults: DetailedValidationResult[] = [];
-          
-          if (data?.pitchDeckAnalysis) {
-            const analysis = data.pitchDeckAnalysis;
-            
-            // Problem Statement
-            detailedResults.push({
-              section: 'Problem Statement',
-              status: analysis.problemStatement.score > 75 ? 'complete' : analysis.problemStatement.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.problemStatement.score,
-              feedback: analysis.problemStatement.feedback,
-              detailedFeedback: {
-                strengths: analysis.problemStatement.keyInsights.filter((_, i) => i < 2),
-                weaknesses: analysis.problemStatement.keyInsights.filter((_, i) => i >= 2),
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('problem')).map(s => s.suggestion) || [],
-                benchmarks: `Industry average: ${data.industryBenchmarks?.clarityIndustryAvg || 70}/100`,
-                industryComparison: `Your problem statement ranks at ${data.industryBenchmarks?.percentileRanking || 50}th percentile`
-              },
-              category: analysis.problemStatement.score < 60 ? 'critical' : analysis.problemStatement.score < 75 ? 'important' : 'minor'
-            });
-
-            // Solution
-            detailedResults.push({
-              section: 'Solution',
-              status: analysis.solutionClarity.score > 75 ? 'complete' : analysis.solutionClarity.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.solutionClarity.score,
-              feedback: analysis.solutionClarity.feedback,
-              detailedFeedback: {
-                strengths: analysis.solutionClarity.keyInsights.filter((_, i) => i < 3),
-                weaknesses: analysis.solutionClarity.keyInsights.filter((_, i) => i >= 3),
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('solution')).map(s => s.suggestion) || [],
-                benchmarks: `Industry average: ${data.industryBenchmarks?.engagementIndustryAvg || 72}/100`,
-                industryComparison: data.industryBenchmarks?.competitiveAdvantage || 'Competitive positioning analysis'
-              },
-              category: 'critical'
-            });
-
-            // Market Size
-            detailedResults.push({
-              section: 'Market Size',
-              status: analysis.marketOpportunity.score > 75 ? 'complete' : analysis.marketOpportunity.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.marketOpportunity.score,
-              feedback: analysis.marketOpportunity.feedback,
-              detailedFeedback: {
-                strengths: [analysis.marketOpportunity.marketSize, analysis.marketOpportunity.targetAudience],
-                weaknesses: data.suggestions?.filter(s => s.category.toLowerCase().includes('market')).slice(0, 2).map(s => s.suggestion) || [],
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('market')).map(s => s.suggestion) || [],
-                benchmarks: 'Successful pitch decks show TAM >$1B, SAM >$100M',
-                industryComparison: `Market sizing at ${analysis.marketOpportunity.score}/100`
-              },
-              category: 'critical'
-            });
-
-            // Business Model
-            detailedResults.push({
-              section: 'Business Model',
-              status: analysis.businessModel.score > 75 ? 'complete' : analysis.businessModel.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.businessModel.score,
-              feedback: analysis.businessModel.feedback,
-              detailedFeedback: {
-                strengths: analysis.businessModel.revenueStreams,
-                weaknesses: [analysis.businessModel.scalability],
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('business') || s.category.toLowerCase().includes('revenue')).map(s => s.suggestion) || [],
-                benchmarks: 'Top-tier decks show CLV:CAC ratio of 3:1 or higher',
-                industryComparison: `Business model clarity: ${analysis.businessModel.score}/100`
-              },
-              category: 'important'
-            });
-
-            // Traction
-            detailedResults.push({
-              section: 'Traction',
-              status: analysis.traction.score > 75 ? 'complete' : analysis.traction.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.traction.score,
-              feedback: analysis.traction.feedback,
-              detailedFeedback: {
-                strengths: analysis.traction.metrics,
-                weaknesses: [analysis.traction.momentum],
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('traction') || s.category.toLowerCase().includes('metric')).map(s => s.suggestion) || [],
-                benchmarks: 'Strong traction shows >20% MoM growth, >90% retention',
-                industryComparison: `Traction strength: ${analysis.traction.score}/100`
-              },
-              category: 'critical'
-            });
-
-            // Team
-            detailedResults.push({
-              section: 'Team',
-              status: analysis.team.score > 75 ? 'complete' : analysis.team.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.team.score,
-              feedback: analysis.team.feedback,
-              detailedFeedback: {
-                strengths: analysis.team.strengths,
-                weaknesses: analysis.team.gaps,
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('team')).map(s => s.suggestion) || [],
-                benchmarks: 'Top teams have 15+ years combined domain experience',
-                industryComparison: `Team strength: ${analysis.team.score}/100`
-              },
-              category: 'minor'
-            });
-
-            // Financials
-            detailedResults.push({
-              section: 'Financials',
-              status: analysis.financials.score > 75 ? 'complete' : analysis.financials.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.financials.score,
-              feedback: analysis.financials.feedback,
-              detailedFeedback: {
-                strengths: analysis.financials.assumptions,
-                weaknesses: [analysis.financials.projectionQuality],
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('financial')).map(s => s.suggestion) || [],
-                benchmarks: 'Investor-ready financials include 3 scenarios with IRR >25%',
-                industryComparison: `Financial detail: ${analysis.financials.score}/100`
-              },
-              category: 'critical'
-            });
-
-            // Funding Ask
-            detailedResults.push({
-              section: 'Funding Ask',
-              status: analysis.askAndExit.score > 75 ? 'complete' : analysis.askAndExit.score > 50 ? 'incomplete' : 'missing',
-              score: analysis.askAndExit.score,
-              feedback: analysis.askAndExit.feedback,
-              detailedFeedback: {
-                strengths: [analysis.askAndExit.clarity, analysis.askAndExit.alignment],
-                weaknesses: data.suggestions?.filter(s => s.category.toLowerCase().includes('funding') || s.category.toLowerCase().includes('ask')).slice(0, 2).map(s => s.suggestion) || [],
-                improvements: data.suggestions?.filter(s => s.category.toLowerCase().includes('funding') || s.category.toLowerCase().includes('ask')).map(s => s.suggestion) || [],
-                benchmarks: 'Clear asks show 18-24 month runway with specific milestones',
-                industryComparison: `Funding ask clarity: ${analysis.askAndExit.score}/100`
-              },
-              category: 'critical'
-            });
-          } else {
-            // Fallback structure if pitchDeckAnalysis is not available
-            const sections = ['Problem Statement', 'Solution', 'Market Size', 'Business Model', 'Traction', 'Team', 'Financials', 'Funding Ask'];
-            sections.forEach((section, index) => {
-              const baseScore = data?.overallScore || 70;
-              const variance = (Math.random() - 0.5) * 20;
-              const score = Math.max(30, Math.min(100, baseScore + variance));
-              
-              detailedResults.push({
-                section,
-                status: score > 75 ? 'complete' : score > 50 ? 'incomplete' : 'missing',
-                score: Math.round(score),
-                feedback: data?.suggestions?.[index]?.suggestion || `${section} analysis completed`,
-                detailedFeedback: {
-                  strengths: data?.strengths?.slice(0, 2).map(s => s.description) || [`${section} is well-structured`],
-                  weaknesses: [`More detail needed in ${section.toLowerCase()}`],
-                  improvements: data?.suggestions?.slice(index, index + 2).map(s => s.suggestion) || [`Enhance ${section.toLowerCase()} with more data`],
-                  benchmarks: `Industry average: ${baseScore}/100`,
-                  industryComparison: `Your ${section.toLowerCase()} ranks at ${data?.industryBenchmarks?.percentileRanking || 50}th percentile`
-                },
-                category: index < 3 ? 'critical' : index < 6 ? 'important' : 'minor'
-              });
-            });
-          }
-          
-          setResults(detailedResults);
-          const avgScore = detailedResults.length > 0 
-            ? detailedResults.reduce((sum, result) => sum + result.score, 0) / detailedResults.length
-            : data?.overallScore || 70;
-          setOverallScore(Math.round(avgScore));
-          setIsValidating(false);
-          
-          toast({
-            title: 'AI Analysis Complete',
-            description: data?.pitchDeckAnalysis 
-              ? 'Your pitch deck has been analyzed by AI with detailed feedback.'
-              : 'Analysis completed. Note: OpenAI quota may be limited.',
-          });
-        } catch (analysisError) {
-          console.error('Analysis processing error:', analysisError);
-          toast({
-            title: 'Analysis Error',
-            description: 'Failed to process analysis results.',
-            variant: 'destructive'
-          });
-          setIsValidating(false);
+      const extractPdfText = async (buf: ArrayBuffer): Promise<string> => {
+        const pdf = await (pdfjsLib as any).getDocument({ data: new Uint8Array(buf) }).promise;
+        let text = '';
+        const maxPages = Math.min(pdf.numPages, 15); // limit for speed/cost
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const pageText = (content.items as any[]).map((it: any) => it.str).join(' ');
+          text += pageText + '\n\n';
+          if (text.length > 80000) break; // hard cap to avoid token overflow
         }
+        return text;
       };
 
-      reader.onerror = () => {
+      const extractPptxText = async (buf: ArrayBuffer): Promise<string> => {
+        const zip = await JSZip.loadAsync(buf);
+        let text = '';
+        const slideFiles = Object.keys(zip.files)
+          .filter((n) => n.startsWith('ppt/slides/slide') && n.endsWith('.xml'))
+          .sort();
+        for (const path of slideFiles) {
+          const xml = await zip.files[path].async('string');
+          const matches = [...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)];
+          text += matches.map((m) => m[1]).join(' ') + '\n\n';
+          if (text.length > 80000) break;
+        }
+        return text;
+      };
+
+      let extracted = '';
+      if (selectedFile.type === 'application/pdf') {
+        extracted = await extractPdfText(arrayBuffer);
+      } else if (selectedFile.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+        extracted = await extractPptxText(arrayBuffer);
+      } else if (selectedFile.type === 'application/vnd.ms-powerpoint') {
         toast({
-          title: 'File Read Error',
-          description: 'Failed to read the file.',
+          title: 'PPT not supported yet',
+          description: 'Please convert to PDF or PPTX for best results.',
           variant: 'destructive'
         });
         setIsValidating(false);
-      };
+        return;
+      } else {
+        // Fallback: try to decode as text
+        extracted = new TextDecoder().decode(arrayBuffer);
+      }
 
-      // Read file as text (for PDF/PPTX we'll send the filename and let the edge function handle it)
-      reader.readAsText(selectedFile);
-      
+      if (!extracted || extracted.trim().length < 50) {
+        toast({
+          title: 'Could not extract text',
+          description: 'The file may be scanned or image-only. Try exporting to PDF (text).',
+          variant: 'destructive'
+        });
+        setIsValidating(false);
+        return;
+      }
+
+      const contentForAI = extracted.slice(0, 50000); // truncate input to manageable size
+
+      toast({
+        title: 'Analyzing with AI',
+        description: 'Generating investor-grade insights...'
+      });
+
+      // Call the analyze-content edge function with real AI
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('analyze-content', {
+        body: {
+          content: contentForAI,
+          contentType: 'pitch-deck',
+          fileName: selectedFile.name
+        }
+      });
+
+      if (error) {
+        console.error('Analysis error:', error);
+        if (error.message?.includes('402')) {
+          toast({ title: 'Payment Required', description: 'Your AI credit balance is empty.', variant: 'destructive' });
+        } else if (error.message?.includes('429')) {
+          toast({ title: 'Rate limited', description: 'Too many requests. Please try again in a moment.', variant: 'destructive' });
+        } else {
+          toast({ title: 'Analysis Error', description: 'Failed to analyze pitch deck. Using fallback if available.', variant: 'destructive' });
+        }
+        if (!data) {
+          setIsValidating(false);
+          return;
+        }
+      }
+
+      // Map AI analysis to validation results (unchanged)
+      const detailedResults: DetailedValidationResult[] = [];
+
+      if (data?.pitchDeckAnalysis) {
+        const analysis = data.pitchDeckAnalysis;
+        detailedResults.push({
+          section: 'Problem Statement',
+          status: analysis.problemStatement.score > 75 ? 'complete' : analysis.problemStatement.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.problemStatement.score,
+          feedback: analysis.problemStatement.feedback,
+          detailedFeedback: {
+            strengths: analysis.problemStatement.keyInsights.filter((_: any, i: number) => i < 2),
+            weaknesses: analysis.problemStatement.keyInsights.filter((_: any, i: number) => i >= 2),
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('problem')).map((s: any) => s.suggestion) || [],
+            benchmarks: `Industry average: ${data.industryBenchmarks?.clarityIndustryAvg || 70}/100`,
+            industryComparison: `Your problem statement ranks at ${data.industryBenchmarks?.percentileRanking || 50}th percentile`
+          },
+          category: analysis.problemStatement.score < 60 ? 'critical' : analysis.problemStatement.score < 75 ? 'important' : 'minor'
+        });
+
+        detailedResults.push({
+          section: 'Solution',
+          status: analysis.solutionClarity.score > 75 ? 'complete' : analysis.solutionClarity.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.solutionClarity.score,
+          feedback: analysis.solutionClarity.feedback,
+          detailedFeedback: {
+            strengths: analysis.solutionClarity.keyInsights.filter((_: any, i: number) => i < 3),
+            weaknesses: analysis.solutionClarity.keyInsights.filter((_: any, i: number) => i >= 3),
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('solution')).map((s: any) => s.suggestion) || [],
+            benchmarks: `Industry average: ${data.industryBenchmarks?.engagementIndustryAvg || 72}/100`,
+            industryComparison: data.industryBenchmarks?.competitiveAdvantage || 'Competitive positioning analysis'
+          },
+          category: 'critical'
+        });
+
+        detailedResults.push({
+          section: 'Market Size',
+          status: analysis.marketOpportunity.score > 75 ? 'complete' : analysis.marketOpportunity.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.marketOpportunity.score,
+          feedback: analysis.marketOpportunity.feedback,
+          detailedFeedback: {
+            strengths: [analysis.marketOpportunity.marketSize, analysis.marketOpportunity.targetAudience],
+            weaknesses: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('market')).slice(0, 2).map((s: any) => s.suggestion) || [],
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('market')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Successful pitch decks show TAM >$1B, SAM >$100M',
+            industryComparison: `Market sizing at ${analysis.marketOpportunity.score}/100`
+          },
+          category: 'critical'
+        });
+
+        detailedResults.push({
+          section: 'Business Model',
+          status: analysis.businessModel.score > 75 ? 'complete' : analysis.businessModel.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.businessModel.score,
+          feedback: analysis.businessModel.feedback,
+          detailedFeedback: {
+            strengths: analysis.businessModel.revenueStreams,
+            weaknesses: [analysis.businessModel.scalability],
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('business') || s.category.toLowerCase().includes('revenue')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Top-tier decks show CLV:CAC ratio of 3:1 or higher',
+            industryComparison: `Business model clarity: ${analysis.businessModel.score}/100`
+          },
+          category: 'important'
+        });
+
+        detailedResults.push({
+          section: 'Traction',
+          status: analysis.traction.score > 75 ? 'complete' : analysis.traction.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.traction.score,
+          feedback: analysis.traction.feedback,
+          detailedFeedback: {
+            strengths: analysis.traction.metrics,
+            weaknesses: [analysis.traction.momentum],
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('traction') || s.category.toLowerCase().includes('metric')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Strong traction shows >20% MoM growth, >90% retention',
+            industryComparison: `Traction strength: ${analysis.traction.score}/100`
+          },
+          category: 'critical'
+        });
+
+        detailedResults.push({
+          section: 'Team',
+          status: analysis.team.score > 75 ? 'complete' : analysis.team.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.team.score,
+          feedback: analysis.team.feedback,
+          detailedFeedback: {
+            strengths: analysis.team.strengths,
+            weaknesses: analysis.team.gaps,
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('team')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Top teams have 15+ years combined domain experience',
+            industryComparison: `Team strength: ${analysis.team.score}/100`
+          },
+          category: 'minor'
+        });
+
+        detailedResults.push({
+          section: 'Financials',
+          status: analysis.financials.score > 75 ? 'complete' : analysis.financials.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.financials.score,
+          feedback: analysis.financials.feedback,
+          detailedFeedback: {
+            strengths: analysis.financials.assumptions,
+            weaknesses: [analysis.financials.projectionQuality],
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('financial')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Investor-ready financials include 3 scenarios with IRR >25%',
+            industryComparison: `Financial detail: ${analysis.financials.score}/100`
+          },
+          category: 'critical'
+        });
+
+        detailedResults.push({
+          section: 'Funding Ask',
+          status: analysis.askAndExit.score > 75 ? 'complete' : analysis.askAndExit.score > 50 ? 'incomplete' : 'missing',
+          score: analysis.askAndExit.score,
+          feedback: analysis.askAndExit.feedback,
+          detailedFeedback: {
+            strengths: [analysis.askAndExit.clarity, analysis.askAndExit.alignment],
+            weaknesses: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('funding') || s.category.toLowerCase().includes('ask')).slice(0, 2).map((s: any) => s.suggestion) || [],
+            improvements: data.suggestions?.filter((s: any) => s.category.toLowerCase().includes('funding') || s.category.toLowerCase().includes('ask')).map((s: any) => s.suggestion) || [],
+            benchmarks: 'Clear asks show 18-24 month runway with specific milestones',
+            industryComparison: `Funding ask clarity: ${analysis.askAndExit.score}/100`
+          },
+          category: 'critical'
+        });
+      } else {
+        const sections = ['Problem Statement', 'Solution', 'Market Size', 'Business Model', 'Traction', 'Team', 'Financials', 'Funding Ask'];
+        sections.forEach((section, index) => {
+          const baseScore = data?.overallScore || 70;
+          const variance = (Math.random() - 0.5) * 20;
+          const score = Math.max(30, Math.min(100, baseScore + variance));
+          detailedResults.push({
+            section,
+            status: score > 75 ? 'complete' : score > 50 ? 'incomplete' : 'missing',
+            score: Math.round(score),
+            feedback: data?.suggestions?.[index]?.suggestion || `${section} analysis completed`,
+            detailedFeedback: {
+              strengths: data?.strengths?.slice(0, 2).map((s: any) => s.description) || [`${section} is well-structured`],
+              weaknesses: [`More detail needed in ${section.toLowerCase()}`],
+              improvements: data?.suggestions?.slice(index, index + 2).map((s: any) => s.suggestion) || [`Enhance ${section.toLowerCase()} with more data`],
+              benchmarks: `Industry average: ${baseScore}/100`,
+              industryComparison: `Your ${section.toLowerCase()} ranks at ${data?.industryBenchmarks?.percentileRanking || 50}th percentile`
+            },
+            category: index < 3 ? 'critical' : index < 6 ? 'important' : 'minor'
+          });
+        });
+      }
+
+      setResults(detailedResults);
+      const avgScore = detailedResults.length > 0
+        ? detailedResults.reduce((sum, result) => sum + result.score, 0) / detailedResults.length
+        : data?.overallScore || 70;
+      setOverallScore(Math.round(avgScore));
+      setIsValidating(false);
+
+      toast({
+        title: 'AI Analysis Complete',
+        description: data?.pitchDeckAnalysis
+          ? 'Your pitch deck has been analyzed by AI with detailed feedback.'
+          : 'Analysis completed. Note: quota limits may apply.'
+      });
     } catch (error) {
       console.error('Validation error:', error);
       toast({
