@@ -39,28 +39,37 @@ const InterestRequests: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Fetch contact requests
+      const { data: contactData, error: contactError } = await supabase
         .from('contact_requests')
-        .select(`
-          *,
-          profiles!contact_requests_startup_user_id_fkey (
-            full_name,
-            company_name,
-            email
-          ),
-          scores (
-            total_score,
-            business_idea,
-            team,
-            traction,
-            financials
-          )
-        `)
+        .select('*')
         .eq('investor_user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setRequests((data || []) as any);
+      if (contactError) throw contactError;
+
+      // Fetch profiles and scores for all startups
+      const startupUserIds = contactData?.map(req => req.startup_user_id) || [];
+      
+      const [{ data: profiles }, { data: scores }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, full_name, company_name, email')
+          .in('id', startupUserIds),
+        supabase
+          .from('scores')
+          .select('user_id, total_score, business_idea, team, traction, financials')
+          .in('user_id', startupUserIds)
+      ]);
+
+      // Combine the data
+      const requestsWithDetails = contactData?.map(request => ({
+        ...request,
+        profiles: profiles?.find(p => p.id === request.startup_user_id),
+        scores: scores?.filter(s => s.user_id === request.startup_user_id)
+      })) || [];
+
+      setRequests(requestsWithDetails as any);
     } catch (error: any) {
       toast({
         title: 'Error loading requests',
