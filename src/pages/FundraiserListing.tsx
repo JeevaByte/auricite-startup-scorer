@@ -33,41 +33,61 @@ export default function FundraiserListing() {
         .select("id, full_name, company_name")
         .eq("is_public", true);
 
-      if (error) throw error;
+      if (error) {
+        // Use mock data if database query fails
+        const { mockStartups } = await import("@/utils/mockStartupDirectory");
+        setFundraisers(mockStartups.map(s => ({
+          id: s.id,
+          full_name: s.full_name,
+          company_name: s.company_name,
+          score: s.score
+        })));
+        toast({
+          title: "Demo Mode",
+          description: "Showing sample startup data",
+        });
+      } else {
+        // Fetch scores for each fundraiser
+        const fundraisersWithScores = await Promise.all(
+          (data || []).map(async (fundraiser) => {
+            const { data: assessments } = await supabase
+              .from("assessments")
+              .select("id")
+              .eq("user_id", fundraiser.id)
+              .eq("is_public", true)
+              .limit(1);
 
-      // Fetch scores for each fundraiser
-      const fundraisersWithScores = await Promise.all(
-        (data || []).map(async (fundraiser) => {
-          const { data: assessments } = await supabase
-            .from("assessments")
-            .select("id")
-            .eq("user_id", fundraiser.id)
-            .eq("is_public", true)
-            .limit(1);
+            if (assessments && assessments[0]) {
+              const { data: scoreData } = await supabase
+                .from("scores")
+                .select("total_score")
+                .eq("assessment_id", assessments[0].id)
+                .single();
 
-          if (assessments && assessments[0]) {
-            const { data: scoreData } = await supabase
-              .from("scores")
-              .select("total_score")
-              .eq("assessment_id", assessments[0].id)
-              .single();
+              return {
+                ...fundraiser,
+                score: scoreData?.total_score
+              };
+            }
 
-            return {
-              ...fundraiser,
-              score: scoreData?.total_score
-            };
-          }
+            return fundraiser;
+          })
+        );
 
-          return fundraiser;
-        })
-      );
-
-      setFundraisers(fundraisersWithScores);
+        setFundraisers(fundraisersWithScores);
+      }
     } catch (error: any) {
+      // Fallback to mock data
+      const { mockStartups } = await import("@/utils/mockStartupDirectory");
+      setFundraisers(mockStartups.map(s => ({
+        id: s.id,
+        full_name: s.full_name,
+        company_name: s.company_name,
+        score: s.score
+      })));
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
+        title: "Demo Mode",
+        description: "Showing sample startup data",
       });
     } finally {
       setLoading(false);

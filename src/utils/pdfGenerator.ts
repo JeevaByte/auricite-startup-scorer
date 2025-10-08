@@ -27,11 +27,11 @@ export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
     container.style.top = '0';
     container.style.width = '794px'; // A4 width in pixels
     container.style.backgroundColor = 'white';
-    container.style.padding = '40px';
-    container.style.fontFamily = 'Arial, sans-serif';
+    container.style.padding = '50px 40px';
+    container.style.fontFamily = 'Inter, system-ui, sans-serif';
     container.style.fontSize = '14px';
-    container.style.lineHeight = '1.6';
-    container.style.color = '#333';
+    container.style.lineHeight = '1.7';
+    container.style.color = '#1f2937';
     
     // Generate HTML content for PDF
     container.innerHTML = generatePDFContent(data);
@@ -43,7 +43,7 @@ export const generatePDFReport = async (data: PDFReportData): Promise<void> => {
 
     // Convert HTML to canvas with better settings for multi-page content
     const canvas = await html2canvas(container, {
-      scale: 1.5,
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',

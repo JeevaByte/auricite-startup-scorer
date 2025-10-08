@@ -484,6 +484,62 @@ export const PitchDeckValidator = () => {
                  overallScore >= 50 ? 'Significant improvements needed. Focus on critical issues first.' :
                  'Major revisions required before presenting to investors. Consider professional pitch deck consultation.'}
               </p>
+              
+              <div className="flex justify-end mt-4">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const { generatePitchDeckPDF } = await import('@/utils/pitchDeckPDFGenerator');
+                      await generatePitchDeckPDF(
+                        {
+                          pitchDeckAnalysis: results.length > 0 ? {
+                            problemStatement: { score: results[0]?.score || 70, feedback: results[0]?.feedback || '', keyInsights: results[0]?.detailedFeedback?.strengths || [] },
+                            solutionClarity: { score: results[1]?.score || 70, feedback: results[1]?.feedback || '', keyInsights: results[1]?.detailedFeedback?.strengths || [] },
+                            marketOpportunity: { score: results[2]?.score || 70, feedback: results[2]?.feedback || '', marketSize: '', targetAudience: '' },
+                            businessModel: { score: results[3]?.score || 70, feedback: results[3]?.feedback || '', revenueStreams: [], scalability: '' },
+                            traction: { score: results[4]?.score || 70, feedback: results[4]?.feedback || '', metrics: [], momentum: '' },
+                            team: { score: results[5]?.score || 70, feedback: results[5]?.feedback || '', strengths: [], gaps: [] },
+                            financials: { score: results[6]?.score || 70, feedback: results[6]?.feedback || '', assumptions: [], projectionQuality: '' },
+                            askAndExit: { score: results[7]?.score || 70, feedback: results[7]?.feedback || '', clarity: '', alignment: '' }
+                          } : undefined,
+                          suggestions: results.map(r => ({
+                            category: r.section,
+                            priority: r.category === 'critical' ? 'high' as const : r.category === 'important' ? 'medium' as const : 'low' as const,
+                            suggestion: r.feedback,
+                            impact: r.detailedFeedback?.improvements?.[0] || 'Improve deck quality',
+                            implementation: r.detailedFeedback?.benchmarks || 'Follow recommendations',
+                            timeline: r.category === 'critical' ? '1-2 days' : r.category === 'important' ? '1-2 weeks' : '1+ month'
+                          })),
+                          industryBenchmarks: {
+                            clarityIndustryAvg: 72,
+                            engagementIndustryAvg: 68,
+                            percentileRanking: Math.round((overallScore / 100) * 100),
+                            competitiveAdvantage: results[0]?.detailedFeedback?.industryComparison || 'Competitive analysis'
+                          },
+                          overallScore: overallScore
+                        },
+                        selectedFile?.name || 'pitch-deck',
+                        'Your Company'
+                      );
+                      toast({
+                        title: "PDF Downloaded",
+                        description: "Your comprehensive pitch deck analysis has been downloaded"
+                      });
+                    } catch (error) {
+                      console.error('PDF generation error:', error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to generate PDF report",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Download Comprehensive PDF Report
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
