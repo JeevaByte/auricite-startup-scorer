@@ -79,6 +79,102 @@ export type Database = {
         }
         Relationships: []
       }
+      advanced_scores: {
+        Row: {
+          assessment_id: string | null
+          calibrated_score: number | null
+          confidence: number | null
+          contributing_phrases: Json | null
+          created_at: string
+          embedding_score: number | null
+          explanations: Json
+          extracted_features_id: string | null
+          final_score: number
+          id: string
+          innovation_score: number | null
+          key_strengths: Json | null
+          key_weaknesses: Json | null
+          llm_model: string | null
+          llm_score: number | null
+          llm_temperature: number | null
+          market_score: number | null
+          ml_model_score: number | null
+          model_version: string | null
+          processing_time_ms: number | null
+          scoring_version: string
+          team_score: number | null
+          traction_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          calibrated_score?: number | null
+          confidence?: number | null
+          contributing_phrases?: Json | null
+          created_at?: string
+          embedding_score?: number | null
+          explanations?: Json
+          extracted_features_id?: string | null
+          final_score: number
+          id?: string
+          innovation_score?: number | null
+          key_strengths?: Json | null
+          key_weaknesses?: Json | null
+          llm_model?: string | null
+          llm_score?: number | null
+          llm_temperature?: number | null
+          market_score?: number | null
+          ml_model_score?: number | null
+          model_version?: string | null
+          processing_time_ms?: number | null
+          scoring_version: string
+          team_score?: number | null
+          traction_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          calibrated_score?: number | null
+          confidence?: number | null
+          contributing_phrases?: Json | null
+          created_at?: string
+          embedding_score?: number | null
+          explanations?: Json
+          extracted_features_id?: string | null
+          final_score?: number
+          id?: string
+          innovation_score?: number | null
+          key_strengths?: Json | null
+          key_weaknesses?: Json | null
+          llm_model?: string | null
+          llm_score?: number | null
+          llm_temperature?: number | null
+          market_score?: number | null
+          ml_model_score?: number | null
+          model_version?: string | null
+          processing_time_ms?: number | null
+          scoring_version?: string
+          team_score?: number | null
+          traction_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advanced_scores_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advanced_scores_extracted_features_id_fkey"
+            columns: ["extracted_features_id"]
+            isOneToOne: false
+            referencedRelation: "extracted_features"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_responses: {
         Row: {
           assessment_data: Json
@@ -510,6 +606,42 @@ export type Database = {
         }
         Relationships: []
       }
+      benchmark_startups: {
+        Row: {
+          assessment_data: Json
+          category: string | null
+          created_at: string
+          description: string | null
+          expected_score_range: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_data: Json
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          expected_score_range: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_data?: Json
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          expected_score_range?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           assessment_id: string | null
@@ -683,6 +815,72 @@ export type Database = {
         }
         Relationships: []
       }
+      drift_monitoring: {
+        Row: {
+          baseline_value: number | null
+          current_value: number | null
+          detection_date: string
+          drift_magnitude: number | null
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          threshold_exceeded: boolean | null
+        }
+        Insert: {
+          baseline_value?: number | null
+          current_value?: number | null
+          detection_date?: string
+          drift_magnitude?: number | null
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type: string
+          threshold_exceeded?: boolean | null
+        }
+        Update: {
+          baseline_value?: number | null
+          current_value?: number | null
+          detection_date?: string
+          drift_magnitude?: number | null
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          threshold_exceeded?: boolean | null
+        }
+        Relationships: []
+      }
+      embedding_cache: {
+        Row: {
+          content_hash: string
+          content_type: string
+          created_at: string
+          embedding: string | null
+          id: string
+          last_accessed: string
+          model_name: string
+        }
+        Insert: {
+          content_hash: string
+          content_type: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          last_accessed?: string
+          model_name: string
+        }
+        Update: {
+          content_hash?: string
+          content_type?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          last_accessed?: string
+          model_name?: string
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           context: Json | null
@@ -733,6 +931,83 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      extracted_features: {
+        Row: {
+          assessment_id: string | null
+          confidence_score: number | null
+          created_at: string
+          extraction_version: string
+          funding_amount: number | null
+          funding_per_employee: number | null
+          funding_round: string | null
+          growth_momentum: number | null
+          growth_rate: number | null
+          id: string
+          locations: Json | null
+          market_size: number | null
+          organizations: Json | null
+          persons: Json | null
+          revenue: number | null
+          revenue_per_user: number | null
+          team_size: number | null
+          user_id: string | null
+          users: number | null
+          years_experience: number | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          extraction_version: string
+          funding_amount?: number | null
+          funding_per_employee?: number | null
+          funding_round?: string | null
+          growth_momentum?: number | null
+          growth_rate?: number | null
+          id?: string
+          locations?: Json | null
+          market_size?: number | null
+          organizations?: Json | null
+          persons?: Json | null
+          revenue?: number | null
+          revenue_per_user?: number | null
+          team_size?: number | null
+          user_id?: string | null
+          users?: number | null
+          years_experience?: number | null
+        }
+        Update: {
+          assessment_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          extraction_version?: string
+          funding_amount?: number | null
+          funding_per_employee?: number | null
+          funding_round?: string | null
+          growth_momentum?: number | null
+          growth_rate?: number | null
+          id?: string
+          locations?: Json | null
+          market_size?: number | null
+          organizations?: Json | null
+          persons?: Json | null
+          revenue?: number | null
+          revenue_per_user?: number | null
+          team_size?: number | null
+          user_id?: string | null
+          users?: number | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extracted_features_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       failed_login_attempts: {
         Row: {
@@ -1516,6 +1791,53 @@ export type Database = {
           },
         ]
       }
+      score_variance_tests: {
+        Row: {
+          benchmark_startup_id: string | null
+          created_at: string
+          id: string
+          mean_score: number | null
+          passed: boolean | null
+          scores: Json
+          scoring_version: string
+          std_deviation: number | null
+          test_run_id: string
+          variance: number | null
+        }
+        Insert: {
+          benchmark_startup_id?: string | null
+          created_at?: string
+          id?: string
+          mean_score?: number | null
+          passed?: boolean | null
+          scores: Json
+          scoring_version: string
+          std_deviation?: number | null
+          test_run_id: string
+          variance?: number | null
+        }
+        Update: {
+          benchmark_startup_id?: string | null
+          created_at?: string
+          id?: string
+          mean_score?: number | null
+          passed?: boolean | null
+          scores?: Json
+          scoring_version?: string
+          std_deviation?: number | null
+          test_run_id?: string
+          variance?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_variance_tests_benchmark_startup_id_fkey"
+            columns: ["benchmark_startup_id"]
+            isOneToOne: false
+            referencedRelation: "benchmark_startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       score_weights: {
         Row: {
           created_at: string | null
@@ -1589,6 +1911,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scores_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scoring_audit_log: {
+        Row: {
+          assessment_id: string | null
+          created_at: string
+          error_message: string | null
+          event_status: string
+          event_type: string
+          execution_time_ms: number | null
+          id: string
+          input_data: Json | null
+          model_version: string | null
+          output_data: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_status: string
+          event_type: string
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          model_version?: string | null
+          output_data?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_status?: string
+          event_type?: string
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          model_version?: string | null
+          output_data?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scoring_audit_log_assessment_id_fkey"
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "assessments"
@@ -2214,6 +2586,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       cleanup_old_security_events: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2258,6 +2634,22 @@ export type Database = {
         Args: { access_types: string[]; user_email: string }
         Returns: string
       }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
       has_paid_access: {
         Args: { access_type_param: string; user_uuid: string }
         Returns: boolean
@@ -2266,6 +2658,22 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_feature_enabled: {
         Args: { _flag_key: string; _user_id?: string }
         Returns: boolean
@@ -2273,6 +2681,26 @@ export type Database = {
       is_organization_admin: {
         Args: { org_id: string; user_uuid: string }
         Returns: boolean
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
       }
       list_unindexed_foreign_keys: {
         Args: { table_name: string }
@@ -2289,6 +2717,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
       update_auth_settings: {
         Args: { config: Json }
         Returns: Json
@@ -2299,6 +2739,30 @@ export type Database = {
           errors: string[]
           is_valid: boolean
         }[]
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {

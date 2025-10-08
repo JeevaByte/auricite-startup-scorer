@@ -36,6 +36,9 @@ verify_jwt = true
 [functions.score-assessment]
 verify_jwt = true
 
+[functions.advanced-scoring]
+verify_jwt = true
+
 [functions.score-engine]
 verify_jwt = true
 

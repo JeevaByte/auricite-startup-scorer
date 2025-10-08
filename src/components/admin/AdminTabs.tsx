@@ -16,6 +16,8 @@ import { DonationsTable } from './DonationsTable';
 import { ZohoSyncManager } from './ZohoSyncManager';
 import { InvestorVerificationConsole } from './InvestorVerificationConsole';
 import { InvestorCSVImporter } from './InvestorCSVImporter';
+import BenchmarkManager from './BenchmarkManager';
+import DriftMonitoring from './DriftMonitoring';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
 import { FeatureFlagsManager } from './FeatureFlagsManager';
 import { ErrorMonitoring } from './ErrorMonitoring';
@@ -40,7 +42,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-13">
+      <TabsList className="grid w-full grid-cols-14">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
@@ -58,6 +60,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="branding">Branding</TabsTrigger>
         <TabsTrigger value="reports">Reports</TabsTrigger>
         <TabsTrigger value="health">Health</TabsTrigger>
+        <TabsTrigger value="ml-ops">ML Ops</TabsTrigger>
       </TabsList>
 
       <TabsContent value="dashboard">
@@ -154,6 +157,13 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="health">
         <SystemHealthMonitor />
+      </TabsContent>
+
+      <TabsContent value="ml-ops">
+        <div className="space-y-6">
+          <BenchmarkManager />
+          <DriftMonitoring />
+        </div>
       </TabsContent>
     </Tabs>
   );
