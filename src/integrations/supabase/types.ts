@@ -665,6 +665,78 @@ export type Database = {
         }
         Relationships: []
       }
+      benchmark_metrics: {
+        Row: {
+          business_idea_p25: number
+          business_idea_p50: number
+          business_idea_p75: number
+          cac_ltv_benchmark: number | null
+          created_at: string
+          financials_p25: number
+          financials_p50: number
+          financials_p75: number
+          id: string
+          last_updated: string
+          retention_benchmark: number | null
+          revenue_growth_benchmark: number | null
+          sample_size: number
+          sector: string
+          stage: string
+          team_p25: number
+          team_p50: number
+          team_p75: number
+          traction_p25: number
+          traction_p50: number
+          traction_p75: number
+        }
+        Insert: {
+          business_idea_p25: number
+          business_idea_p50: number
+          business_idea_p75: number
+          cac_ltv_benchmark?: number | null
+          created_at?: string
+          financials_p25: number
+          financials_p50: number
+          financials_p75: number
+          id?: string
+          last_updated?: string
+          retention_benchmark?: number | null
+          revenue_growth_benchmark?: number | null
+          sample_size?: number
+          sector: string
+          stage: string
+          team_p25: number
+          team_p50: number
+          team_p75: number
+          traction_p25: number
+          traction_p50: number
+          traction_p75: number
+        }
+        Update: {
+          business_idea_p25?: number
+          business_idea_p50?: number
+          business_idea_p75?: number
+          cac_ltv_benchmark?: number | null
+          created_at?: string
+          financials_p25?: number
+          financials_p50?: number
+          financials_p75?: number
+          id?: string
+          last_updated?: string
+          retention_benchmark?: number | null
+          revenue_growth_benchmark?: number | null
+          sample_size?: number
+          sector?: string
+          stage?: string
+          team_p25?: number
+          team_p50?: number
+          team_p75?: number
+          traction_p25?: number
+          traction_p50?: number
+          traction_p75?: number
+        }
+        Relationships: []
+      }
       benchmark_startups: {
         Row: {
           assessment_data: Json
@@ -2023,6 +2095,89 @@ export type Database = {
           },
         ]
       }
+      score_submetrics: {
+        Row: {
+          advisor_quality: number | null
+          burn_rate_efficiency: number | null
+          cac_ltv_ratio: number | null
+          category: string
+          created_at: string
+          domain_expertise: number | null
+          hiring_velocity: number | null
+          id: string
+          innovation_index: number | null
+          market_size_score: number | null
+          product_differentiation: number | null
+          retention_rate: number | null
+          revenue_growth_pct: number | null
+          revenue_quality: number | null
+          runway_adequacy: number | null
+          scalability_score: number | null
+          score_id: string
+          team_completeness: number | null
+          unit_economics: number | null
+          updated_at: string
+          user_acquisition_rate: number | null
+          user_id: string
+        }
+        Insert: {
+          advisor_quality?: number | null
+          burn_rate_efficiency?: number | null
+          cac_ltv_ratio?: number | null
+          category: string
+          created_at?: string
+          domain_expertise?: number | null
+          hiring_velocity?: number | null
+          id?: string
+          innovation_index?: number | null
+          market_size_score?: number | null
+          product_differentiation?: number | null
+          retention_rate?: number | null
+          revenue_growth_pct?: number | null
+          revenue_quality?: number | null
+          runway_adequacy?: number | null
+          scalability_score?: number | null
+          score_id: string
+          team_completeness?: number | null
+          unit_economics?: number | null
+          updated_at?: string
+          user_acquisition_rate?: number | null
+          user_id: string
+        }
+        Update: {
+          advisor_quality?: number | null
+          burn_rate_efficiency?: number | null
+          cac_ltv_ratio?: number | null
+          category?: string
+          created_at?: string
+          domain_expertise?: number | null
+          hiring_velocity?: number | null
+          id?: string
+          innovation_index?: number | null
+          market_size_score?: number | null
+          product_differentiation?: number | null
+          retention_rate?: number | null
+          revenue_growth_pct?: number | null
+          revenue_quality?: number | null
+          runway_adequacy?: number | null
+          scalability_score?: number | null
+          score_id?: string
+          team_completeness?: number | null
+          unit_economics?: number | null
+          updated_at?: string
+          user_acquisition_rate?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_submetrics_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       score_variance_tests: {
         Row: {
           benchmark_startup_id: string | null
@@ -2066,6 +2221,62 @@ export type Database = {
             columns: ["benchmark_startup_id"]
             isOneToOne: false
             referencedRelation: "benchmark_startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_verifications: {
+        Row: {
+          component: string
+          confidence_boost: number
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          score_id: string
+          updated_at: string
+          user_id: string
+          verification_date: string
+          verification_notes: string | null
+          verification_type: string
+          verified_by: string | null
+        }
+        Insert: {
+          component: string
+          confidence_boost?: number
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          score_id: string
+          updated_at?: string
+          user_id: string
+          verification_date?: string
+          verification_notes?: string | null
+          verification_type: string
+          verified_by?: string | null
+        }
+        Update: {
+          component?: string
+          confidence_boost?: number
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          score_id?: string
+          updated_at?: string
+          user_id?: string
+          verification_date?: string
+          verification_notes?: string | null
+          verification_type?: string
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_verifications_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "scores"
             referencedColumns: ["id"]
           },
         ]
