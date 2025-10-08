@@ -9,14 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 
 // PDF & PPTX text extraction for real AI analysis
 import * as pdfjsLib from 'pdfjs-dist';
-// Use worker from cdn/bundled asset via Vite ?url import
-// @ts-ignore - pdfjs worker is a JS asset
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import JSZip from 'jszip';
 
-// Configure pdf.js worker
-// @ts-ignore
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// Configure pdf.js worker from CDN
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`;
 
 interface DetailedValidationResult {
   section: string;
