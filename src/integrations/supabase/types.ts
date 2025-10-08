@@ -175,6 +175,65 @@ export type Database = {
           },
         ]
       }
+      ai_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_responses: {
         Row: {
           assessment_data: Json
@@ -770,6 +829,78 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_audit: {
+        Row: {
+          action: string
+          created_at: string
+          document_id: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          document_id: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_access_requests: {
+        Row: {
+          created_at: string
+          document_id: string | null
+          id: string
+          investor_user_id: string
+          message: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          startup_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          investor_user_id: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          startup_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          investor_user_id?: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          startup_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number
@@ -1179,6 +1310,27 @@ export type Database = {
           },
         ]
       }
+      investor_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       investor_matches: {
         Row: {
           assessment_id: string
@@ -1226,6 +1378,47 @@ export type Database = {
             columns: ["classification_id"]
             isOneToOne: false
             referencedRelation: "investor_classifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          parent_message_id: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          parent_message_id?: string | null
+          recipient_id: string
+          sender_id: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          parent_message_id?: string | null
+          recipient_id?: string
+          sender_id?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "investor_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -1401,6 +1594,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investor_syndicates: {
+        Row: {
+          created_at: string
+          description: string | null
+          focus_sectors: string[] | null
+          id: string
+          is_public: boolean | null
+          lead_investor_id: string
+          name: string
+          ticket_max: number | null
+          ticket_min: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          focus_sectors?: string[] | null
+          id?: string
+          is_public?: boolean | null
+          lead_investor_id: string
+          name: string
+          ticket_max?: number | null
+          ticket_min?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          focus_sectors?: string[] | null
+          id?: string
+          is_public?: boolean | null
+          lead_investor_id?: string
+          name?: string
+          ticket_max?: number | null
+          ticket_min?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {
@@ -2102,6 +2334,39 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       startup_clusters: {
         Row: {
           assessment_id: string | null
@@ -2190,6 +2455,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      syndicate_members: {
+        Row: {
+          id: string
+          investor_id: string
+          joined_at: string
+          role: string
+          syndicate_id: string
+        }
+        Insert: {
+          id?: string
+          investor_id: string
+          joined_at?: string
+          role?: string
+          syndicate_id: string
+        }
+        Update: {
+          id?: string
+          investor_id?: string
+          joined_at?: string
+          role?: string
+          syndicate_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syndicate_members_syndicate_id_fkey"
+            columns: ["syndicate_id"]
+            isOneToOne: false
+            referencedRelation: "investor_syndicates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_health_metrics: {
         Row: {
@@ -2621,6 +2918,12 @@ export type Database = {
       get_auth_settings: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_managed_orgs_for_current_user: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          organization_id: string
+        }[]
       }
       get_user_organization_role: {
         Args: { org_id: string; user_uuid: string }

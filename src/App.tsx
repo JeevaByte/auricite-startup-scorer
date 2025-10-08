@@ -28,6 +28,8 @@ import PortfolioPage from "./pages/investor/PortfolioPage";
 import MatchesPage from "./pages/investor/MatchesPage";
 import AnalyticsPage from "./pages/investor/AnalyticsPage";
 import ProfilePage from "./pages/investor/ProfilePage";
+import AIChatPage from "./pages/investor/AIChatPage";
+import CollaborationPage from "./pages/investor/CollaborationPage";
 import InvestorOnboarding from "./pages/InvestorOnboarding";
 import InvestorListing from "./pages/InvestorListing";
 import InvestorProfilePage from "./pages/InvestorProfilePage";
@@ -99,6 +101,8 @@ const App = () => (
                   <Route path="/investor/matches" element={<InvestorLayout><MatchesPage /></InvestorLayout>} />
                   <Route path="/investor/analytics" element={<InvestorLayout><AnalyticsPage /></InvestorLayout>} />
                   <Route path="/investor/profile" element={<InvestorLayout><ProfilePage /></InvestorLayout>} />
+                  <Route path="/investor/ai-chat" element={<InvestorLayout><AIChatPage /></InvestorLayout>} />
+                  <Route path="/investor/collaboration" element={<InvestorLayout><CollaborationPage /></InvestorLayout>} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
                   <Route path="/investor/:id" element={<InvestorProfilePage />} />
