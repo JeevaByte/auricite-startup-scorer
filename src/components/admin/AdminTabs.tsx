@@ -19,6 +19,10 @@ import { InvestorCSVImporter } from './InvestorCSVImporter';
 import { DashboardStats as DashboardStatsType, AssessmentWithUser } from '@/types/admin';
 import { FeatureFlagsManager } from './FeatureFlagsManager';
 import { ErrorMonitoring } from './ErrorMonitoring';
+import { OrganizationManager } from './OrganizationManager';
+import { TenantBrandingManager } from './TenantBrandingManager';
+import { ScheduledReportsManager } from './ScheduledReportsManager';
+import { SystemHealthMonitor } from './SystemHealthMonitor';
 
 interface AdminTabsProps {
   stats: DashboardStatsType;
@@ -50,6 +54,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="audit">Audit Trail</TabsTrigger>
         <TabsTrigger value="features">Feature Flags</TabsTrigger>
         <TabsTrigger value="errors">Error Monitor</TabsTrigger>
+        <TabsTrigger value="organizations">Organizations</TabsTrigger>
+        <TabsTrigger value="branding">Branding</TabsTrigger>
+        <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsTrigger value="health">Health</TabsTrigger>
       </TabsList>
 
       <TabsContent value="dashboard">
@@ -126,6 +134,22 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="errors">
         <ErrorMonitoring />
+      </TabsContent>
+
+      <TabsContent value="organizations">
+        <OrganizationManager />
+      </TabsContent>
+
+      <TabsContent value="branding">
+        <TenantBrandingManager />
+      </TabsContent>
+
+      <TabsContent value="reports">
+        <ScheduledReportsManager />
+      </TabsContent>
+
+      <TabsContent value="health">
+        <SystemHealthMonitor />
       </TabsContent>
     </Tabs>
   );
