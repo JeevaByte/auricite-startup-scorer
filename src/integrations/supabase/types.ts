@@ -3140,6 +3140,12 @@ export type Database = {
         Args: { org_id: string; user_uuid: string }
         Returns: string
       }
+      get_user_organizations: {
+        Args: { _user_id: string }
+        Returns: {
+          organization_id: string
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: string
@@ -3187,6 +3193,10 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       is_feature_enabled: {
         Args: { _flag_key: string; _user_id?: string }
