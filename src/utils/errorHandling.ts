@@ -136,16 +136,6 @@ export const createRobustAIErrorHandler = () => {
       console.warn(`AI recommendations failed for ${section}, using fallback`);
       return fallbackResponses.recommendations[section as keyof typeof fallbackResponses.recommendations] || 
              ["Focus on strengthening fundamentals in this area", "Seek expert advice for targeted improvements"];
-    },
-    
-    isAPIHealthy: async () => {
-      try {
-        // Simple health check - could be expanded
-        const response = await fetch('/api/health-check');
-        return response.ok;
-      } catch {
-        return false;
-      }
     }
   };
 };

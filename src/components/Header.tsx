@@ -21,7 +21,9 @@ export const Header: React.FC = () => {
               <img 
                 src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" 
                 alt="InvestmentReady" 
-                className="h-10 w-10 transition-transform group-hover:scale-105" 
+                width="40"
+                height="40"
+                className="h-10 w-10 object-contain transition-transform group-hover:scale-105" 
               />
               <div className="absolute inset-0 rounded-lg bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
             </div>

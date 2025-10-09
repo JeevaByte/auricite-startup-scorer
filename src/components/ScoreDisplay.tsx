@@ -241,7 +241,7 @@ export const LegacyScoreDisplay = ({ result, assessmentData, onRestart, badges, 
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <img src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" alt="Investment Logo" className="h-12 w-12" loading="lazy" />
+          <img src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" alt="Investment Logo" width="48" height="48" className="h-12 w-12 object-contain" loading="lazy" />
           <h1 className="text-3xl font-bold text-gray-900">Investment Readiness Score Card</h1>
         </div>
         <p className="text-lg text-gray-600">Here's how your startup scored across key investment criteria</p>
