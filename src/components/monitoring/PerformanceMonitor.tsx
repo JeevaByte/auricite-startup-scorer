@@ -18,6 +18,12 @@ export const PerformanceMonitor = () => {
   });
 
   useEffect(() => {
+    // Defer performance monitoring until after page is interactive
+    // This prevents blocking the critical rendering path
+    const initDelay = setTimeout(() => {
+      observePerformance();
+    }, 2000); // Delay by 2 seconds to allow critical resources to load
+
     // Monitor Core Web Vitals
     const observePerformance = () => {
       // First Contentful Paint
@@ -111,23 +117,30 @@ export const PerformanceMonitor = () => {
       localStorage.setItem('performance_metrics', JSON.stringify(storedData));
 
       // Send to Supabase for analytics (optional)
-      if (window.location.hostname !== 'localhost') {
-        fetch('/api/performance-metrics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            metric: metricName,
-            value: Math.round(value),
-            page: window.location.pathname,
-            userAgent: navigator.userAgent,
-            timestamp: Date.now()
-          })
-        }).catch(err => console.warn('Failed to send performance metric:', err));
+      // Use requestIdleCallback to defer until browser is idle
+      if (window.location.hostname !== 'localhost' && 'requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          fetch('/api/performance-metrics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              metric: metricName,
+              value: Math.round(value),
+              page: window.location.pathname,
+              userAgent: navigator.userAgent,
+              timestamp: Date.now()
+            }),
+            keepalive: true, // Allow request to complete even if page unloads
+            priority: 'low' // Mark as low priority
+          }).catch(err => console.warn('Failed to send performance metric:', err));
+        });
       }
     };
 
-    // Initialize performance monitoring
-    observePerformance();
+    // Cleanup on unmount
+    return () => {
+      clearTimeout(initDelay);
+    };
 
     // Monitor resource loading times
     const resourceObserver = new PerformanceObserver((list) => {
@@ -161,11 +174,7 @@ export const PerformanceMonitor = () => {
       }
     };
 
-    const memoryInterval = setInterval(monitorMemory, 30000); // Every 30 seconds
-
-    return () => {
-      clearInterval(memoryInterval);
-    };
+    // Removed memory monitoring interval - it was already defined inside observePerformance
   }, []);
 
   return null; // This is a monitoring component, no UI needed
