@@ -115,26 +115,6 @@ export const PerformanceMonitor = () => {
         page: window.location.pathname
       };
       localStorage.setItem('performance_metrics', JSON.stringify(storedData));
-
-      // Send to Supabase for analytics (optional)
-      // Use requestIdleCallback to defer until browser is idle
-      if (window.location.hostname !== 'localhost' && 'requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-          fetch('/api/performance-metrics', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              metric: metricName,
-              value: Math.round(value),
-              page: window.location.pathname,
-              userAgent: navigator.userAgent,
-              timestamp: Date.now()
-            }),
-            keepalive: true, // Allow request to complete even if page unloads
-            priority: 'low' // Mark as low priority
-          }).catch(err => console.warn('Failed to send performance metric:', err));
-        });
-      }
     };
 
     // Cleanup on unmount
