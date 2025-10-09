@@ -87,6 +87,15 @@ export const generateEnhancedPDF = async (
       backgroundColor: '#ffffff',
       width: 794,
       height: container.scrollHeight,
+      logging: false,
+      ignoreElements: (element) => {
+        // Skip images that fail to load
+        if (element.tagName === 'IMG') {
+          const img = element as HTMLImageElement;
+          return !img.complete || !img.naturalHeight;
+        }
+        return false;
+      }
     });
 
     document.body.removeChild(container);
@@ -138,7 +147,7 @@ const generateEnhancedPDFContent = (
     <div style="max-width: 794px; margin: 0 auto; background: white;">
       <!-- Cover Page -->
       <div style="min-height: 1000px; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 40px;">
-        <img src="/lovable-uploads/943f5c79-8478-43b5-95c9-18f53c2aed77.png" alt="Investment Analysis Logo" style="max-width: 120px; max-height: 120px; margin-bottom: 40px; border-radius: 12px;">
+        <div style="width: 120px; height: 120px; margin-bottom: 40px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 800;">AI</div>
         <h1 style="font-size: 48px; font-weight: 700; margin: 0 0 20px 0; line-height: 1.2;">
           AI-Powered Content Analysis
         </h1>
