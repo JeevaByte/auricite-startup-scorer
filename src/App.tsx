@@ -97,12 +97,12 @@ const App = () => (
                   
                   {/* New Investor Dashboard Routes with Sidebar */}
                   <Route path="/investor/deal-flow" element={<InvestorLayout><DealFlow /></InvestorLayout>} />
-                  <Route path="/investor/saved" element={<InvestorLayout><SavedStartups /></InvestorLayout>} />
+                  <Route path="/investor/saved" element={<SavedStartups />} />
                   <Route path="/investor/startup-details" element={<InvestorLayout><StartupDetails /></InvestorLayout>} />
                   <Route path="/investor/interest" element={<InvestorLayout><InterestRequests /></InvestorLayout>} />
                   <Route path="/investor/compare" element={<InvestorLayout><ComparisonPage /></InvestorLayout>} />
                   <Route path="/investor/portfolio" element={<InvestorLayout><PortfolioPage /></InvestorLayout>} />
-                  <Route path="/investor/matches" element={<InvestorLayout><MatchesPage /></InvestorLayout>} />
+                  <Route path="/investor/matches" element={<MatchesPage />} />
                   <Route path="/investor/analytics" element={<InvestorLayout><AnalyticsPage /></InvestorLayout>} />
                   <Route path="/investor/profile" element={<InvestorLayout><ProfilePage /></InvestorLayout>} />
                   <Route path="/investor/ai-chat" element={<InvestorLayout><AIChatPage /></InvestorLayout>} />

@@ -33,8 +33,8 @@ export const MainNav: React.FC = () => {
       name: 'Matches', 
       href: '/investor/matches',
       icon: Brain,
-      description: 'AI-recommended startups',
-      badge: 'AI',
+      description: 'Recommended startups',
+      badge: undefined,
       isPremium: false
     },
     { 
