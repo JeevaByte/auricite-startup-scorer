@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function MatchesPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [matches, setMatches] = React.useState(mockMatches);
 
   const getMatchBadge = (score: number) => {
     if (score >= 90) return { label: 'Excellent Match', color: 'bg-green-100 text-green-700' };
@@ -17,16 +18,20 @@ export default function MatchesPage() {
     return { label: 'Potential Match', color: 'bg-yellow-100 text-yellow-700' };
   };
 
-  const handleAccept = (companyName: string) => {
+  const handleAccept = (startupId: string, companyName: string) => {
+    setMatches(prev => prev.map(m => 
+      m.id === startupId ? { ...m, status: 'accepted' as const } : m
+    ));
     toast({
-      title: 'Match Accepted',
-      description: `${companyName} has been accepted. We'll notify them of your interest.`,
+      title: 'Interest Sent',
+      description: `${companyName} will be notified of your interest via email and in-app notification.`,
     });
   };
 
-  const handleReject = (companyName: string) => {
+  const handleReject = (startupId: string, companyName: string) => {
+    setMatches(prev => prev.filter(m => m.id !== startupId));
     toast({
-      title: 'Match Rejected',
+      title: 'Match Removed',
       description: `${companyName} has been removed from your matches.`,
     });
   };
@@ -35,7 +40,7 @@ export default function MatchesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">AI-Powered Matches</h1>
+        <h1 className="text-3xl font-bold mb-2">Matches</h1>
         <p className="text-muted-foreground">
           Startups that match your investment criteria and preferences
         </p>
@@ -49,7 +54,7 @@ export default function MatchesPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMatches.length}</div>
+            <div className="text-2xl font-bold">{matches.length}</div>
             <p className="text-xs text-muted-foreground">Based on your criteria</p>
           </CardContent>
         </Card>
@@ -60,7 +65,7 @@ export default function MatchesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockMatches.filter(s => s.match_score >= 90).length}
+              {matches.filter(s => s.match_score >= 90).length}
             </div>
             <p className="text-xs text-muted-foreground">90%+ compatibility</p>
           </CardContent>
@@ -72,7 +77,7 @@ export default function MatchesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round(mockMatches.reduce((acc, s) => acc + s.match_score, 0) / mockMatches.length)}%
+              {matches.length > 0 ? Math.round(matches.reduce((acc, s) => acc + s.match_score, 0) / matches.length) : 0}%
             </div>
             <p className="text-xs text-muted-foreground">Across all matches</p>
           </CardContent>
@@ -84,7 +89,7 @@ export default function MatchesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockMatches.filter(s => s.status === 'pending').length}
+              {matches.filter(s => s.status === 'pending').length}
             </div>
             <p className="text-xs text-muted-foreground">Awaiting your decision</p>
           </CardContent>
@@ -94,7 +99,7 @@ export default function MatchesPage() {
       {/* Matched Startups */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Top Matches for You</h3>
-        {mockMatches.map((startup) => {
+        {matches.map((startup) => {
           const matchBadge = getMatchBadge(startup.match_score);
           return (
             <Card key={startup.id} className="hover:shadow-lg transition-shadow">
@@ -175,12 +180,7 @@ export default function MatchesPage() {
                   <Button 
                     className="flex-1"
                     variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: 'Opening Details',
-                        description: `Viewing ${startup.company_name} full scorecard`,
-                      });
-                    }}
+                    onClick={() => navigate(`/investor/startup-details?id=${startup.id}`)}
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     View Full Scorecard
@@ -188,7 +188,7 @@ export default function MatchesPage() {
                   {startup.status === 'pending' && (
                     <>
                       <Button 
-                        onClick={() => handleAccept(startup.company_name)}
+                        onClick={() => handleAccept(startup.id, startup.company_name)}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         <CheckCircle className="mr-2 h-4 w-4" />
@@ -196,7 +196,7 @@ export default function MatchesPage() {
                       </Button>
                       <Button 
                         variant="outline"
-                        onClick={() => handleReject(startup.company_name)}
+                        onClick={() => handleReject(startup.id, startup.company_name)}
                       >
                         <XCircle className="mr-2 h-4 w-4" />
                         Pass

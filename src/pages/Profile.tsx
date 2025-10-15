@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,7 +24,7 @@ interface AssessmentHistoryItem {
 }
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentHistoryItem[]>([]);
@@ -171,74 +171,125 @@ export default function Profile() {
           <TabsContent value="history" className="mt-6">
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Investment History</h3>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading assessments...</p>
-                </div>
-              ) : assessments.length === 0 ? (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No assessments yet</p>
-                  <Button onClick={() => navigate('/')} className="mt-4">
-                    Take Your First Assessment
-                  </Button>
+              {userRole === 'investor' ? (
+                <div className="space-y-4">
+                  <p className="text-muted-foreground mb-4">Track your investment portfolio and deal history</p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm">Total Investments</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold">12</div>
+                        <p className="text-xs text-muted-foreground">Active portfolio companies</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm">Total Deployed</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold">$2.4M</div>
+                        <p className="text-xs text-muted-foreground">Across all deals</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="mt-6">
+                    <h4 className="font-semibold mb-3">Recent Investments</h4>
+                    <div className="space-y-3">
+                      {[
+                        { company: 'TechVenture AI', amount: '$250K', date: '2024-10-01', stage: 'Series A' },
+                        { company: 'GreenTech Solutions', amount: '$150K', date: '2024-09-15', stage: 'Seed' },
+                        { company: 'FinanceFlow', amount: '$200K', date: '2024-08-20', stage: 'Series A' },
+                      ].map((investment, idx) => (
+                        <div key={idx} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold">{investment.company}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {investment.stage} • {new Date(investment.date).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <Badge variant="secondary">{investment.amount}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/investor/portfolio')}>
+                      View Full Portfolio
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {assessments.map((assessment) => (
-                    <div key={assessment.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <Badge className={getScoreColor(assessment.score_result?.totalScore || 0)}>
-                              {assessment.score_result?.totalScore || 0}/999
-                            </Badge>
-                            <span className="text-sm text-gray-500">
-                              {new Date(assessment.created_at).toLocaleDateString()}
-                            </span>
+                loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-2 text-muted-foreground">Loading assessments...</p>
+                  </div>
+                ) : assessments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No assessments yet</p>
+                    <Button onClick={() => navigate('/unified-assessment')} className="mt-4">
+                      Take Your First Assessment
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {assessments.map((assessment) => (
+                      <div key={assessment.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <Badge className={getScoreColor(assessment.score_result?.totalScore || 0)}>
+                                {assessment.score_result?.totalScore || 0}/100
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(assessment.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Business:</span>
+                                <span className="ml-1 font-medium">
+                                  {assessment.score_result?.businessIdea || 0}/100
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Financials:</span>
+                                <span className="ml-1 font-medium">
+                                  {assessment.score_result?.financials || 0}/100
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Team:</span>
+                                <span className="ml-1 font-medium">
+                                  {assessment.score_result?.team || 0}/100
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Traction:</span>
+                                <span className="ml-1 font-medium">
+                                  {assessment.score_result?.traction || 0}/100
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="grid grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-500">Business:</span>
-                              <span className="ml-1 font-medium">
-                                {assessment.score_result?.businessIdea || 0}/100
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Financials:</span>
-                              <span className="ml-1 font-medium">
-                                {assessment.score_result?.financials || 0}/100
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Team:</span>
-                              <span className="ml-1 font-medium">
-                                {assessment.score_result?.team || 0}/100
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Traction:</span>
-                              <span className="ml-1 font-medium">
-                                {assessment.score_result?.traction || 0}/100
-                              </span>
-                            </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => viewAssessment(assessment)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
                           </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => viewAssessment(assessment)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )
               )}
             </Card>
           </TabsContent>

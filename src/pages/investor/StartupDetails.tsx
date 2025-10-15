@@ -58,8 +58,15 @@ export default function StartupDetails() {
 
   const handleContact = () => {
     toast({
-      title: 'Contact Request Sent',
-      description: `Your interest in ${startup.company_name} has been sent to the founder.`,
+      title: 'Message Sent',
+      description: `Your message has been sent to ${startup.company_name}. They will receive an email and in-app notification.`,
+    });
+  };
+
+  const handleExpressInterest = () => {
+    toast({
+      title: 'Interest Expressed',
+      description: `${startup.company_name} has been notified of your investment interest via email and in-app notification.`,
     });
   };
 
@@ -76,7 +83,7 @@ export default function StartupDetails() {
             <Mail className="mr-2 h-4 w-4" />
             Contact
           </Button>
-          <Button onClick={handleContact}>
+          <Button onClick={handleExpressInterest}>
             <MessageSquare className="mr-2 h-4 w-4" />
             Express Interest
           </Button>

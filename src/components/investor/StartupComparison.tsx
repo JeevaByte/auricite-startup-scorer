@@ -78,7 +78,16 @@ export const StartupComparison: React.FC<StartupComparisonProps> = ({ startups }
                 </DialogTrigger>
                 <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Startup Comparison</DialogTitle>
+                    <div className="flex items-center justify-between">
+                      <DialogTitle>Startup Comparison</DialogTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setShowComparison(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </DialogHeader>
 
                   {/* Score Comparison Table */}
