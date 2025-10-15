@@ -1706,6 +1706,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempt_time: string
+          blocked_until: string | null
+          created_at: string
+          email: string
+          id: string
+          ip_address: unknown | null
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          attempt_time?: string
+          blocked_until?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: unknown | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          attempt_time?: string
+          blocked_until?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: unknown | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -3206,6 +3239,10 @@ export type Database = {
         Args: { org_id: string; user_uuid: string }
         Returns: boolean
       }
+      is_syndicate_member: {
+        Args: { _syndicate_id: string; _user_id: string }
+        Returns: boolean
+      }
       ivfflat_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -3224,7 +3261,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
+        Returns: unknown
       }
       list_unindexed_foreign_keys: {
         Args: { table_name: string }
@@ -3240,6 +3277,19 @@ export type Database = {
           _target_table: string
         }
         Returns: undefined
+      }
+      record_login_attempt: {
+        Args: {
+          _email: string
+          _ip_address?: unknown
+          _success: boolean
+          _user_agent?: string
+        }
+        Returns: undefined
+      }
+      should_block_login: {
+        Args: { _email: string; _ip_address?: unknown }
+        Returns: Json
       }
       sparsevec_out: {
         Args: { "": unknown }

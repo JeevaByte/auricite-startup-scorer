@@ -186,45 +186,84 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInWithPassword = async (email: string, password: string) => {
-    const rateLimitKey = `login_${email}`;
-    
-    // Check rate limit
-    if (authRateLimiter.isRateLimited(rateLimitKey)) {
-      const remainingTime = authRateLimiter.getRemainingTime(rateLimitKey);
-      logSecurityEvent({
-        type: 'AUTH_FAILURE',
-        details: `Login rate limited for ${email}. ${remainingTime}s remaining.`,
-        timestamp: new Date()
-      });
-      return { error: { message: `Too many login attempts. Try again in ${remainingTime} seconds.` } };
-    }
-
     try {
+      // Server-side rate limiting check (primary defense)
+      const { data: rateLimitCheck, error: rateLimitError } = await supabase
+        .rpc('should_block_login', { 
+          _email: email,
+          _ip_address: null // IP will be captured server-side if needed
+        });
+
+      if (rateLimitError) {
+        console.error('Rate limit check error:', rateLimitError);
+      }
+
+      // Type guard for rate limit response
+      const rateLimitData = rateLimitCheck as { blocked: boolean; retry_after_seconds?: number; reason?: string; failed_attempts?: number } | null;
+
+      if (rateLimitData?.blocked) {
+        const remainingSeconds = rateLimitData.retry_after_seconds || 900;
+        const remainingMinutes = Math.ceil(remainingSeconds / 60);
+        
+        await logSecurityEvent({
+          type: 'SUSPICIOUS_ACTIVITY',
+          userId: undefined,
+          details: `Blocked login attempt for ${email}: ${rateLimitData.reason || 'Too many attempts'}`,
+          timestamp: new Date(),
+        });
+        
+        return { 
+          error: { 
+            message: `Account temporarily locked due to too many failed attempts. Please try again in ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}.` 
+          } 
+        };
+      }
+
+      // Attempt sign in
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      // Record the login attempt (success or failure)
+      const { error: recordError } = await supabase
+        .rpc('record_login_attempt', {
+          _email: email,
+          _success: !error,
+          _ip_address: null,
+          _user_agent: navigator.userAgent
+        });
+
+      if (recordError) {
+        console.error('Failed to record login attempt:', recordError);
+      }
+
       if (error) {
-        logSecurityEvent({
+        await logSecurityEvent({
           type: 'AUTH_FAILURE',
-          details: `Login failed for ${email}: ${error.message}`,
-          timestamp: new Date()
+          userId: undefined,
+          details: `Failed login attempt for ${email}: ${error.message}`,
+          timestamp: new Date(),
         });
         return { error };
       }
 
-      logSecurityEvent({
+      await logSecurityEvent({
         type: 'AUTH_SUCCESS',
         details: `Successful login for ${email}`,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
+      // Reset client-side rate limiter on successful login
+      const rateLimitKey = `login_${email}`;
+      authRateLimiter.reset(rateLimitKey);
+
       return { error: null };
-    } catch (error) {
-      logSecurityEvent({
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      await logSecurityEvent({
         type: 'AUTH_FAILURE',
-        details: `Login error for ${email}`,
+        details: `Login error for ${email}: ${error.message || 'Unknown error'}`,
         timestamp: new Date()
       });
       return { error };
