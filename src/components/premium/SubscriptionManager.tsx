@@ -174,11 +174,10 @@ export const SubscriptionManager: React.FC = () => {
       {/* Available Plans */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Available Plans</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {plans.slice(0, 3).map((plan, idx) => {
+        <div className="grid md:grid-cols-2 gap-6">
+          {plans.filter(p => p.name.toLowerCase() === 'free' || p.name.toLowerCase() === 'premium').map((plan, idx) => {
             const isCurrentPlan = currentPlan?.id === plan.id;
             const isFree = plan.name.toLowerCase() === 'free';
-            const isAdvanced = plan.name.toLowerCase() === 'advanced';
             const isPremium = plan.name.toLowerCase() === 'premium';
             return (
               <Card key={plan.id} className={`relative ${isCurrentPlan ? 'border-primary' : ''}`}>
@@ -190,7 +189,6 @@ export const SubscriptionManager: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{plan.name}</span>
-                    {isAdvanced && <Crown className="h-5 w-5 text-blue-500" />}
                     {isPremium && <Crown className="h-5 w-5 text-yellow-500" />}
                   </CardTitle>
                   <div className="text-3xl font-bold">
@@ -222,29 +220,19 @@ export const SubscriptionManager: React.FC = () => {
                           <span className="text-sm text-gray-600">{feature}</span>
                         </li>
                       ))}
-                      {isAdvanced && [
-                        'Unlimited Assessments',
-                        'Detailed Reports',
-                        'Assessment History',
-                        'Email Reports',
-                        'AI-Powered Recommendations',
-                        'Investor Matching',
-                        'Priority Support',
-                        'Advanced AI Content Analysis',
-                        'Downloadable PDF Reports',
-                        'Investor Directory'
-                      ].map((feature, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-600">{feature}</span>
-                        </li>
-                      ))}
                       {isPremium && [
-                        'Everything in Advanced',
+                        'Everything in Free',
+                        'Unlimited Assessments',
+                        'Investor Directory Access',
                         'Investor Matching',
+                        'Deal Flow Management',
                         'Custom Scoring',
                         'Priority Support',
-                        'API Access'
+                        'Direct Founder Connections',
+                        'Custom Reporting',
+                        'Benchmark Comparisons',
+                        'API Access',
+                        '24/7 Support'
                       ].map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -255,7 +243,7 @@ export const SubscriptionManager: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t">
                     <p className="text-sm text-gray-600">
-                      <strong>Assessments:</strong> {isFree ? '1' : isAdvanced ? '10' : isPremium ? 'Unlimited' : plan.max_assessments}
+                      <strong>Assessments:</strong> {isFree ? '1' : 'Unlimited'}
                     </p>
                   </div>
                   <Button
@@ -271,8 +259,6 @@ export const SubscriptionManager: React.FC = () => {
                       </>
                     ) : isCurrentPlan ? (
                       'Current Plan'
-                    ) : isFree ? (
-                      'Upgrad'
                     ) : (
                       'Upgrade'
                     )}
@@ -295,34 +281,33 @@ export const SubscriptionManager: React.FC = () => {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-3">Feature</th>
-                  {plans.slice(0, 3).map(plan => (
+                  {plans.filter(p => p.name.toLowerCase() === 'free' || p.name.toLowerCase() === 'premium').map(plan => (
                     <th key={plan.id} className="text-center p-3 font-semibold">{plan.name}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {/* List all features for premium, key features green for advanced, only quick assessment for free */}
                 {[
-                  { name: 'Quick Assessment', free: true, advanced: true, premium: true },
-                  { name: 'Comprehensive Assessment', free: true, advanced: true, premium: true },
-                  { name: 'Detailed PDF Reports', free: true, advanced: true, premium: true },
-                  { name: 'Assessment History', free: true, advanced: true, premium: true },
-                  { name: 'Investor Directory', free: false, advanced: true, premium: true },
-                  { name: 'AI-Powered Recommendations', free: true, advanced: true, premium: true },
-                  { name: 'Investor Matching', free: false, advanced: true, premium: true },
-                  { name: 'Priority Support', free: false, advanced: true, premium: true },
-                  { name: 'Advanced AI Content Analysis', free: true, advanced: true, premium: true },
-                  { name: 'Downloadable PDF Reports', free: true, advanced: true, premium: true },
-                  { name: 'Unlimited Assessments', free: false, advanced: true, premium: true },
-                  { name: 'Direct Founder Connections', free: false, advanced: false, premium: true },
-                  { name: 'Deal Flow Management', free: false, advanced: false, premium: true },
-                  { name: 'Custom Reporting', free: false, advanced: false, premium: true },
-                  { name: 'Benchmark Comparisons', free: false, advanced: false, premium: true },
-                  { name: '24/7 Support', free: false, advanced: false, premium: true }
+                  { name: 'Quick Assessment', free: true, premium: true },
+                  { name: 'Comprehensive Assessment', free: true, premium: true },
+                  { name: 'Detailed PDF Reports', free: true, premium: true },
+                  { name: 'Assessment History', free: true, premium: true },
+                  { name: 'AI-Powered Recommendations', free: true, premium: true },
+                  { name: 'Advanced AI Content Analysis', free: true, premium: true },
+                  { name: 'Downloadable PDF Reports', free: true, premium: true },
+                  { name: 'Unlimited Assessments', free: false, premium: true },
+                  { name: 'Investor Directory', free: false, premium: true },
+                  { name: 'Investor Matching', free: false, premium: true },
+                  { name: 'Priority Support', free: false, premium: true },
+                  { name: 'Direct Founder Connections', free: false, premium: true },
+                  { name: 'Deal Flow Management', free: false, premium: true },
+                  { name: 'Custom Reporting', free: false, premium: true },
+                  { name: 'Benchmark Comparisons', free: false, premium: true },
+                  { name: 'API Access', free: false, premium: true },
+                  { name: '24/7 Support', free: false, premium: true }
                 ].map((feature, idx) => (
                   <tr key={feature.name} className={idx % 2 === 0 ? "border-b bg-gray-50" : "border-b"}>
                     <td className="p-3 font-medium">{feature.name}</td>
-                    {/* Free plan: enabled features green */}
                     <td className="text-center p-3">
                       {feature.free ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />
@@ -330,15 +315,6 @@ export const SubscriptionManager: React.FC = () => {
                         <X className="h-4 w-4 text-red-500 mx-auto" />
                       )}
                     </td>
-                    {/* Advanced plan: key features green */}
-                    <td className="text-center p-3">
-                      {feature.advanced ? (
-                        <Check className="h-4 w-4 text-green-500 mx-auto" />
-                      ) : (
-                        <X className="h-4 w-4 text-red-500 mx-auto" />
-                      )}
-                    </td>
-                    {/* Premium plan: all green */}
                     <td className="text-center p-3">
                       {feature.premium ? (
                         <Check className="h-4 w-4 text-green-500 mx-auto" />

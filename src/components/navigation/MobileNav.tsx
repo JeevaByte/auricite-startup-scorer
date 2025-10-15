@@ -20,22 +20,18 @@ export const MobileNav: React.FC = () => {
     { name: 'Matches', href: '/investor/matches' },
     { name: 'Portfolio', href: '/investor/portfolio' },
     { name: 'Analytics', href: '/investor/analytics' },
-    { name: 'How It Works', href: '/how-it-works' },
     { name: 'Profile', href: '/investor/profile' },
-    { name: 'Pricing', href: '/pricing' },
   ];
 
   const fundSeekerNavigation = [
     { name: 'Home', href: '/' },
     { name: 'Assessment', href: '/unified-assessment' },
-    { name: 'How It Works', href: '/how-it-works' },
     { name: 'Investors', href: '/investors' },
     { name: 'Fundraisers', href: '/fundraisers' },
     { name: 'AI Analysis', href: '/ai-feedback' },
     { name: 'Learn', href: '/learn' },
     { name: 'Profile', href: '/profile' },
     { name: 'Donate', href: '/donate' },
-    { name: 'Pricing', href: '/pricing' },
   ];
 
   const navigation = isInvestor ? investorNavigation : fundSeekerNavigation;

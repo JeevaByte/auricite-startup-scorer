@@ -103,7 +103,7 @@ export default function Profile() {
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center space-x-2">
               <History className="h-4 w-4" />
-              <span>Assessment History</span>
+              <span>Investment History</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
@@ -138,7 +138,7 @@ export default function Profile() {
               </Card>
 
               <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Assessment Summary</h3>
+                <h3 className="text-lg font-semibold mb-4">Investment Summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Assessments</span>
@@ -170,7 +170,7 @@ export default function Profile() {
 
           <TabsContent value="history" className="mt-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Assessment History</h3>
+              <h3 className="text-lg font-semibold mb-4">Investment History</h3>
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
