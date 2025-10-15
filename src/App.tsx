@@ -30,6 +30,7 @@ import AnalyticsPage from "./pages/investor/AnalyticsPage";
 import ProfilePage from "./pages/investor/ProfilePage";
 import AIChatPage from "./pages/investor/AIChatPage";
 import CollaborationPage from "./pages/investor/CollaborationPage";
+import StartupDetails from "./pages/investor/StartupDetails";
 import InvestorOnboarding from "./pages/InvestorOnboarding";
 import InvestorListing from "./pages/InvestorListing";
 import InvestorProfilePage from "./pages/InvestorProfilePage";
@@ -48,6 +49,7 @@ import Learn from "./pages/Learn";
 import Donate from "./pages/Donate";
 import HowItWorks from "./pages/HowItWorks";
 import NotFound from "./pages/NotFound";
+import { SubscriptionWarning } from "./components/subscription/SubscriptionWarning";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { EnhancedCookieConsent } from "./components/EnhancedCookieConsent";
@@ -65,6 +67,7 @@ const App = () => (
             <BrowserRouter>
               <PerformanceMonitor />
               <UserBehaviorTracker />
+              <SubscriptionWarning />
               <div className="min-h-screen flex flex-col">
                 <Header />
                 <main className="flex-1">
@@ -95,6 +98,7 @@ const App = () => (
                   {/* New Investor Dashboard Routes with Sidebar */}
                   <Route path="/investor/deal-flow" element={<InvestorLayout><DealFlow /></InvestorLayout>} />
                   <Route path="/investor/saved" element={<InvestorLayout><SavedStartups /></InvestorLayout>} />
+                  <Route path="/investor/startup-details" element={<InvestorLayout><StartupDetails /></InvestorLayout>} />
                   <Route path="/investor/interest" element={<InvestorLayout><InterestRequests /></InvestorLayout>} />
                   <Route path="/investor/compare" element={<InvestorLayout><ComparisonPage /></InvestorLayout>} />
                   <Route path="/investor/portfolio" element={<InvestorLayout><PortfolioPage /></InvestorLayout>} />

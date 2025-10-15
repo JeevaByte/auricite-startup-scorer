@@ -199,12 +199,7 @@ export default function DealFlow() {
                 <div className="flex gap-2 pt-2">
                   <Button 
                     className="flex-1"
-                    onClick={() => {
-                      toast({
-                        title: 'Opening Details',
-                        description: `Viewing ${startup.company_name} details`,
-                      });
-                    }}
+                    onClick={() => navigate(`/investor/startup-details?id=${startup.id}`)}
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     View Details

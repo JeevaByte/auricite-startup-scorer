@@ -217,19 +217,14 @@ export default function PortfolioPage() {
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <Button 
-                      className="flex-1"
-                      variant="outline"
-                      onClick={() => {
-                        toast({
-                          title: 'Opening Details',
-                          description: `Viewing ${company.company_name} details`,
-                        });
-                      }}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </Button>
+                  <Button 
+                    className="flex-1"
+                    variant="outline"
+                    onClick={() => navigate(`/investor/startup-details?id=${company.id}`)}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </Button>
                     <Button 
                       variant="outline"
                       onClick={() => {

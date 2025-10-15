@@ -251,7 +251,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ analysis
             <div className="space-y-4">
               {analysis.contentHeatmap.highImpactSections.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-green-800 mb-2">🔥 High Impact Sections</h4>
+                  <h4 className="font-medium text-green-800 mb-2">High Impact Sections</h4>
                   <div className="flex flex-wrap gap-2">
                     {analysis.contentHeatmap.highImpactSections.map((section, index) => (
                       <Badge key={index} className="bg-green-100 text-green-800">

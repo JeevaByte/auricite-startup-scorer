@@ -137,12 +137,7 @@ export default function SavedStartups() {
                     variant="outline" 
                     className="flex-1"
                     size="sm"
-                    onClick={() => {
-                      toast({
-                        title: 'Opening Details',
-                        description: `Viewing ${startup.company_name}`,
-                      });
-                    }}
+                    onClick={() => navigate(`/investor/startup-details?id=${startup.id}`)}
                   >
                     <Eye className="mr-2 h-3 w-3" />
                     View
