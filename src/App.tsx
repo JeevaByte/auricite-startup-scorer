@@ -101,19 +101,19 @@ const App = () => (
                   <Route path="/investor-dashboard-new" element={<InvestorDashboardNew />} />
                   <Route path="/investor-directory" element={<InvestorDirectory />} />
                   
-                  {/* New Investor Dashboard Routes with Sidebar */}
-                  <Route path="/investor/deal-flow" element={<InvestorLayout><DealFlow /></InvestorLayout>} />
+                  {/* New Investor Dashboard Routes */}
+                  <Route path="/investor/deal-flow" element={<DealFlow />} />
                   <Route path="/investor/saved" element={<SavedStartups />} />
-                  <Route path="/investor/startup-details" element={<InvestorLayout><StartupDetails /></InvestorLayout>} />
-                  <Route path="/investor/interest" element={<InvestorLayout><InterestRequests /></InvestorLayout>} />
-                  <Route path="/investor/compare" element={<InvestorLayout><ComparisonPage /></InvestorLayout>} />
-                  <Route path="/investor/portfolio" element={<InvestorLayout><PortfolioPage /></InvestorLayout>} />
+                  <Route path="/investor/startup-details" element={<StartupDetails />} />
+                  <Route path="/investor/interest" element={<InterestRequests />} />
+                  <Route path="/investor/compare" element={<ComparisonPage />} />
+                  <Route path="/investor/portfolio" element={<PortfolioPage />} />
                   <Route path="/investor/matches" element={<MatchesPage />} />
-                  <Route path="/investor/analytics" element={<InvestorLayout><AnalyticsPage /></InvestorLayout>} />
-                  <Route path="/investor/activity" element={<InvestorLayout><ActivityLog /></InvestorLayout>} />
-                  <Route path="/investor/profile" element={<InvestorLayout><ProfilePage /></InvestorLayout>} />
-                  <Route path="/investor/ai-chat" element={<InvestorLayout><AIChatPage /></InvestorLayout>} />
-                  <Route path="/investor/collaboration" element={<InvestorLayout><CollaborationPage /></InvestorLayout>} />
+                  <Route path="/investor/analytics" element={<AnalyticsPage />} />
+                  <Route path="/investor/activity" element={<ActivityLog />} />
+                  <Route path="/investor/profile" element={<ProfilePage />} />
+                  <Route path="/investor/ai-chat" element={<AIChatPage />} />
+                  <Route path="/investor/collaboration" element={<CollaborationPage />} />
                   <Route path="/investor-onboarding" element={<InvestorOnboarding />} />
                   <Route path="/investors" element={<InvestorListing />} />
                   <Route path="/investor/:id" element={<InvestorProfilePage />} />
