@@ -56,7 +56,8 @@ export default function DealFlow() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Deal Flow</h1>
@@ -254,6 +255,7 @@ export default function DealFlow() {
             </CardContent>
           </Card>
         )}
+      </div>
       </div>
     </div>
   );

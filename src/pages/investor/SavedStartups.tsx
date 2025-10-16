@@ -25,7 +25,8 @@ export default function SavedStartups() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Saved Startups</h1>
@@ -155,6 +156,7 @@ export default function SavedStartups() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

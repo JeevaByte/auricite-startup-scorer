@@ -25,7 +25,8 @@ export default function PortfolioPage() {
   const activeInvestments = mockPortfolio.filter(item => item.status === 'active').length;
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Investment Portfolio</h1>
@@ -242,6 +243,7 @@ export default function PortfolioPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
