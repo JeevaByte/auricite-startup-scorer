@@ -45,6 +45,14 @@ export default function Auth() {
     }
   }, [user, loading, userRole, navigate, searchParams]);
 
+  // Set role from URL parameter on mount
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'investor' || roleParam === 'fund_seeker') {
+      setRole(roleParam);
+    }
+  }, [searchParams]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

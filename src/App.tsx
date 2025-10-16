@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/monitoring/ErrorBoundary";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { UserBehaviorTracker } from "@/components/analytics/UserBehaviorTracker";
 import { PWAPrompt } from "@/components/pwa/PWAPrompt";
+import Index from "./pages/Index";
 import RoleSelection from "./pages/RoleSelection";
 import FundSeekerLanding from "./pages/FundSeekerLanding";
 import InvestorLanding from "./pages/InvestorLanding";
@@ -75,7 +76,7 @@ const App = () => (
                 <Header />
                 <main className="flex-1">
                   <Routes>
-                  <Route path="/" element={<RoleSelection />} />
+                  <Route path="/" element={<Index />} />
                   <Route path="/fund-seeker-landing" element={<FundSeekerLanding />} />
                   <Route path="/investor-landing" element={<InvestorLanding />} />
                   <Route path="/auth" element={<Auth />} />

@@ -7,6 +7,14 @@ import { Users, TrendingUp, ArrowRight, Building2 } from 'lucide-react';
 export default function RoleSelection() {
   const navigate = useNavigate();
 
+  const handleFundSeekerClick = () => {
+    navigate('/auth?role=fund_seeker');
+  };
+
+  const handleInvestorClick = () => {
+    navigate('/auth?role=investor');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
       <div className="max-w-5xl w-full">
@@ -22,7 +30,7 @@ export default function RoleSelection() {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Fund Seeker Card */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 hover:border-primary" onClick={() => navigate('/fund-seeker-landing')}>
+          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 hover:border-primary" onClick={handleFundSeekerClick}>
             <CardHeader>
               <div className="flex justify-center mb-4">
                 <div className="bg-blue-100 p-6 rounded-full">
@@ -61,7 +69,7 @@ export default function RoleSelection() {
           </Card>
 
           {/* Investor Card */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 hover:border-primary" onClick={() => navigate('/investor-landing')}>
+          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 hover:border-primary" onClick={handleInvestorClick}>
             <CardHeader>
               <div className="flex justify-center mb-4">
                 <div className="bg-green-100 p-6 rounded-full">
