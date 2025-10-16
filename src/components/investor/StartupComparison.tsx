@@ -90,6 +90,7 @@ export const StartupComparison: React.FC<StartupComparisonProps> = ({ startups }
                     </div>
                   </DialogHeader>
 
+                  <div className="space-y-6 p-4">
                   {/* Score Comparison Table */}
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
@@ -196,6 +197,7 @@ export const StartupComparison: React.FC<StartupComparisonProps> = ({ startups }
                       </p>
                     </CardContent>
                   </Card>
+                  </div>
                 </DialogContent>
               </Dialog>
               <Button variant="outline" onClick={() => setSelectedStartups([])}>
