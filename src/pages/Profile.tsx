@@ -103,7 +103,7 @@ export default function Profile() {
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center space-x-2">
               <History className="h-4 w-4" />
-              <span>Investment History</span>
+              <span>{userRole === 'investor' ? 'Investor History' : 'Investment History'}</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />

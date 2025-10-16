@@ -99,14 +99,9 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <p className="text-gray-400 text-sm text-center">
             © 2025 Auricite InvestX. All rights reserved.
-          </p>
-          <p className="text-gray-400 text-sm flex items-center space-x-1 mt-4 md:mt-0">
-            <span>Made with</span>
-            <Heart className="h-4 w-4 text-red-500" />
-            <span>for founders</span>
           </p>
         </div>
       </div>

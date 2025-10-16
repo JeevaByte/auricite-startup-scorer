@@ -31,7 +31,8 @@ export default function Index() {
       return;
     }
 
-    if (user && !localStorage.getItem('onboarding-completed')) {
+    // Only show onboarding to fund seekers
+    if (user && userRole !== 'investor' && !localStorage.getItem('onboarding-completed')) {
       const timer = setTimeout(() => setShowOnboarding(true), 2000);
       return () => clearTimeout(timer);
     }

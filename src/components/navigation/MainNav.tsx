@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2, TrendingUp, BarChart2 } from 'lucide-react';
+import { BarChart3, Users, Brain, BookOpen, Heart, Crown, Target, HelpCircle, Building2, TrendingUp, BarChart2, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export const MainNav: React.FC = () => {
@@ -50,6 +50,14 @@ export const MainNav: React.FC = () => {
       href: '/investor/analytics',
       icon: BarChart3,
       description: 'Market insights',
+      badge: undefined,
+      isPremium: false
+    },
+    { 
+      name: 'Activity & Reports', 
+      href: '/investor/activity',
+      icon: ClipboardList,
+      description: 'Track activity and export data',
       badge: undefined,
       isPremium: false
     }

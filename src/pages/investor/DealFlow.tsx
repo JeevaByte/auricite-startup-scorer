@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, Bookmark, TrendingUp, Building2, MapPin, DollarSign, Users, Eye } from 'lucide-react';
 import { mockStartups } from '@/utils/mockInvestorData';
 import { useToast } from '@/hooks/use-toast';
+import { InvestorPreferencesFilter, PreferenceFilters } from '@/components/investor/InvestorPreferencesFilter';
 
 export default function DealFlow() {
   const navigate = useNavigate();
@@ -16,6 +17,17 @@ export default function DealFlow() {
   const [sectorFilter, setSectorFilter] = useState('all');
   const [stageFilter, setStageFilter] = useState('all');
   const [scoreFilter, setScoreFilter] = useState('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [preferenceFilters, setPreferenceFilters] = useState<PreferenceFilters>({
+    industries: [],
+    stages: [],
+    geographies: [],
+  });
+
+  const handlePreferenceFilterChange = (filters: PreferenceFilters) => {
+    setPreferenceFilters(filters);
+    // You can also sync these with the basic filters if needed
+  };
 
   const filteredStartups = mockStartups.filter(startup => {
     const matchesSearch = startup.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,8 +121,25 @@ export default function DealFlow() {
               </SelectContent>
             </Select>
           </div>
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="w-full"
+            >
+              {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <InvestorPreferencesFilter 
+          onFilterChange={handlePreferenceFilterChange}
+          initialFilters={preferenceFilters}
+        />
+      )}
 
       {/* Startup Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

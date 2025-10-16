@@ -8,6 +8,7 @@ import {
   User, 
   TrendingUp, 
   BarChart3,
+  ClipboardList,
   Menu,
   X
 } from 'lucide-react';
@@ -33,6 +34,7 @@ const navItems = [
   { title: 'Portfolio', url: '/investor/portfolio', icon: Briefcase },
   { title: 'Matches', url: '/investor/matches', icon: TrendingUp },
   { title: 'Analytics', url: '/investor/analytics', icon: BarChart3 },
+  { title: 'Activity & Reports', url: '/investor/activity', icon: ClipboardList },
   { title: 'Profile', url: '/investor/profile', icon: User },
 ];
 

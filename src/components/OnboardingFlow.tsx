@@ -4,13 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, Users, TrendingUp, Target, DollarSign } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface OnboardingFlowProps {
   onComplete: () => void;
 }
 
 export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
+  const { userRole } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Only show onboarding to fund seekers, not investors
+  if (userRole === 'investor') {
+    return null;
+  }
 
   const steps = [
     {
