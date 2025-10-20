@@ -20,7 +20,7 @@ export const Footer = () => {
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
               Accelerate your funding journey with AI-powered investment readiness assessments 
-              and personalized recommendations for pre-seed startups.
+              and personalized recommendations for startups at every stage.
             </p>
             <div className="flex space-x-4">
               <a 
