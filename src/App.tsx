@@ -120,6 +120,7 @@ const App = () => (
                   
                   {/* Fundraiser Routes */}
                   <Route path="/fundraisers" element={<FundraiserListing />} />
+                  <Route path="/startup-directory" element={<FundraiserListing />} />
                   <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   

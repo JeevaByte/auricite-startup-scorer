@@ -124,10 +124,7 @@ function InvestorDirectoryContent() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">Investor Directory</h1>
-                <Badge className="bg-yellow-100 text-yellow-800">Premium</Badge>
-              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Investor Directory</h1>
               <p className="text-gray-600">Connect with investors who match your startup's stage and sector</p>
             </div>
             <Button 

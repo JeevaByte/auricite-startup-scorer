@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export const MainNav: React.FC = () => {
   const location = useLocation();
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
   const isInvestor = userRole === 'investor';
   
   // Investor Navigation
@@ -70,45 +70,48 @@ export const MainNav: React.FC = () => {
       href: '/unified-assessment',
       icon: BarChart3,
       description: 'Investment readiness score',
-      badge: 'Popular'
+      badge: undefined,
+      isPremium: false
     },
-    { 
+    ...(!user ? [{ 
       name: 'How It Works', 
       href: '/how-it-works',
       icon: HelpCircle,
-      description: 'Scorecard methodology'
-    },
+      description: 'Scorecard methodology',
+      badge: undefined,
+      isPremium: false
+    }] : []),
     { 
-      name: 'Investors', 
+      name: 'Investor Directory', 
       href: '/investors',
       icon: Users,
       description: 'Browse investor profiles',
-      isPremium: true
+      badge: undefined,
+      isPremium: false
     },
     { 
-      name: 'Fundraisers', 
+      name: 'Startup Directory', 
       href: '/fundraisers',
       icon: Building2,
-      description: 'Explore startups'
+      description: 'Discover investment-ready startups',
+      badge: undefined,
+      isPremium: false
     },
     { 
-      name: 'AI Analysis', 
+      name: 'Analysis', 
       href: '/ai-feedback',
       icon: Brain,
       description: 'Content analysis & feedback',
-      badge: 'AI Powered'
-    },
-    { 
-      name: 'Learn', 
-      href: '/learn',
-      icon: BookOpen,
-      description: 'Tutorials & guides'
+      badge: undefined,
+      isPremium: false
     },
     { 
       name: 'Pricing', 
       href: '/pricing',
       icon: Crown,
-      description: 'Plans & features'
+      description: 'Plans & features',
+      badge: undefined,
+      isPremium: false
     }
   ];
 

@@ -17,12 +17,6 @@ interface IncomingRequest {
     full_name: string;
     email: string;
   };
-  investor_profiles?: Array<{
-    display_name: string;
-    org_name: string;
-    verification_status: string;
-    bio: string;
-  }>;
 }
 
 const FundSeekerDashboard: React.FC = () => {
@@ -42,12 +36,6 @@ const FundSeekerDashboard: React.FC = () => {
           profiles!contact_requests_investor_user_id_fkey (
             full_name,
             email
-          ),
-          investor_profiles!investor_profiles_user_id_fkey (
-            display_name,
-            org_name,
-            verification_status,
-            bio
           )
         `)
         .eq('startup_user_id', user.id)
@@ -168,7 +156,6 @@ const FundSeekerDashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {requests.map((request) => {
-                  const investorProfile = request.investor_profiles?.[0];
                   return (
                     <Card key={request.id} className="border">
                       <CardContent className="pt-6">
@@ -177,20 +164,9 @@ const FundSeekerDashboard: React.FC = () => {
                             <div className="flex items-center gap-2 mb-2">
                               <User className="h-5 w-5 text-muted-foreground" />
                               <h3 className="font-semibold text-lg">
-                                {investorProfile?.display_name || request.profiles?.full_name || 'Unknown Investor'}
+                                {request.profiles?.full_name || 'Unknown Investor'}
                               </h3>
-                              {investorProfile?.verification_status === 'verified' && (
-                                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                                  ✓ Verified
-                                </Badge>
-                              )}
                             </div>
-                            {investorProfile?.org_name && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                                <Building className="h-4 w-4" />
-                                {investorProfile.org_name}
-                              </div>
-                            )}
                             <p className="text-sm text-muted-foreground">
                               {request.profiles?.email}
                             </p>
@@ -205,13 +181,6 @@ const FundSeekerDashboard: React.FC = () => {
                             {request.status}
                           </Badge>
                         </div>
-
-                        {investorProfile?.bio && (
-                          <div className="mb-4 p-3 bg-muted rounded-md">
-                            <p className="text-sm font-medium mb-1">Investor Bio:</p>
-                            <p className="text-sm text-muted-foreground">{investorProfile.bio}</p>
-                          </div>
-                        )}
 
                         {request.message && (
                           <div className="mb-4 p-3 bg-muted rounded-md">
@@ -252,7 +221,7 @@ const FundSeekerDashboard: React.FC = () => {
                                 </p>
                               </div>
                               <Button
-                                onClick={() => window.open(`mailto:${request.profiles?.email}?subject=Re: Interest in my startup&body=Hi ${investorProfile?.display_name || request.profiles?.full_name},
+                                onClick={() => window.open(`mailto:${request.profiles?.email}?subject=Re: Interest in my startup&body=Hi ${request.profiles?.full_name},
 
 Thank you for expressing interest in my startup! I'd love to discuss this opportunity with you.
 
