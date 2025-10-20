@@ -23,8 +23,8 @@ export const Hero = ({ onStartAssessment }: HeroProps) => {
           <span className="text-blue-600 block">Funding Journey</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-          Get your startup investment readiness score and personalized feedback in minutes. 
-          Built for pre-seed startups seeking £25K-£250K funding rounds.
+          AI-powered investment readiness assessments and personalized recommendations 
+          for startups at every stage - from pre-seed to growth.
         </p>
         
         {/* Trust Indicators */}

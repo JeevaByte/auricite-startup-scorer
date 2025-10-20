@@ -53,6 +53,14 @@ export const InterestButton: React.FC<InterestButtonProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('You must be logged in to show interest');
 
+      // Get investor profile for name
+      const { data: investorProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      // Insert contact request
       const { error } = await supabase
         .from('contact_requests')
         .insert({
@@ -70,9 +78,25 @@ export const InterestButton: React.FC<InterestButtonProps> = ({
         throw error;
       }
 
+      // Send notification email to startup founder
+      try {
+        const investorName = investorProfile?.full_name || 'An investor';
+        await supabase.functions.invoke('send-interest-notification', {
+          body: {
+            startupUserId,
+            investorName,
+            companyName,
+            message: message.trim() || undefined,
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send email notification:', emailError);
+        // Don't fail the whole operation if email fails
+      }
+
       toast({
         title: 'Interest sent!',
-        description: `Your interest in ${companyName} has been sent to the founder.`,
+        description: `Your interest in ${companyName} has been sent to the founder. They will be notified via email.`,
       });
 
       setHasRequested(true);

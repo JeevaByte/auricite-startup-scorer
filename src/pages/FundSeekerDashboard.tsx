@@ -240,14 +240,29 @@ const FundSeekerDashboard: React.FC = () => {
                               </Button>
                             </>
                           )}
-                          {request.status === 'accepted' && (
-                            <Button
-                              onClick={() => window.open(`mailto:${request.profiles?.email}`, '_blank')}
-                              className="w-full"
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Contact Investor
-                            </Button>
+                          {request.status === 'accepted' && request.profiles?.email && (
+                            <div className="w-full">
+                              <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p className="text-sm text-green-800 font-medium mb-2 flex items-center">
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Contact information unlocked!
+                                </p>
+                                <p className="text-xs text-green-700">
+                                  You can now reach out to this investor via email.
+                                </p>
+                              </div>
+                              <Button
+                                onClick={() => window.open(`mailto:${request.profiles?.email}?subject=Re: Interest in my startup&body=Hi ${investorProfile?.display_name || request.profiles?.full_name},
+
+Thank you for expressing interest in my startup! I'd love to discuss this opportunity with you.
+
+Best regards`, '_blank')}
+                                className="w-full"
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                Email: {request.profiles.email}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </CardContent>
