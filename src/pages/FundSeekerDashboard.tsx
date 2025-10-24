@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, CheckCircle, XCircle, User, Building } from 'lucide-react';
+import { Mail, CheckCircle, XCircle, User, Building, TrendingUp, DollarSign, ArrowRight, MapPin, Star } from 'lucide-react';
+import { mockInvestors } from '@/utils/mockInvestorDirectory';
+import { mockStartups } from '@/utils/mockStartupDirectory';
+import { useNavigate } from 'react-router-dom';
 
 interface IncomingRequest {
   id: string;
@@ -20,6 +23,7 @@ interface IncomingRequest {
 }
 
 const FundSeekerDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<IncomingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -139,6 +143,108 @@ const FundSeekerDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Investor Directory Preview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl mb-1">Investor Directory</CardTitle>
+                <p className="text-sm text-muted-foreground">Connect with investors looking for opportunities like yours</p>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/investors')}>
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockInvestors.slice(0, 3).map((investor) => (
+                <Card key={investor.id} className="p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold mb-1">{investor.display_name}</h3>
+                      <p className="text-sm text-muted-foreground">{investor.org_name}</p>
+                    </div>
+                    {investor.verification_status === 'verified' && (
+                      <Badge variant="default" className="text-xs">Verified</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{investor.bio}</p>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      {investor.region}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <DollarSign className="h-3 w-3" />
+                      £{(investor.ticket_min / 1000).toFixed(0)}K - £{(investor.ticket_max / 1000).toFixed(0)}K
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {investor.sectors.slice(0, 2).map((sector) => (
+                      <Badge key={sector} variant="outline" className="text-xs">{sector}</Badge>
+                    ))}
+                  </div>
+                  <Button size="sm" className="w-full" onClick={() => navigate('/investors')}>
+                    View Profile
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Startup Directory Preview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl mb-1">Startup Directory</CardTitle>
+                <p className="text-sm text-muted-foreground">Discover investment-ready startups</p>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/startup-directory')}>
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockStartups.slice(0, 3).map((startup) => (
+                <Card key={startup.id} className="p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">{startup.company_name}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">{startup.tagline}</p>
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-full">
+                      <Star className="h-3 w-3 text-primary fill-primary" />
+                      <span className="text-xs font-semibold text-primary">{startup.score}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Building className="h-3 w-3" />
+                      {startup.team_size} employees • {startup.stage}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <TrendingUp className="h-3 w-3" />
+                      {startup.traction_metrics.mrr || startup.traction_metrics.users}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {startup.sector.slice(0, 2).map((sector) => (
+                      <Badge key={sector} variant="outline" className="text-xs">{sector}</Badge>
+                    ))}
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full" onClick={() => navigate('/startup-directory')}>
+                    View Details
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Requests List */}
         <Card>
