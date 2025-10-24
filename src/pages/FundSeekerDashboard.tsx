@@ -33,20 +33,35 @@ const FundSeekerDashboard: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Fetch contact requests
+      const { data: contactData, error: contactError } = await supabase
         .from('contact_requests')
-        .select(`
-          *,
-          profiles!contact_requests_investor_user_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('startup_user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setRequests((data || []) as any);
+      if (contactError) throw contactError;
+
+      // Fetch investor profiles
+      if (contactData && contactData.length > 0) {
+        const investorIds = contactData.map(r => r.investor_user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', investorIds);
+
+        if (profilesError) throw profilesError;
+
+        // Merge data
+        const requestsWithProfiles = contactData.map(request => ({
+          ...request,
+          profiles: profilesData?.find(p => p.id === request.investor_user_id)
+        }));
+
+        setRequests(requestsWithProfiles as any);
+      } else {
+        setRequests([]);
+      }
     } catch (error: any) {
       toast({
         title: 'Error loading requests',
