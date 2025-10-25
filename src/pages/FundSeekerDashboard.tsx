@@ -162,10 +162,19 @@ const FundSeekerDashboard: React.FC = () => {
 
         {/* Tabbed Content */}
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="requests">Investor Requests</TabsTrigger>
-            <TabsTrigger value="investors">Investor Directory</TabsTrigger>
-            <TabsTrigger value="startups">Startup Directory</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="requests">
+              <Mail className="h-4 w-4 mr-2" />
+              Investor Requests
+            </TabsTrigger>
+            <TabsTrigger value="investors">
+              <User className="h-4 w-4 mr-2" />
+              Investor Directory
+            </TabsTrigger>
+            <TabsTrigger value="startups">
+              <Building className="h-4 w-4 mr-2" />
+              Startup Directory
+            </TabsTrigger>
           </TabsList>
 
           {/* Investor Requests Tab */}
