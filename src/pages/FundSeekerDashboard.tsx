@@ -174,7 +174,7 @@ const FundSeekerDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockInvestors.slice(0, 3).map((investor) => (
+              {mockInvestors.slice(0, 6).map((investor) => (
                 <Card key={investor.id} className="p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -225,7 +225,7 @@ const FundSeekerDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockStartups.slice(0, 3).map((startup) => (
+              {mockStartups.slice(0, 6).map((startup) => (
                 <Card key={startup.id} className="p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
