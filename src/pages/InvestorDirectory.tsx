@@ -6,69 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, DollarSign, Users, ExternalLink, Unlock, UserCircle } from 'lucide-react';
 import { AccessControl } from '@/components/AccessControl';
 import { useNavigate } from 'react-router-dom';
-
-interface InvestorProfile {
-  id: string;
-  name: string;
-  type: 'Angel' | 'VC' | 'Corporate VC' | 'Family Office';
-  location: string;
-  checkSize: string;
-  stage: string[];
-  sectors: string[];
-  description: string;
-  website?: string;
-  portfolio: string[];
-}
-
-const mockInvestors: InvestorProfile[] = [
-  {
-    id: '1',
-    name: 'Sarah Chen',
-    type: 'Angel',
-    location: 'San Francisco, CA',
-    checkSize: '$25K - $100K',
-    stage: ['Pre-Seed', 'Seed'],
-    sectors: ['SaaS', 'FinTech', 'HealthTech'],
-    description: 'Former VP at Stripe, focused on B2B SaaS and fintech startups. Active mentor and advisor.',
-    website: 'https://sarahchen.vc',
-    portfolio: ['Startup A', 'Startup B', 'Startup C']
-  },
-  {
-    id: '2',
-    name: 'Accel Partners',
-    type: 'VC',
-    location: 'Palo Alto, CA',
-    checkSize: '$1M - $15M',
-    stage: ['Seed', 'Series A', 'Series B'],
-    sectors: ['Enterprise', 'Consumer', 'Mobile'],
-    description: 'Early-stage venture capital firm with a focus on software and internet companies.',
-    website: 'https://accel.com',
-    portfolio: ['Facebook', 'Dropbox', 'Slack']
-  },
-  {
-    id: '3',
-    name: 'Google Ventures',
-    type: 'Corporate VC',
-    location: 'Mountain View, CA',
-    checkSize: '$250K - $50M',
-    stage: ['Seed', 'Series A', 'Series B', 'Growth'],
-    sectors: ['AI/ML', 'Healthcare', 'Robotics', 'Cybersecurity'],
-    description: 'Venture capital arm of Alphabet Inc., investing in bold new companies.',
-    website: 'https://gv.com',
-    portfolio: ['Uber', 'Nest', 'Flatiron Health']
-  },
-  {
-    id: '4',
-    name: 'Johnson Family Office',
-    type: 'Family Office',
-    location: 'New York, NY',
-    checkSize: '$100K - $5M',
-    stage: ['Pre-Seed', 'Seed', 'Series A'],
-    sectors: ['Real Estate Tech', 'E-commerce', 'Climate'],
-    description: 'Multi-generational family office with interests in sustainable technology.',
-    portfolio: ['CleanTech Co', 'PropTech Startup']
-  }
-];
+import { mockInvestorDirectory } from '@/utils/directoryMockData';
 
 export default function InvestorDirectory() {
   const [showFreeAccess, setShowFreeAccess] = useState(false);
@@ -104,19 +42,24 @@ export default function InvestorDirectory() {
 function InvestorDirectoryContent() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('All');
-  const [selectedStage, setSelectedStage] = useState<string>('All');
-  const filteredInvestors = mockInvestors.filter(investor => {
+  const [selectedSector, setSelectedSector] = useState<string>('All');
+  const [selectedRegion, setSelectedRegion] = useState<string>('All');
+  
+  const filteredInvestors = mockInvestorDirectory.filter(investor => {
     const matchesSearch = investor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         investor.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          investor.sectors.some(sector => sector.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesType = selectedType === 'All' || investor.type === selectedType;
-    const matchesStage = selectedStage === 'All' || investor.stage.includes(selectedStage);
+    const matchesSector = selectedSector === 'All' || investor.sectors.some(s => s === selectedSector);
+    const matchesRegion = selectedRegion === 'All' || investor.regions.some(r => r === selectedRegion);
     
-    return matchesSearch && matchesType && matchesStage;
+    return matchesSearch && matchesSector && matchesRegion && investor.is_active;
   });
 
-  const investorTypes = ['All', 'Angel', 'VC', 'Corporate VC', 'Family Office'];
-  const stages = ['All', 'Pre-Seed', 'Seed', 'Series A', 'Series B', 'Growth'];
+  const allSectors = Array.from(new Set(mockInvestorDirectory.flatMap(inv => inv.sectors)));
+  const sectors = ['All', ...allSectors.sort()];
+  
+  const allRegions = Array.from(new Set(mockInvestorDirectory.flatMap(inv => inv.regions)));
+  const regions = ['All', ...allRegions.sort()];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -156,27 +99,27 @@ function InvestorDirectoryContent() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sector</label>
               <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
+                value={selectedSector}
+                onChange={(e) => setSelectedSector(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {investorTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {sectors.map(sector => (
+                  <option key={sector} value={sector}>{sector}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Stage</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Region</label>
               <select
-                value={selectedStage}
-                onChange={(e) => setSelectedStage(e.target.value)}
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {stages.map(stage => (
-                  <option key={stage} value={stage}>{stage}</option>
+                {regions.map(region => (
+                  <option key={region} value={region}>{region}</option>
                 ))}
               </select>
             </div>
@@ -196,19 +139,17 @@ function InvestorDirectoryContent() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-1">{investor.name}</h3>
+                  {investor.organization && (
+                    <p className="text-sm text-gray-600 mb-1">{investor.organization} {investor.title && `• ${investor.title}`}</p>
+                  )}
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {investor.type}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {investor.location}
-                    </div>
-                    <div className="flex items-center">
                       <DollarSign className="h-4 w-4 mr-1" />
-                      {investor.checkSize}
+                      ${investor.ticket_min?.toLocaleString()} - ${investor.ticket_max?.toLocaleString()}
                     </div>
+                    {investor.is_verified && (
+                      <Badge variant="secondary" className="text-xs">Verified</Badge>
+                    )}
                   </div>
                 </div>
                 
@@ -222,13 +163,15 @@ function InvestorDirectoryContent() {
                 </div>
               </div>
 
-              <p className="text-gray-600 mb-4">{investor.description}</p>
+              {investor.bio && (
+                <p className="text-gray-600 mb-4">{investor.bio}</p>
+              )}
 
               <div className="grid md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Investment Stages</h4>
                   <div className="flex flex-wrap gap-1">
-                    {investor.stage.map((stage) => (
+                    {investor.stages.map((stage) => (
                       <Badge key={stage} variant="outline" className="text-xs">
                         {stage}
                       </Badge>
@@ -239,33 +182,42 @@ function InvestorDirectoryContent() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Sectors</h4>
                   <div className="flex flex-wrap gap-1">
-                    {investor.sectors.map((sector) => (
+                    {investor.sectors.slice(0, 3).map((sector) => (
                       <Badge key={sector} variant="secondary" className="text-xs">
                         {sector}
                       </Badge>
                     ))}
+                    {investor.sectors.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">+{investor.sectors.length - 3}</Badge>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Portfolio</h4>
-                  <div className="text-sm text-gray-600">
-                    {investor.portfolio.slice(0, 3).join(', ')}
-                    {investor.portfolio.length > 3 && ` +${investor.portfolio.length - 3} more`}
+                  <h4 className="font-medium text-gray-900 mb-2">Regions</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {investor.regions.slice(0, 3).map((region) => (
+                      <Badge key={region} variant="outline" className="text-xs">
+                        {region}
+                      </Badge>
+                    ))}
+                    {investor.regions.length > 3 && (
+                      <Badge variant="outline" className="text-xs">+{investor.regions.length - 3}</Badge>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {investor.website && (
+              {investor.linkedin_url && (
                 <div className="border-t pt-4">
                   <a
-                    href={investor.website}
+                    href={investor.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm"
                   >
                     <ExternalLink className="h-4 w-4 mr-1" />
-                    Visit Website
+                    LinkedIn Profile
                   </a>
                 </div>
               )}
