@@ -1,11 +1,18 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.74.0';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Validation schema for chat input
+const chatInputSchema = z.object({
+  message: z.string().min(1).max(5000),
+  sessionId: z.string().uuid().optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -28,7 +35,24 @@ serve(async (req) => {
       throw new Error('Not authenticated');
     }
 
-    const { message, sessionId } = await req.json();
+    const body = await req.json();
+    
+    // Validate input data
+    const validation = chatInputSchema.safeParse(body);
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid chat input', 
+          details: validation.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const { message, sessionId } = validation.data;
 
     // Get or create chat session
     let currentSessionId = sessionId;
@@ -135,10 +159,14 @@ Keep responses concise and data-driven.`;
 
   } catch (error) {
     console.error('Error in ai-investment-chat function:', error);
+    // Sanitize error message - don't expose internal details
+    const errorMessage = error instanceof Error && error.message.includes('authenticated')
+      ? 'Authentication required'
+      : 'An error occurred processing your request';
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ error: errorMessage }), 
       {
-        status: 500,
+        status: error instanceof Error && error.message.includes('authenticated') ? 401 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

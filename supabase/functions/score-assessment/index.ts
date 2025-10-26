@@ -1,8 +1,24 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 // Load locked scoring rules (source of truth)
 import rules from './scoring_rules.v0.1.0.json' assert { type: 'json' };
+
+// Validation schema for assessment data
+const assessmentDataSchema = z.object({
+  prototype: z.boolean(),
+  externalCapital: z.boolean(),
+  revenue: z.boolean(),
+  fullTimeTeam: z.boolean(),
+  termSheets: z.boolean(),
+  capTable: z.boolean(),
+  mrr: z.enum(['none', 'low', 'medium', 'high']),
+  employees: z.enum(['1-2', '3-10', '11-50', '50+']),
+  fundingGoal: z.string().max(1000),
+  investors: z.enum(['none', 'angels', 'vc', 'lateStage']),
+  milestones: z.enum(['concept', 'launch', 'scale', 'exit']),
+});
 
 interface AssessmentData {
   prototype: boolean;
@@ -81,17 +97,23 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const assessmentData: AssessmentData = body.assessmentData
-
-    if (!assessmentData) {
+    
+    // Validate input data
+    const validation = assessmentDataSchema.safeParse(body.assessmentData)
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Assessment data is required' }),
+        JSON.stringify({ 
+          error: 'Invalid assessment data', 
+          details: validation.error.errors 
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
+    
+    const assessmentData: AssessmentData = validation.data
 
     // Build scoring configuration from locked JSON rules
     const dims = rules.dimensions as Record<string, number>

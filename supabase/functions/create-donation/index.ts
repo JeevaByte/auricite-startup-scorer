@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,14 @@ const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-DONATION] ${step}${detailsStr}`);
 };
+
+// Validation schema for donation data
+const donationSchema = z.object({
+  amount: z.number().int().min(100).max(1000000), // Min $1, max $10,000
+  donorName: z.string().max(200).optional(),
+  message: z.string().max(1000).optional(),
+  email: z.string().email().max(255),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,13 +35,25 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { amount, donorName, message, email } = await req.json();
+    const body = await req.json();
     
-    if (!amount || amount < 100) { // Minimum $1
-      throw new Error("Invalid donation amount. Minimum is $1.");
+    // Validate input data
+    const validation = donationSchema.safeParse(body);
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid donation data', 
+          details: validation.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
-    logStep("Request data received", { amount, donorName, email });
+    const { amount, donorName, message, email } = validation.data;
+    logStep("Request data validated", { amount, donorName, email });
 
     // Get authenticated user (optional for donations)
     const authHeader = req.headers.get("Authorization");
