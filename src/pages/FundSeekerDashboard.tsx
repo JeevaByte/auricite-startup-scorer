@@ -7,8 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, CheckCircle, XCircle, User, Building, TrendingUp, DollarSign, ArrowRight, MapPin, Star } from 'lucide-react';
-import { mockInvestors } from '@/utils/mockInvestorDirectory';
-import { mockStartups } from '@/utils/mockStartupDirectory';
+import { mockInvestorDirectory, mockStartupDirectory } from '@/utils/directoryMockData';
 import { useNavigate } from 'react-router-dom';
 
 interface IncomingRequest {
@@ -26,6 +25,8 @@ interface IncomingRequest {
 const FundSeekerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<IncomingRequest[]>([]);
+  const [investors, setInvestors] = useState(mockInvestorDirectory);
+  const [startups, setStartups] = useState(mockStartupDirectory);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -74,8 +75,43 @@ const FundSeekerDashboard: React.FC = () => {
     }
   };
 
+  const fetchDirectories = async () => {
+    try {
+      // Fetch investors from Supabase
+      const { data: investorData, error: investorError } = await supabase
+        .from('investor_directory')
+        .select('*')
+        .eq('is_active', true)
+        .eq('visibility', 'public')
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+      if (!investorError && investorData && investorData.length > 0) {
+        setInvestors(investorData as any);
+      }
+
+      // Fetch startups from Supabase
+      const { data: startupData, error: startupError } = await supabase
+        .from('startup_directory')
+        .select('*')
+        .eq('is_active', true)
+        .eq('visibility', 'public')
+        .eq('seeking_funding', true)
+        .order('readiness_score', { ascending: false })
+        .limit(12);
+
+      if (!startupError && startupData && startupData.length > 0) {
+        setStartups(startupData as any);
+      }
+    } catch (error: any) {
+      console.log('Using mock data - Supabase fetch failed:', error.message);
+      // Fallback to mock data (already set in state)
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchDirectories();
   }, []);
 
   const handleRequest = async (requestId: string, status: 'accepted' | 'declined') => {
@@ -297,40 +333,50 @@ Best regards`, '_blank')}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {mockInvestors.slice(0, 6).map((investor) => (
-                    <Card key={investor.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold mb-1">{investor.display_name}</h3>
-                          <p className="text-sm text-muted-foreground">{investor.org_name}</p>
+                {investors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      No investors found matching your criteria
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {investors.slice(0, 6).map((investor) => (
+                      <Card key={investor.id} className="p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="font-semibold mb-1">{investor.name}</h3>
+                            <p className="text-sm text-muted-foreground">{investor.organization}</p>
+                            <p className="text-xs text-muted-foreground">{investor.title}</p>
+                          </div>
+                          {investor.is_verified && (
+                            <Badge variant="default" className="text-xs">Verified</Badge>
+                          )}
                         </div>
-                        {investor.verification_status === 'verified' && (
-                          <Badge variant="default" className="text-xs">Verified</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{investor.bio}</p>
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          {investor.region}
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{investor.bio}</p>
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {investor.regions.join(', ')}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <DollarSign className="h-3 w-3" />
+                            ${(investor.ticket_min / 1000).toFixed(0)}K - ${(investor.ticket_max / 1000).toFixed(0)}K
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <DollarSign className="h-3 w-3" />
-                          £{(investor.ticket_min / 1000).toFixed(0)}K - £{(investor.ticket_max / 1000).toFixed(0)}K
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {investor.sectors.slice(0, 2).map((sector) => (
+                            <Badge key={sector} variant="outline" className="text-xs">{sector}</Badge>
+                          ))}
                         </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {investor.sectors.slice(0, 2).map((sector) => (
-                          <Badge key={sector} variant="outline" className="text-xs">{sector}</Badge>
-                        ))}
-                      </div>
-                      <Button size="sm" className="w-full" onClick={() => navigate('/investors')}>
-                        View Profile
-                      </Button>
-                    </Card>
-                  ))}
-                </div>
+                        <Button size="sm" className="w-full" onClick={() => navigate('/investors')}>
+                          View Profile
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -350,40 +396,54 @@ Best regards`, '_blank')}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {mockStartups.slice(0, 6).map((startup) => (
-                    <Card key={startup.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{startup.company_name}</h3>
-                          <p className="text-xs text-muted-foreground mb-2">{startup.tagline}</p>
+                {startups.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Building className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      No startups found
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {startups.slice(0, 6).map((startup) => (
+                      <Card key={startup.id} className="p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold mb-1">{startup.company_name}</h3>
+                            <p className="text-xs text-muted-foreground mb-2">{startup.tagline}</p>
+                          </div>
+                          <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-full">
+                            <Star className="h-3 w-3 text-primary fill-primary" />
+                            <span className="text-xs font-semibold text-primary">{startup.readiness_score}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-full">
-                          <Star className="h-3 w-3 text-primary fill-primary" />
-                          <span className="text-xs font-semibold text-primary">{startup.score}</span>
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Building className="h-3 w-3" />
+                            {startup.team_size} employees • {startup.stage}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <TrendingUp className="h-3 w-3" />
+                            {startup.current_mrr ? `$${(startup.current_mrr / 1000).toFixed(0)}K MRR` : startup.sector}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {startup.location}
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Building className="h-3 w-3" />
-                          {startup.team_size} employees • {startup.stage}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          <Badge variant="outline" className="text-xs">{startup.sector}</Badge>
+                          {startup.is_verified && (
+                            <Badge variant="default" className="text-xs">Verified</Badge>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <TrendingUp className="h-3 w-3" />
-                          {startup.traction_metrics.mrr || startup.traction_metrics.users}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {startup.sector.slice(0, 2).map((sector) => (
-                          <Badge key={sector} variant="outline" className="text-xs">{sector}</Badge>
-                        ))}
-                      </div>
-                      <Button size="sm" variant="outline" className="w-full" onClick={() => navigate('/startup-directory')}>
-                        View Details
-                      </Button>
-                    </Card>
-                  ))}
-                </div>
+                        <Button size="sm" variant="outline" className="w-full" onClick={() => navigate('/startup-directory')}>
+                          View Details
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

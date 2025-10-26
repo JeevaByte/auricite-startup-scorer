@@ -95,7 +95,7 @@ The MVP is **PRODUCTION READY** with all core features implemented and tested.
       
       for (const table of tables) {
         try {
-          const { data, error } = await supabase.from(table).select('*').limit(1);
+          const { data, error } = await (supabase.from(table as any).select('*') as any).limit(1);
           if (error) {
             this.addResult('Phase 1', `${table} table`, '❌', `Table error: ${error.message}`);
           } else {

@@ -1382,6 +1382,99 @@ export type Database = {
           },
         ]
       }
+      investor_directory: {
+        Row: {
+          bio: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          investment_thesis: string | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          linkedin_url: string | null
+          name: string
+          notable_investments: string | null
+          organization: string | null
+          phone: string | null
+          portfolio_companies: string[] | null
+          regions: string[] | null
+          search_vector: unknown
+          sectors: string[] | null
+          stages: string[] | null
+          ticket_max: number | null
+          ticket_min: number | null
+          title: string | null
+          updated_at: string
+          visibility: string | null
+          website: string | null
+          zoho_account_id: string | null
+          zoho_contact_id: string | null
+          zoho_last_sync: string | null
+          zoho_sync_status: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          linkedin_url?: string | null
+          name: string
+          notable_investments?: string | null
+          organization?: string | null
+          phone?: string | null
+          portfolio_companies?: string[] | null
+          regions?: string[] | null
+          search_vector?: unknown
+          sectors?: string[] | null
+          stages?: string[] | null
+          ticket_max?: number | null
+          ticket_min?: number | null
+          title?: string | null
+          updated_at?: string
+          visibility?: string | null
+          website?: string | null
+          zoho_account_id?: string | null
+          zoho_contact_id?: string | null
+          zoho_last_sync?: string | null
+          zoho_sync_status?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          linkedin_url?: string | null
+          name?: string
+          notable_investments?: string | null
+          organization?: string | null
+          phone?: string | null
+          portfolio_companies?: string[] | null
+          regions?: string[] | null
+          search_vector?: unknown
+          sectors?: string[] | null
+          stages?: string[] | null
+          ticket_max?: number | null
+          ticket_min?: number | null
+          title?: string | null
+          updated_at?: string
+          visibility?: string | null
+          website?: string | null
+          zoho_account_id?: string | null
+          zoho_contact_id?: string | null
+          zoho_last_sync?: string | null
+          zoho_sync_status?: string | null
+        }
+        Relationships: []
+      }
       investor_follows: {
         Row: {
           created_at: string
@@ -2657,6 +2750,137 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "startup_clusters_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_directory: {
+        Row: {
+          assessment_id: string | null
+          company_name: string
+          created_at: string
+          current_mrr: number | null
+          description: string | null
+          email: string | null
+          founded_year: number | null
+          founder_email: string | null
+          founder_linkedin: string | null
+          founder_name: string | null
+          funding_goal: number | null
+          funding_raised: number | null
+          has_revenue: boolean | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          key_metrics: Json | null
+          location: string | null
+          one_pager_url: string | null
+          phone: string | null
+          pitch_deck_url: string | null
+          readiness_score: number | null
+          region: string | null
+          search_vector: unknown
+          sector: string
+          seeking_funding: boolean | null
+          stage: string
+          tagline: string | null
+          team_size: string | null
+          updated_at: string
+          user_id: string | null
+          video_url: string | null
+          visibility: string | null
+          website: string | null
+          zoho_account_id: string | null
+          zoho_deal_id: string | null
+          zoho_last_sync: string | null
+          zoho_sync_status: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          company_name: string
+          created_at?: string
+          current_mrr?: number | null
+          description?: string | null
+          email?: string | null
+          founded_year?: number | null
+          founder_email?: string | null
+          founder_linkedin?: string | null
+          founder_name?: string | null
+          funding_goal?: number | null
+          funding_raised?: number | null
+          has_revenue?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          key_metrics?: Json | null
+          location?: string | null
+          one_pager_url?: string | null
+          phone?: string | null
+          pitch_deck_url?: string | null
+          readiness_score?: number | null
+          region?: string | null
+          search_vector?: unknown
+          sector: string
+          seeking_funding?: boolean | null
+          stage: string
+          tagline?: string | null
+          team_size?: string | null
+          updated_at?: string
+          user_id?: string | null
+          video_url?: string | null
+          visibility?: string | null
+          website?: string | null
+          zoho_account_id?: string | null
+          zoho_deal_id?: string | null
+          zoho_last_sync?: string | null
+          zoho_sync_status?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          company_name?: string
+          created_at?: string
+          current_mrr?: number | null
+          description?: string | null
+          email?: string | null
+          founded_year?: number | null
+          founder_email?: string | null
+          founder_linkedin?: string | null
+          founder_name?: string | null
+          funding_goal?: number | null
+          funding_raised?: number | null
+          has_revenue?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          key_metrics?: Json | null
+          location?: string | null
+          one_pager_url?: string | null
+          phone?: string | null
+          pitch_deck_url?: string | null
+          readiness_score?: number | null
+          region?: string | null
+          search_vector?: unknown
+          sector?: string
+          seeking_funding?: boolean | null
+          stage?: string
+          tagline?: string | null
+          team_size?: string | null
+          updated_at?: string
+          user_id?: string | null
+          video_url?: string | null
+          visibility?: string | null
+          website?: string | null
+          zoho_account_id?: string | null
+          zoho_deal_id?: string | null
+          zoho_last_sync?: string | null
+          zoho_sync_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_directory_assessment_id_fkey"
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "assessments"
