@@ -9,34 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { mockInvestorDirectory } from '@/utils/directoryMockData';
 
 export default function InvestorDirectory() {
-  const [showFreeAccess, setShowFreeAccess] = useState(false);
-
-  if (showFreeAccess) {
-    return <InvestorDirectoryContent />;
-  }
-
-  return (
-    <AccessControl
-      accessType="investor_directory"
-      title="Investor Directory"
-      description="Connect with investors who are actively looking for startups like yours. Access granted through donation or Premium subscription."
-    >
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto text-center mb-8">
-          <Button 
-            onClick={() => setShowFreeAccess(true)}
-            variant="outline"
-            size="lg"
-            className="w-full"
-          >
-            <Unlock className="h-4 w-4 mr-2" />
-            Access Investor Directory (Free Preview)
-          </Button>
-        </div>
-        <InvestorDirectoryContent />
-      </div>
-    </AccessControl>
-  );
+  return <InvestorDirectoryContent />;
 }
 
 function InvestorDirectoryContent() {
