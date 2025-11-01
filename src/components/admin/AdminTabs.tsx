@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardStats } from './DashboardStats';
 import { AssessmentsTable } from './AssessmentsTable';
 import { ApiAccessManager } from './ApiAccessManager';
@@ -92,12 +93,40 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
       </TabsContent>
 
       <TabsContent value="fundraiser-dashboard">
-        <div className="space-y-4">
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">Fundraiser Dashboard</h3>
-            <p className="text-muted-foreground">Manage investor interest and explore opportunities</p>
-          </div>
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Total Fundraisers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{stats.totalAssessments}</p>
+              <p className="text-xs text-muted-foreground">Active fundraising campaigns</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Investor Connections</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{assessments.filter(a => a.total_score && a.total_score > 70).length}</p>
+              <p className="text-xs text-muted-foreground">High-score fundraisers</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Avg Readiness Score</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                {assessments.length > 0 
+                  ? Math.round(assessments.reduce((sum, a) => sum + (a.total_score || 0), 0) / assessments.length)
+                  : 0}
+              </p>
+              <p className="text-xs text-muted-foreground">Platform average</p>
+            </CardContent>
+          </Card>
         </div>
+        <AssessmentsTable assessments={assessments.filter(a => a.total_score)} />
       </TabsContent>
 
       <TabsContent value="edit">
