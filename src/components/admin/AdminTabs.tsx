@@ -46,6 +46,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
+        <TabsTrigger value="fundraiser-dashboard">Fundraiser Dashboard</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="scoring">Scoring</TabsTrigger>
         <TabsTrigger value="rescore">Re-score</TabsTrigger>
@@ -88,6 +89,15 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="donations" className="space-y-4">
         <DonationsTable />
+      </TabsContent>
+
+      <TabsContent value="fundraiser-dashboard">
+        <div className="space-y-4">
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold mb-2">Fundraiser Dashboard</h3>
+            <p className="text-muted-foreground">Manage investor interest and explore opportunities</p>
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="edit">
