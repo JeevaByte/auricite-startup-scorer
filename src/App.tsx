@@ -42,6 +42,7 @@ import FundraiserProfile from "./pages/FundraiserProfile";
 import FundraiserListing from "./pages/FundraiserListing";
 import StartupDirectory from "./pages/StartupDirectory";
 import FundSeekerDashboard from "./pages/FundSeekerDashboard";
+import FundraiserDashboard from "./pages/FundraiserDashboard";
 import MyInvestors from "./pages/MyInvestors";
 import AIFeedback from "./pages/AIFeedback";
 import Feedback from "./pages/Feedback";
@@ -121,6 +122,7 @@ const App = () => (
                   
                   {/* Fundraiser Routes */}
                   <Route path="/fundraisers" element={<FundraiserListing />} />
+                  <Route path="/fundraiser-dashboard" element={<FundraiserDashboard />} />
                   <Route path="/startup-directory" element={<StartupDirectory />} />
                   <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />

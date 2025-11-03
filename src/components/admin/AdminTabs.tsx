@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardStats } from './DashboardStats';
 import { AssessmentsTable } from './AssessmentsTable';
 import { ApiAccessManager } from './ApiAccessManager';
@@ -26,6 +25,8 @@ import { OrganizationManager } from './OrganizationManager';
 import { TenantBrandingManager } from './TenantBrandingManager';
 import { ScheduledReportsManager } from './ScheduledReportsManager';
 import { SystemHealthMonitor } from './SystemHealthMonitor';
+import InvestorDirectory from '@/pages/InvestorDirectory';
+import StartupDirectory from '@/pages/StartupDirectory';
 
 interface AdminTabsProps {
   stats: DashboardStatsType;
@@ -47,7 +48,8 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
-        <TabsTrigger value="fundraiser-dashboard">Fundraiser Dashboard</TabsTrigger>
+        <TabsTrigger value="investor-directory">Investor Directory</TabsTrigger>
+        <TabsTrigger value="startup-directory">Startup Directory</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="scoring">Scoring</TabsTrigger>
         <TabsTrigger value="rescore">Re-score</TabsTrigger>
@@ -92,41 +94,12 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
         <DonationsTable />
       </TabsContent>
 
-      <TabsContent value="fundraiser-dashboard">
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Total Fundraisers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.totalAssessments}</p>
-              <p className="text-xs text-muted-foreground">Active fundraising campaigns</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Investor Connections</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{assessments.filter(a => a.total_score && a.total_score > 70).length}</p>
-              <p className="text-xs text-muted-foreground">High-score fundraisers</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Avg Readiness Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">
-                {assessments.length > 0 
-                  ? Math.round(assessments.reduce((sum, a) => sum + (a.total_score || 0), 0) / assessments.length)
-                  : 0}
-              </p>
-              <p className="text-xs text-muted-foreground">Platform average</p>
-            </CardContent>
-          </Card>
-        </div>
-        <AssessmentsTable assessments={assessments.filter(a => a.total_score)} />
+      <TabsContent value="investor-directory">
+        <InvestorDirectory />
+      </TabsContent>
+
+      <TabsContent value="startup-directory">
+        <StartupDirectory />
       </TabsContent>
 
       <TabsContent value="edit">
