@@ -7,7 +7,8 @@ import { Search, MapPin, DollarSign, Users, ExternalLink, Unlock, UserCircle } f
 import { AccessControl } from '@/components/AccessControl';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
+import { useToast } from '@/hooks/use-toast';
+import { mockInvestorDirectory } from '@/utils/directoryMockData';
 export default function InvestorDirectory() {
   return <InvestorDirectoryContent />;
 }
@@ -19,6 +20,7 @@ function InvestorDirectoryContent() {
   const [selectedRegion, setSelectedRegion] = useState<string>('All');
   const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   
   useEffect(() => {
     const fetchInvestors = async () => {
@@ -28,20 +30,33 @@ function InvestorDirectoryContent() {
           .select('*')
           .eq('visibility', 'public')
           .eq('is_active', true);
-        
-        if (!error && data) {
-          setInvestors(data);
+
+        if (error) {
+          console.warn('Supabase error loading investor_directory, falling back to mock data:', error);
+          setInvestors(mockInvestorDirectory as any[]);
+          toast({ title: 'Demo Mode', description: 'Showing sample investor data' });
+          return;
         }
+
+        if (!data || data.length === 0) {
+          setInvestors(mockInvestorDirectory as any[]);
+          toast({ title: 'Demo Mode', description: 'Showing sample investor data' });
+          return;
+        }
+
+        setInvestors(data);
       } catch (err) {
-        console.error('Error fetching investors:', err);
+        console.error('Error fetching investors, falling back to mock:', err);
+        setInvestors(mockInvestorDirectory as any[]);
+        toast({ title: 'Demo Mode', description: 'Showing sample investor data' });
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchInvestors();
   }, []);
-  
+
   const filteredInvestors = investors.filter(investor => {
     const matchesSearch = investor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          investor.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
