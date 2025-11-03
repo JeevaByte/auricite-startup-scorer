@@ -25,8 +25,6 @@ import { OrganizationManager } from './OrganizationManager';
 import { TenantBrandingManager } from './TenantBrandingManager';
 import { ScheduledReportsManager } from './ScheduledReportsManager';
 import { SystemHealthMonitor } from './SystemHealthMonitor';
-import InvestorDirectory from '@/pages/InvestorDirectory';
-import StartupDirectory from '@/pages/StartupDirectory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, TrendingUp, Target } from 'lucide-react';
 
@@ -52,12 +50,10 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-20">
+      <TabsList className="grid w-full grid-cols-18">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="assessments">Assessments</TabsTrigger>
         <TabsTrigger value="donations">Donations</TabsTrigger>
-        <TabsTrigger value="investor-directory">Investor Directory</TabsTrigger>
-        <TabsTrigger value="startup-directory">Startup Directory</TabsTrigger>
         <TabsTrigger value="fundraiser-dashboard">Fundraisers</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="scoring">Scoring</TabsTrigger>
@@ -101,14 +97,6 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ stats, assessments, search
 
       <TabsContent value="donations" className="space-y-4">
         <DonationsTable />
-      </TabsContent>
-
-      <TabsContent value="investor-directory">
-        <InvestorDirectory />
-      </TabsContent>
-
-      <TabsContent value="startup-directory">
-        <StartupDirectory />
       </TabsContent>
 
       <TabsContent value="fundraiser-dashboard">
