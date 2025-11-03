@@ -1,154 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, DollarSign, TrendingUp, Building2, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { StartupDirectoryItem } from '@/utils/directoryMockData';
-
-// Using comprehensive mock data directly
-const mockStartupDirectory: StartupDirectoryItem[] = [
-  {
-    id: 'startup-001',
-    company_name: 'VisionAI',
-    tagline: 'AI-powered computer vision for manufacturing quality control',
-    description: 'We reduce defect rates by 95% using real-time AI visual inspection on production lines.',
-    founder_name: 'Marcus Johnson',
-    team_size: '28',
-    sector: 'AI/ML',
-    stage: 'Series A',
-    location: 'San Francisco, CA',
-    region: 'North America',
-    funding_raised: 5000000,
-    funding_goal: 3000000,
-    current_mrr: 85000,
-    has_revenue: true,
-    readiness_score: 85,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-  {
-    id: 'startup-002',
-    company_name: 'HealthPulse',
-    tagline: 'Remote patient monitoring for chronic disease management',
-    description: 'FDA-cleared wearable + AI platform helping doctors monitor chronic patients remotely.',
-    founder_name: 'Dr. Samantha Lee',
-    team_size: '15',
-    sector: 'HealthTech',
-    stage: 'Seed',
-    location: 'Boston, MA',
-    region: 'North America',
-    funding_raised: 1500000,
-    funding_goal: 2000000,
-    current_mrr: 42000,
-    has_revenue: true,
-    readiness_score: 78,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-  {
-    id: 'startup-003',
-    company_name: 'GreenCharge',
-    tagline: 'Solar-powered EV charging network',
-    description: 'Building the largest carbon-neutral EV charging network with 200+ stations installed.',
-    founder_name: 'Elena Rodriguez',
-    team_size: '65',
-    sector: 'Climate Tech',
-    stage: 'Series B',
-    location: 'Austin, TX',
-    region: 'North America',
-    funding_raised: 25000000,
-    funding_goal: 10000000,
-    current_mrr: 420000,
-    has_revenue: true,
-    readiness_score: 89,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-  {
-    id: 'startup-004',
-    company_name: 'EduFlow',
-    tagline: 'AI tutor personalizing K-12 education',
-    description: 'Adaptive learning platform improving test scores by 32% across 45 schools.',
-    founder_name: 'Jason Park',
-    team_size: '12',
-    sector: 'EdTech',
-    stage: 'Seed',
-    location: 'Palo Alto, CA',
-    region: 'North America',
-    funding_raised: 800000,
-    funding_goal: 1500000,
-    current_mrr: 28000,
-    has_revenue: true,
-    readiness_score: 75,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-  {
-    id: 'startup-005',
-    company_name: 'SecureAPI',
-    tagline: 'Real-time API security platform',
-    description: 'AI-powered API threat detection protecting $2B+ in transactions daily.',
-    founder_name: 'Linda Chen',
-    team_size: '22',
-    sector: 'Cybersecurity',
-    stage: 'Series A',
-    location: 'New York, NY',
-    region: 'North America',
-    funding_raised: 8000000,
-    funding_goal: 5000000,
-    current_mrr: 180000,
-    has_revenue: true,
-    readiness_score: 82,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-  {
-    id: 'startup-006',
-    company_name: 'FarmTech Solutions',
-    tagline: 'Precision agriculture platform',
-    description: 'IoT sensors and AI helping farmers increase yields by 25% while reducing water usage.',
-    founder_name: 'Raj Patel',
-    team_size: '18',
-    sector: 'AgTech',
-    stage: 'Seed',
-    location: 'Bangalore, India',
-    region: 'Asia',
-    funding_raised: 2000000,
-    funding_goal: 3000000,
-    current_mrr: 35000,
-    has_revenue: true,
-    readiness_score: 76,
-    is_verified: true,
-    is_active: true,
-    seeking_funding: true,
-  },
-];
+import { supabase } from '@/integrations/supabase/client';
 
 export default function StartupDirectory() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStage, setSelectedStage] = useState<string>('All');
   const [selectedSector, setSelectedSector] = useState<string>('All');
+  const [startups, setStartups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredStartups = mockStartupDirectory.filter(startup => {
-    const matchesSearch = startup.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  useEffect(() => {
+    const fetchStartups = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('startup_directory')
+          .select('*')
+          .eq('visibility', 'public')
+          .eq('is_active', true);
+        
+        if (!error && data) {
+          setStartups(data);
+        }
+      } catch (err) {
+        console.error('Error fetching startups:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStartups();
+  }, []);
+
+  const filteredStartups = startups.filter(startup => {
+    const matchesSearch = startup.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         startup.sector?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          startup.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStage = selectedStage === 'All' || startup.stage === selectedStage;
     const matchesSector = selectedSector === 'All' || startup.sector === selectedSector;
     
-    return matchesSearch && matchesStage && matchesSector && startup.is_active;
+    return matchesSearch && matchesStage && matchesSector;
   });
 
-  const stages = ['All', 'Pre-Seed', 'Seed', 'Series A', 'Series B', 'Growth'];
-  const allSectors = Array.from(new Set(mockStartupDirectory.map(s => s.sector))).filter(Boolean);
+  const allStages = Array.from(new Set(startups.map(s => s.stage))).filter(Boolean);
+  const stages = ['All', ...allStages.sort()];
+  const allSectors = Array.from(new Set(startups.map(s => s.sector))).filter(Boolean);
   const sectors = ['All', ...allSectors.sort()];
 
   return (

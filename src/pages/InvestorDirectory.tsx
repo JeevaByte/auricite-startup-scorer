@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, DollarSign, Users, ExternalLink, Unlock, UserCircle } from 'lucide-react';
 import { AccessControl } from '@/components/AccessControl';
 import { useNavigate } from 'react-router-dom';
-import { mockInvestorDirectory } from '@/utils/directoryMockData';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function InvestorDirectory() {
   return <InvestorDirectoryContent />;
@@ -17,21 +17,45 @@ function InvestorDirectoryContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState<string>('All');
   const [selectedRegion, setSelectedRegion] = useState<string>('All');
+  const [investors, setInvestors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const filteredInvestors = mockInvestorDirectory.filter(investor => {
-    const matchesSearch = investor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         investor.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         investor.sectors.some(sector => sector.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesSector = selectedSector === 'All' || investor.sectors.some(s => s === selectedSector);
-    const matchesRegion = selectedRegion === 'All' || investor.regions.some(r => r === selectedRegion);
+  useEffect(() => {
+    const fetchInvestors = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('investor_directory')
+          .select('*')
+          .eq('visibility', 'public')
+          .eq('is_active', true);
+        
+        if (!error && data) {
+          setInvestors(data);
+        }
+      } catch (err) {
+        console.error('Error fetching investors:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    return matchesSearch && matchesSector && matchesRegion && investor.is_active;
+    fetchInvestors();
+  }, []);
+  
+  const filteredInvestors = investors.filter(investor => {
+    const matchesSearch = investor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         investor.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         investor.sectors?.some((sector: string) => sector.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSector = selectedSector === 'All' || investor.sectors?.includes(selectedSector);
+    const matchesRegion = selectedRegion === 'All' || investor.regions?.includes(selectedRegion);
+    
+    return matchesSearch && matchesSector && matchesRegion;
   });
 
-  const allSectors = Array.from(new Set(mockInvestorDirectory.flatMap(inv => inv.sectors)));
+  const allSectors = Array.from(new Set(investors.flatMap(inv => inv.sectors || [])));
   const sectors = ['All', ...allSectors.sort()];
   
-  const allRegions = Array.from(new Set(mockInvestorDirectory.flatMap(inv => inv.regions)));
+  const allRegions = Array.from(new Set(investors.flatMap(inv => inv.regions || [])));
   const regions = ['All', ...allRegions.sort()];
 
   return (
