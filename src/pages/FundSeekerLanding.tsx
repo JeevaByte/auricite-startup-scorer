@@ -25,18 +25,12 @@ export default function Index() {
   const [showHelpCenter, setShowHelpCenter] = useState(false);
 
   useEffect(() => {
-    // Redirect fund seekers to dashboard if logged in and not on assessment
-    if (user && userRole !== 'investor' && !showAssessment) {
-      navigate('/dashboard');
-      return;
-    }
-
-    // Only show onboarding to fund seekers
+    // Show onboarding to fund seekers (no auto-redirect to dashboard)
     if (user && userRole !== 'investor' && !localStorage.getItem('onboarding-completed')) {
       const timer = setTimeout(() => setShowOnboarding(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, [user, userRole, showAssessment, navigate]);
+  }, [user, userRole]);
 
   const handleGetStarted = () => {
     if (!user) {
