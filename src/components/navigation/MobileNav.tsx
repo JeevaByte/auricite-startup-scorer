@@ -26,8 +26,7 @@ export const MobileNav: React.FC = () => {
   const fundSeekerNavigation = [
     { name: 'Home', href: '/' },
     { name: 'Assessment', href: '/unified-assessment' },
-    { name: 'Investors', href: '/investors' },
-    { name: 'Fundraisers', href: '/fundraisers' },
+    { name: 'Fundraiser Dashboard', href: '/fundraiser-dashboard' },
     { name: 'AI Analysis', href: '/ai-feedback' },
     { name: 'Learn', href: '/learn' },
     { name: 'Profile', href: '/profile' },

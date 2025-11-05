@@ -82,18 +82,10 @@ export const MainNav: React.FC = () => {
       isPremium: false
     }] : []),
     { 
-      name: 'Investor Directory', 
-      href: '/investors',
-      icon: Users,
-      description: 'Browse investor profiles',
-      badge: undefined,
-      isPremium: false
-    },
-    { 
-      name: 'Startup Directory', 
-      href: '/fundraisers',
+      name: 'Fundraiser Dashboard', 
+      href: '/fundraiser-dashboard',
       icon: Building2,
-      description: 'Discover investment-ready startups',
+      description: 'Explore investors and startups',
       badge: undefined,
       isPremium: false
     },
