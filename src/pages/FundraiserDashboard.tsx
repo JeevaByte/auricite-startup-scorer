@@ -5,9 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Users, Building2, MapPin, DollarSign, TrendingUp, Star, ExternalLink } from 'lucide-react';
+import { useSavedItems } from '@/hooks/useSavedItems';
+import { Search, Users, Building2, MapPin, DollarSign, TrendingUp, Star, ExternalLink, Heart, Filter, ArrowUpDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function FundraiserDashboard() {
@@ -16,8 +19,15 @@ export default function FundraiserDashboard() {
   const [loading, setLoading] = useState(true);
   const [investorSearch, setInvestorSearch] = useState('');
   const [startupSearch, setStartupSearch] = useState('');
+  const [stageFilter, setStageFilter] = useState('all');
+  const [sectorFilter, setSectorFilter] = useState('all');
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { savedInvestors, savedStartups, saveInvestor, unsaveInvestor, saveStartup, unsaveStartup, isInvestorSaved, isStartupSaved } = useSavedItems();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,17 +68,86 @@ export default function FundraiserDashboard() {
     fetchData();
   }, []);
 
-  const filteredInvestors = investors.filter(investor =>
-    investor.name?.toLowerCase().includes(investorSearch.toLowerCase()) ||
-    investor.organization?.toLowerCase().includes(investorSearch.toLowerCase()) ||
-    investor.sectors?.some((s: string) => s.toLowerCase().includes(investorSearch.toLowerCase()))
-  );
+  const handleConnect = async (investorId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: 'Please log in to connect', variant: 'destructive' });
+      return;
+    }
 
-  const filteredStartups = startups.filter(startup =>
-    startup.company_name?.toLowerCase().includes(startupSearch.toLowerCase()) ||
-    startup.sector?.toLowerCase().includes(startupSearch.toLowerCase()) ||
-    startup.description?.toLowerCase().includes(startupSearch.toLowerCase())
-  );
+    const { error } = await supabase.from('contact_requests').insert({
+      investor_user_id: investorId,
+      startup_user_id: user.id,
+      message: 'I would like to connect with you.'
+    });
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Connection request sent successfully' });
+    }
+  };
+
+  const handleExpressInterest = async (startupUserId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: 'Please log in to express interest', variant: 'destructive' });
+      return;
+    }
+
+    const { error } = await supabase.from('contact_requests').insert({
+      investor_user_id: user.id,
+      startup_user_id: startupUserId,
+      message: 'I am interested in learning more about your startup.'
+    });
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Interest expressed successfully' });
+    }
+  };
+
+  const filteredInvestors = investors
+    .filter(investor => {
+      const matchesSearch = investor.name?.toLowerCase().includes(investorSearch.toLowerCase()) ||
+        investor.organization?.toLowerCase().includes(investorSearch.toLowerCase()) ||
+        investor.sectors?.some((s: string) => s.toLowerCase().includes(investorSearch.toLowerCase()));
+      
+      const matchesStage = stageFilter === 'all' || investor.stages?.includes(stageFilter);
+      const matchesSector = sectorFilter === 'all' || investor.sectors?.includes(sectorFilter);
+      const matchesRegion = regionFilter === 'all' || investor.regions?.includes(regionFilter);
+      
+      return matchesSearch && matchesStage && matchesSector && matchesRegion;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'ticket') return (b.ticket_max || 0) - (a.ticket_max || 0);
+      return 0;
+    });
+
+  const filteredStartups = startups
+    .filter(startup => {
+      const matchesSearch = startup.company_name?.toLowerCase().includes(startupSearch.toLowerCase()) ||
+        startup.sector?.toLowerCase().includes(startupSearch.toLowerCase()) ||
+        startup.description?.toLowerCase().includes(startupSearch.toLowerCase());
+      
+      const matchesStage = stageFilter === 'all' || startup.stage === stageFilter;
+      const matchesSector = sectorFilter === 'all' || startup.sector === sectorFilter;
+      
+      return matchesSearch && matchesStage && matchesSector;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.company_name || '').localeCompare(b.company_name || '');
+      if (sortBy === 'score') return (b.readiness_score || 0) - (a.readiness_score || 0);
+      if (sortBy === 'funding') return (b.funding_goal || 0) - (a.funding_goal || 0);
+      return 0;
+    });
+
+  const paginatedInvestors = filteredInvestors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedStartups = filteredStartups.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalInvestorPages = Math.ceil(filteredInvestors.length / itemsPerPage);
+  const totalStartupPages = Math.ceil(filteredStartups.length / itemsPerPage);
 
   if (loading) {
     return (
@@ -137,24 +216,76 @@ export default function FundraiserDashboard() {
 
         {/* Investor Directory Tab */}
         <TabsContent value="investors" className="space-y-4">
-          <Card className="p-4">
+          <Card className="p-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search investors by name, organization, or sector..."
                 value={investorSearch}
-                onChange={(e) => setInvestorSearch(e.target.value)}
+                onChange={(e) => { setInvestorSearch(e.target.value); setCurrentPage(1); }}
                 className="pl-10"
               />
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Select value={stageFilter} onValueChange={(v) => { setStageFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by stage" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stages</SelectItem>
+                  <SelectItem value="Pre-seed">Pre-seed</SelectItem>
+                  <SelectItem value="Seed">Seed</SelectItem>
+                  <SelectItem value="Series A">Series A</SelectItem>
+                  <SelectItem value="Series B">Series B</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sectorFilter} onValueChange={(v) => { setSectorFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sectors</SelectItem>
+                  <SelectItem value="FinTech">FinTech</SelectItem>
+                  <SelectItem value="HealthTech">HealthTech</SelectItem>
+                  <SelectItem value="SaaS">SaaS</SelectItem>
+                  <SelectItem value="E-commerce">E-commerce</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={regionFilter} onValueChange={(v) => { setRegionFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by region" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Regions</SelectItem>
+                  <SelectItem value="North America">North America</SelectItem>
+                  <SelectItem value="Europe">Europe</SelectItem>
+                  <SelectItem value="Asia">Asia</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="ticket">Ticket Size</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </Card>
 
-          <p className="text-sm text-muted-foreground">
-            {filteredInvestors.length} investor{filteredInvestors.length !== 1 ? 's' : ''} found
-          </p>
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {filteredInvestors.length} investor{filteredInvestors.length !== 1 ? 's' : ''} found
+            </p>
+          </div>
 
           <div className="grid gap-4">
-            {filteredInvestors.map((investor) => (
+            {paginatedInvestors.map((investor) => (
               <Card key={investor.id} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -174,7 +305,16 @@ export default function FundraiserDashboard() {
                       )}
                     </div>
                   </div>
-                  <Button size="sm">Connect</Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => isInvestorSaved(investor.id) ? unsaveInvestor(investor.id) : saveInvestor(investor.id)}
+                    >
+                      <Heart className={`h-4 w-4 ${isInvestorSaved(investor.id) ? 'fill-current' : ''}`} />
+                    </Button>
+                    <Button size="sm" onClick={() => handleConnect(investor.id)}>Connect</Button>
+                  </div>
                 </div>
 
                 {investor.bio && (
@@ -220,6 +360,36 @@ export default function FundraiserDashboard() {
             ))}
           </div>
 
+          {totalInvestorPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {[...Array(totalInvestorPages)].map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(i + 1)}
+                      isActive={currentPage === i + 1}
+                      className="cursor-pointer"
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalInvestorPages, p + 1))}
+                    className={currentPage === totalInvestorPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+
           {filteredInvestors.length === 0 && (
             <Card className="p-12 text-center">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -231,24 +401,65 @@ export default function FundraiserDashboard() {
 
         {/* Startup Directory Tab */}
         <TabsContent value="startups" className="space-y-4">
-          <Card className="p-4">
+          <Card className="p-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search startups by name, sector, or description..."
                 value={startupSearch}
-                onChange={(e) => setStartupSearch(e.target.value)}
+                onChange={(e) => { setStartupSearch(e.target.value); setCurrentPage(1); }}
                 className="pl-10"
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select value={stageFilter} onValueChange={(v) => { setStageFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by stage" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stages</SelectItem>
+                  <SelectItem value="Idea">Idea</SelectItem>
+                  <SelectItem value="MVP">MVP</SelectItem>
+                  <SelectItem value="Growth">Growth</SelectItem>
+                  <SelectItem value="Scale">Scale</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sectorFilter} onValueChange={(v) => { setSectorFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sectors</SelectItem>
+                  <SelectItem value="FinTech">FinTech</SelectItem>
+                  <SelectItem value="HealthTech">HealthTech</SelectItem>
+                  <SelectItem value="SaaS">SaaS</SelectItem>
+                  <SelectItem value="E-commerce">E-commerce</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="score">Score</SelectItem>
+                  <SelectItem value="funding">Funding Goal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </Card>
 
-          <p className="text-sm text-muted-foreground">
-            {filteredStartups.length} startup{filteredStartups.length !== 1 ? 's' : ''} found
-          </p>
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {filteredStartups.length} startup{filteredStartups.length !== 1 ? 's' : ''} found
+            </p>
+          </div>
 
           <div className="grid gap-4">
-            {filteredStartups.map((startup) => (
+            {paginatedStartups.map((startup) => (
               <Card key={startup.id} className="p-6 hover:shadow-lg transition-all border-l-4 border-l-primary/40">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
@@ -317,19 +528,58 @@ export default function FundraiserDashboard() {
                 </div>
 
                 <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => isStartupSaved(startup.id) ? unsaveStartup(startup.id) : saveStartup(startup.id)}
+                  >
+                    <Heart className={`h-4 w-4 ${isStartupSaved(startup.id) ? 'fill-current' : ''}`} />
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => navigate(`/fundraiser/${startup.id}`)}
+                    onClick={() => navigate(`/startup/${startup.id}`)}
                     className="flex-1"
                   >
                     View Profile
                   </Button>
-                  <Button size="sm" className="flex-1">Express Interest</Button>
+                  <Button size="sm" className="flex-1" onClick={() => handleExpressInterest(startup.user_id)}>
+                    Express Interest
+                  </Button>
                 </div>
               </Card>
             ))}
           </div>
+
+          {totalStartupPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {[...Array(totalStartupPages)].map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(i + 1)}
+                      isActive={currentPage === i + 1}
+                      className="cursor-pointer"
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalStartupPages, p + 1))}
+                    className={currentPage === totalStartupPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
 
           {filteredStartups.length === 0 && (
             <Card className="p-12 text-center">

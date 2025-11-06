@@ -44,6 +44,8 @@ import StartupDirectory from "./pages/StartupDirectory";
 import FundSeekerDashboard from "./pages/FundSeekerDashboard";
 import FundraiserDashboard from "./pages/FundraiserDashboard";
 import MyInvestors from "./pages/MyInvestors";
+import InvestorDetail from "./pages/InvestorDetail";
+import StartupDetail from "./pages/StartupDetail";
 import AIFeedback from "./pages/AIFeedback";
 import Feedback from "./pages/Feedback";
 import Pricing from "./pages/Pricing";
@@ -125,6 +127,8 @@ const App = () => (
                   <Route path="/fundraiser-dashboard" element={<FundraiserDashboard />} />
                   <Route path="/startup-directory" element={<StartupDirectory />} />
                   <Route path="/fundraiser/:id" element={<FundraiserProfile />} />
+                  <Route path="/investor-detail/:id" element={<InvestorDetail />} />
+                  <Route path="/startup/:id" element={<StartupDetail />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   
                   {/* General Routes */}
