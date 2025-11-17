@@ -68,15 +68,31 @@ export default function FundraiserDashboard() {
     fetchData();
   }, []);
 
-  const handleConnect = async (investorId: string) => {
+  const handleConnect = async (investorDirId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: 'Please log in to connect', variant: 'destructive' });
       return;
     }
 
+    // Get investor's user_id from directory
+    const { data: investorData, error: fetchError } = await supabase
+      .from('investor_directory')
+      .select('user_id')
+      .eq('id', investorDirId)
+      .single();
+
+    if (fetchError || !investorData?.user_id) {
+      toast({ 
+        title: 'Unable to connect', 
+        description: 'This investor profile is not linked to a user account',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     const { error } = await supabase.from('contact_requests').insert({
-      investor_user_id: investorId,
+      investor_user_id: investorData.user_id,
       startup_user_id: user.id,
       message: 'I would like to connect with you.'
     });
@@ -88,16 +104,32 @@ export default function FundraiserDashboard() {
     }
   };
 
-  const handleExpressInterest = async (startupUserId: string) => {
+  const handleExpressInterest = async (startupDirId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: 'Please log in to express interest', variant: 'destructive' });
       return;
     }
 
+    // Get startup's user_id from directory
+    const { data: startupData, error: fetchError } = await supabase
+      .from('startup_directory')
+      .select('user_id')
+      .eq('id', startupDirId)
+      .single();
+
+    if (fetchError || !startupData?.user_id) {
+      toast({ 
+        title: 'Unable to express interest', 
+        description: 'This startup profile is not linked to a user account',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     const { error } = await supabase.from('contact_requests').insert({
       investor_user_id: user.id,
-      startup_user_id: startupUserId,
+      startup_user_id: startupData.user_id,
       message: 'I am interested in learning more about your startup.'
     });
 
@@ -543,7 +575,7 @@ export default function FundraiserDashboard() {
                   >
                     View Profile
                   </Button>
-                  <Button size="sm" className="flex-1" onClick={() => handleExpressInterest(startup.user_id)}>
+                  <Button size="sm" className="flex-1" onClick={() => handleExpressInterest(startup.id)}>
                     Express Interest
                   </Button>
                 </div>

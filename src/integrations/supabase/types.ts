@@ -1406,6 +1406,7 @@ export type Database = {
           ticket_min: number | null
           title: string | null
           updated_at: string
+          user_id: string | null
           visibility: string | null
           website: string | null
           zoho_account_id: string | null
@@ -1436,6 +1437,7 @@ export type Database = {
           ticket_min?: number | null
           title?: string | null
           updated_at?: string
+          user_id?: string | null
           visibility?: string | null
           website?: string | null
           zoho_account_id?: string | null
@@ -1466,6 +1468,7 @@ export type Database = {
           ticket_min?: number | null
           title?: string | null
           updated_at?: string
+          user_id?: string | null
           visibility?: string | null
           website?: string | null
           zoho_account_id?: string | null
